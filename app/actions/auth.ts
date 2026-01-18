@@ -1,0 +1,65 @@
+'use server'
+
+import { createClient } from '@/lib/supabase/server'
+import { redirect } from 'next/navigation'
+import { headers } from 'next/headers'
+
+export async function signIn(formData: FormData) {
+    const email = formData.get('email') as string
+    const password = formData.get('password') as string
+    const supabase = await createClient()
+
+    const { error } = await supabase.auth.signInWithPassword({
+        email,
+        password,
+    })
+
+    if (error) {
+        return { error: error.message }
+    }
+
+    redirect('/dashboard')
+}
+
+export async function signUp(formData: FormData) {
+    const origin = (await headers()).get('origin')
+    const email = formData.get('email') as string
+    const password = formData.get('password') as string
+    const supabase = await createClient()
+
+    const { error } = await supabase.auth.signUp({
+        email,
+        password,
+        options: {
+            emailRedirectTo: `${origin}/auth/callback`,
+        },
+    })
+
+    if (error) {
+        return { error: error.message }
+    }
+
+    return { success: true, message: 'Check your email to confirm your account.' }
+}
+
+export async function signOut() {
+    const supabase = await createClient()
+    await supabase.auth.signOut()
+    redirect('/login')
+}
+
+export async function resetPassword(formData: FormData) {
+    const origin = (await headers()).get('origin')
+    const email = formData.get('email') as string
+    const supabase = await createClient()
+
+    const { error } = await supabase.auth.resetPasswordForEmail(email, {
+        redirectTo: `${origin}/auth/callback?next=/reset-password/update`,
+    })
+
+    if (error) {
+        return { error: error.message }
+    }
+
+    return { success: true, message: 'Check your email for the password reset link.' }
+}
