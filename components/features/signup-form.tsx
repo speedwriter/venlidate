@@ -17,6 +17,8 @@ import {
 import { Input } from '@/components/ui/input'
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card'
 import { signUp } from '@/app/actions/auth'
+import { toast } from 'sonner'
+import { LoadingSpinner } from '@/components/ui/loading-spinner'
 
 const formSchema = z.object({
     email: z.string().email({ message: 'Please enter a valid email address.' }),
@@ -46,23 +48,32 @@ export function SignupForm() {
         setError(null)
         setSuccess(null)
 
-        const formData = new FormData()
-        formData.append('email', values.email)
-        formData.append('password', values.password)
+        try {
+            const formData = new FormData()
+            formData.append('email', values.email)
+            formData.append('password', values.password)
 
-        const result = await signUp(formData)
+            const result = await signUp(formData)
 
-        if (result?.error) {
-            setError(result.error)
-        } else if (result?.success) {
-            setSuccess(result.message || 'Signup successful!')
-            form.reset()
+            if (result && !result.success) {
+                setError(result.error || 'Something went wrong')
+                toast.error(result.error || 'Something went wrong. Please try again.')
+            } else if (result && result.success) {
+                setSuccess('Check your email to confirm your account.')
+                toast.success('Signup validated successfully!')
+                form.reset()
+            }
+        } catch (e) {
+            console.error(e)
+            setError('An unexpected error occurred.')
+            toast.error('Something went wrong. Please try again.')
+        } finally {
+            setIsLoading(false)
         }
-        setIsLoading(false)
     }
 
     return (
-        <Card className="w-full max-w-md mx-auto shadow-lg border-muted/20">
+        <Card className="w-full max-w-md mx-auto shadow-lg border-muted/20 animate-in fade-in duration-500">
             <CardHeader className="space-y-1">
                 <CardTitle className="text-2xl font-bold text-center">Create an account</CardTitle>
                 <CardDescription className="text-center">
@@ -71,8 +82,8 @@ export function SignupForm() {
             </CardHeader>
             <CardContent>
                 {success ? (
-                    <div className="p-4 mb-4 text-sm text-green-800 rounded-lg bg-green-50 dark:bg-gray-800 dark:text-green-400" role="alert">
-                        <span className="font-medium">Success!</span> {success}
+                    <div className="p-4 mb-4 text-sm text-green-800 rounded-lg bg-green-50 dark:bg-gray-800 dark:text-green-400 text-center animate-in zoom-in duration-300" role="alert">
+                        <span className="font-medium">Check your email!</span> {success}
                     </div>
                 ) : (
                     <Form {...form}>
@@ -118,13 +129,20 @@ export function SignupForm() {
                             />
 
                             {error && (
-                                <div className="text-sm font-medium text-destructive text-center">
+                                <div className="text-sm font-medium text-destructive text-center bg-destructive/10 py-2 rounded-md">
                                     {error}
                                 </div>
                             )}
 
                             <Button type="submit" className="w-full" disabled={isLoading}>
-                                {isLoading ? 'Creating account...' : 'Sign Up'}
+                                {isLoading ? (
+                                    <>
+                                        <LoadingSpinner className="mr-2 text-primary-foreground" size={16} />
+                                        Creating account...
+                                    </>
+                                ) : (
+                                    'Sign Up'
+                                )}
                             </Button>
                         </form>
                     </Form>

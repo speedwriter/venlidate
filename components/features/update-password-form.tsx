@@ -17,6 +17,8 @@ import {
 import { Input } from '@/components/ui/input'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { createClient } from '@/lib/supabase/client'
+import { toast } from 'sonner'
+import { LoadingSpinner } from '@/components/ui/loading-spinner'
 
 const formSchema = z.object({
     password: z.string().min(6, { message: 'Password must be at least 6 characters.' }),
@@ -45,24 +47,33 @@ export function UpdatePasswordForm() {
         setError(null)
         setSuccess(null)
 
-        const supabase = createClient()
-        const { error } = await supabase.auth.updateUser({
-            password: values.password
-        })
+        try {
+            const supabase = createClient()
+            const { error } = await supabase.auth.updateUser({
+                password: values.password
+            })
 
-        if (error) {
-            setError(error.message)
-        } else {
-            setSuccess('Password updated successfully. Redirecting...')
-            setTimeout(() => {
-                router.push('/dashboard')
-            }, 2000)
+            if (error) {
+                setError(error.message)
+                toast.error(error.message || 'Failed to update password.')
+            } else {
+                setSuccess('Password updated successfully. Redirecting...')
+                toast.success('Password updated successfully!')
+                setTimeout(() => {
+                    router.push('/dashboard')
+                }, 2000)
+            }
+        } catch (e) {
+            console.error(e)
+            setError('An unexpected error occurred.')
+            toast.error('Something went wrong. Please try again.')
+        } finally {
+            setIsLoading(false)
         }
-        setIsLoading(false)
     }
 
     return (
-        <Card className="w-full max-w-md mx-auto shadow-lg border-muted/20">
+        <Card className="w-full max-w-md mx-auto shadow-lg border-muted/20 animate-in fade-in duration-500">
             <CardHeader className="space-y-1">
                 <CardTitle className="text-2xl font-bold text-center">Update Password</CardTitle>
                 <CardDescription className="text-center">
@@ -71,7 +82,7 @@ export function UpdatePasswordForm() {
             </CardHeader>
             <CardContent>
                 {success ? (
-                    <div className="p-4 mb-4 text-sm text-green-800 rounded-lg bg-green-50 dark:bg-gray-800 dark:text-green-400" role="alert">
+                    <div className="p-4 mb-4 text-sm text-green-800 rounded-lg bg-green-50 dark:bg-gray-800 dark:text-green-400 text-center animate-in zoom-in duration-300" role="alert">
                         <span className="font-medium">Success!</span> {success}
                     </div>
                 ) : (
@@ -105,13 +116,20 @@ export function UpdatePasswordForm() {
                             />
 
                             {error && (
-                                <div className="text-sm font-medium text-destructive text-center">
+                                <div className="text-sm font-medium text-destructive text-center bg-destructive/10 py-2 rounded-md">
                                     {error}
                                 </div>
                             )}
 
                             <Button type="submit" className="w-full" disabled={isLoading}>
-                                {isLoading ? 'Updating...' : 'Update Password'}
+                                {isLoading ? (
+                                    <>
+                                        <LoadingSpinner className="mr-2 text-primary-foreground" size={16} />
+                                        Updating...
+                                    </>
+                                ) : (
+                                    'Update Password'
+                                )}
                             </Button>
                         </form>
                     </Form>

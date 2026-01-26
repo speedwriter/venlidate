@@ -18,6 +18,8 @@ import {
 import { Input } from '@/components/ui/input'
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card'
 import { signIn } from '@/app/actions/auth'
+import { toast } from 'sonner'
+import { LoadingSpinner } from '@/components/ui/loading-spinner'
 
 const formSchema = z.object({
     email: z.string().email({ message: 'Please enter a valid email address.' }),
@@ -36,32 +38,37 @@ export function LoginForm() {
         },
     })
 
+
     async function onSubmit(values: z.infer<typeof formSchema>) {
         setIsLoading(true)
         setError(null)
 
-        const formData = new FormData()
-        formData.append('email', values.email)
-        formData.append('password', values.password)
+        try {
+            const formData = new FormData()
+            formData.append('email', values.email)
+            formData.append('password', values.password)
 
-        const result = await signIn(formData)
+            const result = await signIn(formData)
 
-        // Note: signIn redirects on success, so if we get a result, it's likely an error unless handled otherwise
-        // However, server actions that redirect throws an error that Next.js catches.
-        // Use a try-catch block wrapping server action calls if not returning simple objects?
-        // In this specific implementation of signIn, it returns `{ error: string }` OR it throws a redirect.
-        // So if result is returned, it is an error.
-
-        if (result?.error) {
-            setError(result.error)
+            if (result && !result.success) {
+                setError(result.error || 'Invalid email or password')
+                toast.error(result.error || 'Something went wrong. Please try again.')
+                setIsLoading(false)
+            }
+        } catch (e) {
+            // Redirect errors are expected and should not be handled as errors here
+            if (e instanceof Error && e.message.includes('NEXT_REDIRECT')) {
+                throw e;
+            }
+            console.error(e)
+            setError('An unexpected error occurred.')
+            toast.error('Something went wrong. Please try again.')
             setIsLoading(false)
         }
-        // If no result returned and no redirect happened (which shouldn't happen with valid redirect), check logic.
-        // Actually standard Next.js redirect in Server Action works fine. 
     }
 
     return (
-        <Card className="w-full max-w-md mx-auto shadow-lg border-muted/20">
+        <Card className="w-full max-w-md mx-auto shadow-lg border-muted/20 animate-in fade-in duration-500">
             <CardHeader className="space-y-1">
                 <CardTitle className="text-2xl font-bold text-center">Welcome back</CardTitle>
                 <CardDescription className="text-center">
@@ -99,13 +106,20 @@ export function LoginForm() {
                         />
 
                         {error && (
-                            <div className="text-sm font-medium text-destructive text-center">
+                            <div className="text-sm font-medium text-destructive text-center bg-destructive/10 py-2 rounded-md">
                                 {error}
                             </div>
                         )}
 
                         <Button type="submit" className="w-full" disabled={isLoading}>
-                            {isLoading ? 'Signing in...' : 'Sign In'}
+                            {isLoading ? (
+                                <>
+                                    <LoadingSpinner className="mr-2 text-primary-foreground" size={16} />
+                                    Signing in...
+                                </>
+                            ) : (
+                                'Sign In'
+                            )}
                         </Button>
                     </form>
                 </Form>

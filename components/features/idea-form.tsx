@@ -6,6 +6,7 @@ import { zodResolver } from "@hookform/resolvers/zod"
 import * as z from "zod"
 import { useRouter } from "next/navigation"
 import { Loader2, ChevronRight, ChevronLeft, CheckCircle2 } from "lucide-react"
+import { toast } from "sonner"
 
 import { Button } from "@/components/ui/button"
 import {
@@ -71,6 +72,7 @@ export function IdeaForm() {
         },
     })
 
+
     async function onSubmit(values: FormData) {
         setIsSubmitting(true)
         setValidationStatus("Saving your idea draft...")
@@ -85,6 +87,7 @@ export function IdeaForm() {
             const result = await createIdea(formData)
 
             if (!result.success || !result.data) {
+                toast.error(result.error || "Failed to create idea")
                 throw new Error(result.error || "Failed to create idea")
             }
 
@@ -94,15 +97,18 @@ export function IdeaForm() {
             const validationResult = await submitIdeaForValidation(ideaId)
 
             if (!validationResult.success) {
+                toast.error(validationResult.error || "AI validation failed")
                 throw new Error(validationResult.error || "AI validation failed")
             }
 
+            toast.success("Idea validated successfully!")
             router.push(`/dashboard/${ideaId}`)
         } catch (error) {
             console.error(error)
             setValidationStatus(null)
-            // You might want to use a toast here
-            alert(error instanceof Error ? error.message : "An error occurred")
+            if (!(error instanceof Error && error.message.includes("NEXT_REDIRECT"))) {
+                toast.error(error instanceof Error ? error.message : "Something went wrong. Please try again.")
+            }
         } finally {
             setIsSubmitting(false)
         }

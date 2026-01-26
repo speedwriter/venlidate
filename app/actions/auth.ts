@@ -15,7 +15,7 @@ export async function signIn(formData: FormData) {
     })
 
     if (error) {
-        return { error: error.message }
+        return { success: false, error: error.message }
     }
 
     redirect('/dashboard')
@@ -36,10 +36,10 @@ export async function signUp(formData: FormData) {
     })
 
     if (error) {
-        return { error: error.message }
+        return { success: false, error: error.message }
     }
 
-    return { success: true, message: 'Check your email to confirm your account.' }
+    return { success: true }
 }
 
 export async function signOut() {
@@ -58,8 +58,8 @@ export async function resetPassword(formData: FormData) {
     })
 
     if (error) {
-        return { error: error.message }
+        return { success: false, error: error.message }
     }
 
-    return { success: true, message: 'Check your email for the password reset link.' }
+    return { success: true }
 }

@@ -4,6 +4,8 @@ import { useState, useTransition } from 'react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { joinWaitlist } from '@/app/actions/waitlist';
+import { toast } from 'sonner';
+import { LoadingSpinner } from '@/components/ui/loading-spinner';
 
 interface WaitlistFormProps {
     initialEmail?: string;
@@ -25,10 +27,12 @@ export function WaitlistForm({ initialEmail = '' }: WaitlistFormProps) {
 
         startTransition(async () => {
             const result = await joinWaitlist(formData);
-            if (result.error) {
+            if (result.success) {
+                setMessage(result.message || "You're on the list!");
+                toast.success(result.message || "You're on the list!");
+            } else if (result.error) {
                 setError(result.error);
-            } else if (result.message) {
-                setMessage(result.message);
+                toast.error(result.error);
             }
         });
     }
@@ -61,7 +65,14 @@ export function WaitlistForm({ initialEmail = '' }: WaitlistFormProps) {
                 disabled={isPending}
                 className="h-12 px-8 bg-indigo-600 hover:bg-indigo-700 text-white font-semibold transition-all shadow-lg hover:shadow-indigo-500/20"
             >
-                {isPending ? 'Joining...' : "Join Founder's Club"}
+                {isPending ? (
+                    <>
+                        <LoadingSpinner className="mr-2 text-white" size={18} />
+                        Joining...
+                    </>
+                ) : (
+                    "Join Founder's Club"
+                )}
             </Button>
         </form>
     );

@@ -17,6 +17,8 @@ import {
 import { Input } from '@/components/ui/input'
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card'
 import { resetPassword } from '@/app/actions/auth'
+import { toast } from 'sonner'
+import { LoadingSpinner } from '@/components/ui/loading-spinner'
 
 const formSchema = z.object({
     email: z.string().email({ message: 'Please enter a valid email address.' }),
@@ -39,22 +41,31 @@ export function ResetPasswordForm() {
         setError(null)
         setSuccess(null)
 
-        const formData = new FormData()
-        formData.append('email', values.email)
+        try {
+            const formData = new FormData()
+            formData.append('email', values.email)
 
-        const result = await resetPassword(formData)
+            const result = await resetPassword(formData)
 
-        if (result?.error) {
-            setError(result.error)
-        } else if (result?.success) {
-            setSuccess(result.message || 'Check your email for instructions.')
-            form.reset()
+            if (result && !result.success) {
+                setError(result.error || 'Something went wrong')
+                toast.error(result.error || 'Something went wrong. Please try again.')
+            } else if (result && result.success) {
+                setSuccess('Check your email for the password reset link.')
+                toast.success('Reset link sent! Please check your email.')
+                form.reset()
+            }
+        } catch (e) {
+            console.error(e)
+            setError('An unexpected error occurred.')
+            toast.error('Something went wrong. Please try again.')
+        } finally {
+            setIsLoading(false)
         }
-        setIsLoading(false)
     }
 
     return (
-        <Card className="w-full max-w-md mx-auto shadow-lg border-muted/20">
+        <Card className="w-full max-w-md mx-auto shadow-lg border-muted/20 animate-in fade-in duration-500">
             <CardHeader className="space-y-1">
                 <CardTitle className="text-2xl font-bold text-center">Reset password</CardTitle>
                 <CardDescription className="text-center">
@@ -63,7 +74,7 @@ export function ResetPasswordForm() {
             </CardHeader>
             <CardContent>
                 {success ? (
-                    <div className="p-4 mb-4 text-sm text-green-800 rounded-lg bg-green-50 dark:bg-gray-800 dark:text-green-400" role="alert">
+                    <div className="p-4 mb-4 text-sm text-green-800 rounded-lg bg-green-50 dark:bg-gray-800 dark:text-green-400 text-center animate-in zoom-in duration-300" role="alert">
                         <span className="font-medium">Success!</span> {success}
                     </div>
                 ) : (
@@ -84,13 +95,20 @@ export function ResetPasswordForm() {
                             />
 
                             {error && (
-                                <div className="text-sm font-medium text-destructive text-center">
+                                <div className="text-sm font-medium text-destructive text-center bg-destructive/10 py-2 rounded-md">
                                     {error}
                                 </div>
                             )}
 
                             <Button type="submit" className="w-full" disabled={isLoading}>
-                                {isLoading ? 'Sending link...' : 'Send Reset Link'}
+                                {isLoading ? (
+                                    <>
+                                        <LoadingSpinner className="mr-2 text-primary-foreground" size={16} />
+                                        Sending link...
+                                    </>
+                                ) : (
+                                    'Send Reset Link'
+                                )}
                             </Button>
                         </form>
                     </Form>

@@ -9,7 +9,7 @@ export async function joinWaitlist(formData: FormData) {
     const email = formData.get('email') as string;
 
     if (!email) {
-        return { error: 'Email is required' };
+        return { success: false, error: 'Email is required' };
     }
 
     // Get current user if logged in
@@ -24,12 +24,12 @@ export async function joinWaitlist(formData: FormData) {
 
     if (error) {
         if (error.code === '23505') {
-            return { message: "You're already on the list! We'll email you with early-bird pricing." };
+            return { success: true, message: "You're already on the list! We'll email you with early-bird pricing." };
         }
         console.error('Waitlist error:', error);
-        return { error: 'Failed to join waitlist. Please try again.' };
+        return { success: false, error: 'Failed to join waitlist. Please try again.' };
     }
 
     revalidatePath('/pricing');
-    return { message: "You're on the list! We'll email you with early-bird pricing." };
+    return { success: true, message: "You're on the list! We'll email you with early-bird pricing." };
 }
