@@ -1,118 +1,79 @@
-import { createClient } from '@/lib/supabase/server'
 import Link from 'next/link'
-import { Card, CardContent, CardFooter, CardHeader, CardTitle } from '@/components/ui/card'
+import { getUserIdeas } from '@/app/actions/ideas'
+import { Card, CardContent } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
-import { Badge } from '@/components/ui/badge'
-import { Plus, ArrowRight, Activity } from 'lucide-react'
+import { Plus, Activity, Sparkles } from 'lucide-react'
+import { IdeaCard } from '@/components/features/idea-card'
 
 export default async function DashboardPage() {
-    const supabase = await createClient()
+    const result = await getUserIdeas()
 
-    const {
-        data: { user },
-    } = await supabase.auth.getUser()
-
-    if (!user) {
-        // Layout handles redirect, but good for type safety
-        return null
+    if (!result.success) {
+        return (
+            <div className="flex flex-col items-center justify-center py-12 text-center">
+                <p className="text-red-500 mb-4">Error: {result.error || 'Failed to load ideas'}</p>
+                <Button onClick={() => window.location.reload()}>Try Again</Button>
+            </div>
+        )
     }
 
-    const { data: ideas } = await supabase
-        .from('ideas')
-        .select(`
-            *,
-            validations (
-                id,
-                overall_score,
-                created_at
-            )
-        `)
-        .eq('user_id', user.id)
-        .order('created_at', { ascending: false })
+    const ideas = result.data || []
 
-    // Helper to get latest validation
-    const getLatestValidation = (validations: any[]) => {
-        if (!validations || validations.length === 0) return null
-        // Sort by created_at desc just in case, though usually reliable if query ordered (we didn't order nested yet)
-        return validations.sort((a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime())[0]
-    }
+    // Sort ideas: Validated first, then by created_at desc
+    const sortedIdeas = [...ideas].sort((a, b) => {
+        // Priority to validated ideas
+        const aValidated = a.status === 'validated' ? 1 : 0
+        const bValidated = b.status === 'validated' ? 1 : 0
 
-    const getScoreColor = (score: number) => {
-        if (score >= 80) return "bg-green-100 text-green-800 hover:bg-green-100"
-        if (score >= 50) return "bg-yellow-100 text-yellow-800 hover:bg-yellow-100"
-        return "bg-red-100 text-red-800 hover:bg-red-100"
-    }
+        if (aValidated !== bValidated) {
+            return bValidated - aValidated
+        }
+
+        // Then sort by created_at desc
+        return new Date(b.created_at).getTime() - new Date(a.created_at).getTime()
+    })
 
     return (
-        <div className="space-y-6">
-            <div className="flex items-center justify-between">
+        <div className="max-w-7xl mx-auto space-y-8 pb-12">
+            <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
                 <div>
-                    <h1 className="text-3xl font-bold tracking-tight">Your Ideas</h1>
-                    <p className="text-muted-foreground">Manage and validate your startup ideas.</p>
+                    <h1 className="text-3xl md:text-4xl font-extrabold tracking-tight bg-gradient-to-r from-slate-900 to-slate-700 bg-clip-text text-transparent">
+                        Your Ideas
+                    </h1>
+                    <p className="text-muted-foreground mt-1 text-lg">
+                        Manage and track your startup validation journey.
+                    </p>
                 </div>
                 <Link href="/new-idea">
-                    <Button className="gap-2">
-                        <Plus className="h-4 w-4" />
-                        Create New Idea
+                    <Button size="lg" className="rounded-full px-8 shadow-md hover:shadow-lg transition-all gap-2 bg-primary hover:bg-primary/90">
+                        <Plus className="h-5 w-5" />
+                        New Idea
                     </Button>
                 </Link>
             </div>
 
-            {!ideas || ideas.length === 0 ? (
-                <Card className="bg-slate-50 border-dashed">
-                    <CardContent className="flex flex-col items-center justify-center py-16 text-center">
-                        <div className="bg-white p-4 rounded-full shadow-sm mb-4">
-                            <Activity className="h-8 w-8 text-blue-600" />
+            {sortedIdeas.length === 0 ? (
+                <Card className="border-2 border-dashed border-slate-200 bg-slate-50/50 hover:bg-slate-50 transition-colors">
+                    <CardContent className="flex flex-col items-center justify-center py-20 text-center">
+                        <div className="bg-white p-6 rounded-3xl shadow-sm mb-6 border border-slate-100 ring-8 ring-slate-50">
+                            <Sparkles className="h-10 w-10 text-primary animate-pulse" />
                         </div>
-                        <h3 className="text-lg font-semibold mb-2">No ideas yet</h3>
-                        <p className="text-muted-foreground max-w-sm mb-6">
-                            Start your validation journey by creating your first startup idea. We'll help you analyze its potential.
+                        <h3 className="text-2xl font-bold mb-3 text-slate-900">No ideas validated yet</h3>
+                        <p className="text-muted-foreground max-w-sm mb-8 text-lg leading-relaxed">
+                            You haven&apos;t validated any ideas yet. Create your first one and let AI help you analyze its potential.
                         </p>
                         <Link href="/new-idea">
-                            <Button>Create Your First Idea</Button>
+                            <Button size="lg" className="rounded-xl px-10 transition-all">
+                                Create Your First Idea
+                            </Button>
                         </Link>
                     </CardContent>
                 </Card>
             ) : (
-                <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
-                    {ideas.map((idea) => {
-                        const latestValidation = getLatestValidation(idea.validations)
-
-                        return (
-                            <Card key={idea.id} className="flex flex-col hover:shadow-md transition-shadow">
-                                <CardHeader className="pb-2">
-                                    <div className="flex justify-between items-start gap-2">
-                                        <CardTitle className="text-xl line-clamp-1" title={idea.title}>
-                                            {idea.title}
-                                        </CardTitle>
-                                        {latestValidation ? (
-                                            <Badge className={getScoreColor(latestValidation.overall_score)} variant="secondary">
-                                                {latestValidation.overall_score}/100
-                                            </Badge>
-                                        ) : (
-                                            <Badge variant="outline" className="text-gray-500">Draft</Badge>
-                                        )}
-                                    </div>
-                                    <div className="text-xs text-muted-foreground">
-                                        Created {new Date(idea.created_at).toLocaleDateString()}
-                                    </div>
-                                </CardHeader>
-                                <CardContent className="flex-1 pb-4">
-                                    <p className="text-sm text-gray-600 line-clamp-3">
-                                        {idea.description || 'No description provided.'}
-                                    </p>
-                                </CardContent>
-                                <CardFooter className="pt-0">
-                                    <Link href={`/dashboard/${idea.id}`} className="w-full">
-                                        <Button variant="outline" className="w-full gap-2 group">
-                                            View Details
-                                            <ArrowRight className="h-4 w-4 group-hover:translate-x-1 transition-transform" />
-                                        </Button>
-                                    </Link>
-                                </CardFooter>
-                            </Card>
-                        )
-                    })}
+                <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
+                    {sortedIdeas.map((idea) => (
+                        <IdeaCard key={idea.id} idea={idea} />
+                    ))}
                 </div>
             )}
         </div>
