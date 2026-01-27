@@ -29,7 +29,7 @@ import {
 } from "@/components/ui/select"
 import { Progress } from "@/components/ui/progress"
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card"
-import { createIdea, submitIdeaForValidation } from "@/app/actions/ideas"
+import { createIdea, updateIdea, submitIdeaForValidation } from "@/app/actions/ideas"
 
 type FieldName = keyof FormData
 
@@ -52,7 +52,12 @@ const STEPS = [
     { id: 3, title: "Founder Context", description: "Why you are the right person for this" },
 ]
 
-export function IdeaForm() {
+interface IdeaFormProps {
+    initialData?: Partial<FormData>
+    ideaId?: string
+}
+
+export function IdeaForm({ initialData, ideaId }: IdeaFormProps) {
     const [step, setStep] = React.useState(1)
     const [isSubmitting, setIsSubmitting] = React.useState(false)
     const [validationStatus, setValidationStatus] = React.useState<string | null>(null)
@@ -61,14 +66,14 @@ export function IdeaForm() {
     const form = useForm<FormData>({
         resolver: zodResolver(ideaSchema),
         defaultValues: {
-            title: "",
-            problem: "",
-            targetCustomer: "",
-            painkillerMoment: "",
-            revenueModel: "",
-            unfairAdvantage: "",
-            distributionChannel: "",
-            timeCommitment: "nights_weekends",
+            title: initialData?.title || "",
+            problem: initialData?.problem || "",
+            targetCustomer: initialData?.targetCustomer || "",
+            painkillerMoment: initialData?.painkillerMoment || "",
+            revenueModel: initialData?.revenueModel || "",
+            unfairAdvantage: initialData?.unfairAdvantage || "",
+            distributionChannel: initialData?.distributionChannel || "",
+            timeCommitment: initialData?.timeCommitment || "nights_weekends",
         },
     })
 
@@ -84,17 +89,51 @@ export function IdeaForm() {
                 formData.append(key, value)
             })
 
-            const result = await createIdea(formData)
+            // If new idea logic was removed above, we need to ensure we don't declare result twice if we merge logic blocks.
+            // But here I'm replacing the whole block logic.
+            // Wait, I need to match the target content exactly.
+            // The logic above handles both cases. 
+            // The previous chunk started at line 95.
+            // This chunk should delete lines 87-94 and incorporate them into the logic above?
+            // Actually, I can replace the whole try block content or just the part that differs.
 
-            if (!result.success || !result.data) {
-                toast.error(result.error || "Failed to create idea")
-                throw new Error(result.error || "Failed to create idea")
+            // Let's look at lines 87-94 in original:
+            // const result = await createIdea(formData)
+            // if (!result.success || !result.data) {
+            //    toast.error(result.error || "Failed to create idea")
+            //    throw new Error(result.error || "Failed to create idea")
+            // }
+            // const ideaId = result.data.id
+
+            // My earlier chunk replaced lines 95 onwards.
+            // So I need to replace lines 87-94 as well or handle them.
+            // Let's do a larger replacement covering from line 87 to 105.
+
+            let targetIdeaId = ideaId
+
+            if (ideaId) {
+                // Update existing idea
+                const result = await updateIdea(ideaId, formData)
+                if (!result.success) {
+                    toast.error(result.error || "Failed to update idea")
+                    throw new Error(result.error || "Failed to update idea")
+                }
+            } else {
+                // Create new idea
+                const result = await createIdea(formData)
+
+                if (!result.success || !result.data) {
+                    toast.error(result.error || "Failed to create idea")
+                    throw new Error(result.error || "Failed to create idea")
+                }
+                targetIdeaId = result.data.id
             }
 
-            const ideaId = result.data.id
             setValidationStatus("AI is validating your idea. This usually takes 15-30 seconds...")
 
-            const validationResult = await submitIdeaForValidation(ideaId)
+            if (!targetIdeaId) throw new Error("No idea ID found")
+
+            const validationResult = await submitIdeaForValidation(targetIdeaId)
 
             if (!validationResult.success) {
                 toast.error(validationResult.error || "AI validation failed")
@@ -102,7 +141,7 @@ export function IdeaForm() {
             }
 
             toast.success("Idea validated successfully!")
-            router.push(`/dashboard/${ideaId}`)
+            router.push(`/dashboard/${targetIdeaId}`)
         } catch (error) {
             console.error(error)
             setValidationStatus(null)
@@ -333,8 +372,10 @@ export function IdeaForm() {
                             </>
                         ) : (
                             <>
-                                Submit for Validation
-                                <CheckCircle2 className="ml-2 h-4 w-4" />
+                                <>
+                                    {ideaId ? "Update & Revalidate" : "Submit for Validation"}
+                                    <CheckCircle2 className="ml-2 h-4 w-4" />
+                                </>
                             </>
                         )}
                     </Button>

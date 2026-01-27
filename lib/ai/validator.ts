@@ -12,15 +12,162 @@ import type { IdeaFormData, ValidationResult, DimensionScore } from '@/types/val
 
 /**
  * Helper function to extract JSON from markdown-wrapped responses
- * Some AI models return JSON wrapped in ```json ... ``` blocks
+ * Some AI models return JSON wrapped in ```json ... ``` blocks or conversational text
  */
 function extractJSON(text: string): string {
-    // Remove markdown code blocks if present
-    const jsonMatch = text.match(/```(?:json)?\s*\n?([\s\S]*?)\n?```/);
-    if (jsonMatch) {
-        return jsonMatch[1].trim();
+    let jsonString = text.trim();
+
+    // 0. Strip common conversational prefixes that AI models add
+    const conversationalPrefixes = [
+        /^Here'?s?\s+(?:my|the|a)\s+(?:evaluation|analysis|assessment|response|answer)[\s:,.]*/i,
+        /^Here\s+is\s+(?:my|the|a)\s+(?:evaluation|analysis|assessment|response|answer)[\s:,.]*/i,
+        /^Based on\s+.*?[:,]\s*/i,
+        /^Let me\s+.*?[:,]\s*/i,
+    ];
+
+    for (const prefix of conversationalPrefixes) {
+        jsonString = jsonString.replace(prefix, '').trim();
     }
-    return text.trim();
+
+    // 1. Try to find markdown code block start
+    const startMatch = jsonString.match(/```(?:json)?\s*/i);
+    if (startMatch && startMatch.index !== undefined) {
+        const headerLength = startMatch[0].length;
+        const startIdx = startMatch.index;
+
+        const contentStart = startIdx + headerLength;
+        const rest = jsonString.substring(contentStart);
+
+        // Look for closing block (use lastIndexOf to find the last fence if multiple exist,
+        // effectively getting the widest block, or just standard regex logic.
+        // Simple 'indexOf' is fine for the *next* block, but if we want to be safe against nested things...
+        // Standard markdown blocks don't nest. indexOf is correct for "finding the end of THIS block".)
+        const closeIdx = rest.indexOf('```');
+
+        if (closeIdx !== -1) {
+            return rest.substring(0, closeIdx).trim();
+        } else {
+            // No closing block found - assume truncated, return everything after header
+            return rest.trim();
+        }
+    }
+
+    // 2. Fallback: Finding the first [ or { and the last ] or }
+    const firstOpenBrace = jsonString.indexOf('{');
+    const firstOpenBracket = jsonString.indexOf('[');
+    let startIndex = -1;
+
+    if (firstOpenBrace !== -1 && firstOpenBracket !== -1) {
+        startIndex = Math.min(firstOpenBrace, firstOpenBracket);
+    } else if (firstOpenBrace !== -1) {
+        startIndex = firstOpenBrace;
+    } else {
+        startIndex = firstOpenBracket;
+    }
+
+    if (startIndex !== -1) {
+        const lastCloseBrace = jsonString.lastIndexOf('}');
+        const lastCloseBracket = jsonString.lastIndexOf(']');
+        const endIndex = Math.max(lastCloseBrace, lastCloseBracket);
+
+        if (endIndex !== -1 && endIndex > startIndex) {
+            return jsonString.substring(startIndex, endIndex + 1);
+        } else {
+            // Found start but no end - return from start to end of string (truncated json)
+            return jsonString.substring(startIndex);
+        }
+    }
+
+    // 3. No JSON structure found at all - return original text
+    // The safeParseJSON function will handle this with regex fallback
+    console.warn('⚠️ No JSON structure found in AI response, will attempt regex extraction');
+    return jsonString;
+}
+
+/**
+ * Helper function to parse JSON safely with robust fallback for truncated/conversational responses.
+ */
+function safeParseJSON(text: string, type: 'object' | 'array' = 'object'): any {
+    const extracted = extractJSON(text);
+
+    try {
+        return JSON.parse(extracted);
+    } catch (e) {
+        console.warn('⚠️ JSON parse failed, attempting regex fallback:', (e as Error).message);
+        console.warn('Raw text:', text.substring(0, 200) + '...');
+
+        if (type === 'object') {
+            // Fallback for DimensionScore: Look for "score": 8, Score: 8, etc.
+            const scoreMatch = text.match(/(?:score|rating)"?\s*[:=]\s*"?(\d+)"?/i);
+            const reasoningMatch = text.match(/(?:reasoning|explanation)"?\s*[:=]\s*"?([^"}\]]+)/i); // Capture until quote or brace
+
+            // Additional field for painkiller dimension
+            const realPainCheckMatch = text.match(/(?:realPainCheck|real_pain_check)"?\s*[:=]\s*"?([^"}\]]+)/i);
+
+            if (scoreMatch) {
+                let reasoning = 'Reasoning truncated due to model error.';
+                if (reasoningMatch) {
+                    reasoning = reasoningMatch[1].trim();
+                    // Clean up trailing comma from the capture if present (regex might catch it)
+                    if (reasoning.endsWith(',')) reasoning = reasoning.slice(0, -1);
+                }
+
+                const result: any = {
+                    score: parseInt(scoreMatch[1], 10),
+                    reasoning: reasoning,
+                    _isFallback: true
+                };
+
+                // Add realPainCheck if found (for painkiller dimension)
+                if (realPainCheckMatch) {
+                    let realPainCheck = realPainCheckMatch[1].trim();
+                    if (realPainCheck.endsWith(',')) realPainCheck = realPainCheck.slice(0, -1);
+                    result.realPainCheck = realPainCheck;
+                }
+
+                return result;
+            }
+        } else if (type === 'array') {
+            // Try to repair truncated JSON by adding missing closing brackets
+            let repairedJSON = extracted;
+
+            // Count opening and closing braces/brackets
+            const openBraces = (repairedJSON.match(/\{/g) || []).length;
+            const closeBraces = (repairedJSON.match(/\}/g) || []).length;
+            const openBrackets = (repairedJSON.match(/\[/g) || []).length;
+            const closeBrackets = (repairedJSON.match(/\]/g) || []).length;
+
+            // Add missing closing braces and brackets
+            if (openBraces > closeBraces) {
+                repairedJSON += '}'.repeat(openBraces - closeBraces);
+            }
+            if (openBrackets > closeBrackets) {
+                repairedJSON += ']'.repeat(openBrackets - closeBrackets);
+            }
+
+            // Try parsing the repaired JSON
+            try {
+                const parsed = JSON.parse(repairedJSON);
+                if (Array.isArray(parsed)) {
+                    console.log('✅ Successfully repaired truncated JSON array');
+                    return parsed;
+                }
+            } catch (repairError) {
+                console.warn('⚠️ JSON repair failed, falling back to regex extraction');
+            }
+
+            // Fallback for arrays (Red Flags, Comparables, Recommendations): Extract quoted strings
+            // This regex matches "string"
+            const matches = [...text.matchAll(/"([^"]+)"/g)].map(m => m[1]);
+            if (matches.length > 0) {
+                // Filter out common keys that might be misidentified as values if the object structure is messy
+                const filtered = matches.filter(m => !['score', 'reasoning', 'estimate', 'json', 'realPainCheck', 'real_pain_check', 'name', 'outcome', 'similarity', 'keyLesson', 'linkIfAvailable', 'timeline', 'action', 'successMetric', 'whyThis'].includes(m.toLowerCase()));
+                if (filtered.length > 0) return filtered;
+            }
+        }
+
+        throw e; // Re-throw if fallback fails
+    }
 }
 
 /**
@@ -73,8 +220,14 @@ export async function validateIdea(ideaData: IdeaFormData): Promise<{ validation
                     maxOutputTokens: 500,
                 });
 
-                // Parse JSON response
-                const parsed = JSON.parse(extractJSON(text));
+                // Parse JSON response with safe fallback
+                let parsed: any;
+                try {
+                    parsed = safeParseJSON(text, 'object');
+                } catch (error) {
+                    console.error(`❌ Failed to parse response for ${dimension.key}. Raw text:`, text);
+                    throw error;
+                }
 
                 // Store score and reasoning
                 const dimensionScore: DimensionScore = {
@@ -83,8 +236,16 @@ export async function validateIdea(ideaData: IdeaFormData): Promise<{ validation
                 };
 
                 // Add additional fields for timeToRevenue if present
-                if (dimension.key === 'timeToRevenue' && parsed.estimate) {
-                    (dimensionScore as any).estimate = parsed.estimate;
+                if (dimension.key === 'timeToRevenue') {
+                    if (parsed.estimate) {
+                        (dimensionScore as any).estimate = parsed.estimate;
+                    } else {
+                        // Fallback extraction for estimate
+                        const estimateMatch = text.match(/"estimate"\s*:\s*"([^"]*)/);
+                        if (estimateMatch) {
+                            (dimensionScore as any).estimate = estimateMatch[1] + (text.includes(`"${estimateMatch[1]}"`) ? '' : '...');
+                        }
+                    }
                 }
 
                 result[dimension.resultKey] = dimensionScore;
@@ -143,7 +304,7 @@ export async function validateIdea(ideaData: IdeaFormData): Promise<{ validation
                     maxOutputTokens: 500,
                 });
 
-                const redFlags = JSON.parse(extractJSON(redFlagsText));
+                const redFlags = safeParseJSON(redFlagsText, 'array');
                 result.redFlags = Array.isArray(redFlags) ? redFlags : [];
             } catch (error) {
                 console.error('❌ Error generating red flags:', error);
@@ -160,10 +321,10 @@ export async function validateIdea(ideaData: IdeaFormData): Promise<{ validation
             const { text: comparablesText } = await generateTextWithFallback({
                 prompt: comparablesPrompt,
                 temperature: 0.5, // Slightly higher for creativity
-                maxOutputTokens: 800,
+                maxOutputTokens: 1200, // Increased to prevent truncation
             });
 
-            const comparables = JSON.parse(extractJSON(comparablesText));
+            const comparables = safeParseJSON(comparablesText, 'array');
             result.comparableCompanies = Array.isArray(comparables) ? comparables : [];
         } catch (error) {
             console.error('❌ Error generating comparable companies:', error);
@@ -180,13 +341,29 @@ export async function validateIdea(ideaData: IdeaFormData): Promise<{ validation
                 maxOutputTokens: 800,
             });
 
-            const recommendations = JSON.parse(extractJSON(recommendationsText));
+            // The recommendations prompt might return an array of strings OR objects.
+            // safeParseJSON('array') handles extracting quoted strings which works for both 
+            // (if objects, it extracts values, which might be "Timeline: action" if that's how it's formatted, 
+            // or separate keys. Let's stick effectively to string extraction for robustness).
+            const recommendations = safeParseJSON(recommendationsText, 'array');
 
-            // Convert recommendation objects to strings if needed
             if (Array.isArray(recommendations)) {
+                // Check if it's an array of objects or strings based on first item
+                // If it was objects, safeParseJSON 'array' regex might have grabbed keys and values as separate strings. 
+                // BUT, validateIdea previously handled objects (timeline, action). 
+                // If we want to support objects perfectly we need a more complex regex or just rely on 'object' parsing if possible.
+                // Given the prompt asks for specific JSON structure, let's try to trust standard extract first.
+                // safeParseJSON tries standard JSON.parse first. So if it's a valid array of objects, it works.
+                // If it fails, our regex fallback extracts STRINGS. 
+                // So we should map whatever we got to strings.
+
                 result.recommendations = recommendations.map(rec => {
                     if (typeof rec === 'string') return rec;
-                    return `${rec.timeline}: ${rec.action} (Success metric: ${rec.successMetric})`;
+                    // If it is an object (from successful JSON parse)
+                    if (typeof rec === 'object' && rec !== null) {
+                        return `${rec.timeline || ''}: ${rec.action || ''} (Success metric: ${rec.successMetric || ''})`;
+                    }
+                    return JSON.stringify(rec);
                 });
             } else {
                 result.recommendations = [];

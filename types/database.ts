@@ -117,6 +117,7 @@ export type Database = {
           time_to_revenue_score: number
           traffic_light: string
           user_id: string
+          idea_snapshot: Json | null
         }
         Insert: {
           acquisition_reasoning: string
@@ -145,6 +146,7 @@ export type Database = {
           time_to_revenue_score: number
           traffic_light: string
           user_id: string
+          idea_snapshot?: Json | null
         }
         Update: {
           acquisition_reasoning?: string
@@ -173,6 +175,7 @@ export type Database = {
           time_to_revenue_score?: number
           traffic_light?: string
           user_id?: string
+          idea_snapshot?: Json | null
         }
         Relationships: [
           {

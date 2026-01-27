@@ -23,7 +23,9 @@ Red flags:
 - "Platform" or "marketplace" for first-time founders
 - Pain described in future tense ("will need") not present tense ("desperately need NOW")
 
-Return JSON:
+IMPORTANT: You must respond with ONLY valid JSON. Do not include any explanatory text, conversational phrases, or commentary before or after the JSON. Do not start with "Here is" or "Here's my". Return only the raw JSON object.
+
+Return this exact JSON structure:
 {
   "score": number,
   "reasoning": "3-4 sentences explaining WHY, with specific evidence",
@@ -309,21 +311,22 @@ export function COMPARABLE_COMPANIES_PROMPT(data: Record<string, string>): strin
 REQUIREMENTS:
 - At least 2 must be REAL companies (use actual company names if they exist)
 - Include at least 1 FAILURE (crucial learning - failures teach more than successes)
-- For each, explain WHAT KILLED THEM or WHAT SAVED THEM
-- If no exact comparables exist, find adjacent companies in similar spaces
+- Keep each field concise (1 sentence max)
 
-Return JSON array:
+IMPORTANT: You must respond with ONLY valid JSON. Do not include any explanatory text before or after the JSON.
+
+Return this exact JSON array structure:
 [
   {
-    "name": string (real company name or "Unknown startup in [space]"),
+    "name": "Company name or 'Unknown startup in [space]'",
     "outcome": "success" | "failure" | "acquired" | "pivoted" | "struggling",
     "similarity": "1 sentence: what's similar to user's idea",
-    "keyLesson": "What should user learn from this company's journey? Be specific.",
-    "linkIfAvailable": "URL to case study/postmortem/article if it exists, otherwise empty string"
+    "keyLesson": "1 sentence: key takeaway for user",
+    "linkIfAvailable": ""
   }
 ]
 
-FOCUS ON FAILURES - they're more educational than successes. What killed them? Bad timing? No distribution? Wrong pricing? Be specific.`;
+FOCUS ON FAILURES - they're more educational. What killed them? Be specific but concise.`;
     return interpolatePrompt(template, data);
 }
 
@@ -340,8 +343,7 @@ FORMAT EACH AS:
 2. "Before quitting job: [validation milestone]" (What proof needed before going full-time)
 3. "In 90 days: [decision point]" (Clear go/no-go criteria)
 
-DO NOT give generic advice like "talk to customers" or "validate your idea."
-BE SPECIFIC:
+BE SPECIFIC with concrete numbers:
 - ❌ "Talk to potential customers"
 - ✅ "This week: Cold DM 20 corporate lawyers on LinkedIn asking if they'd pay $50/mo for contract automation"
 
@@ -349,10 +351,11 @@ FOCUS ON BIGGEST WEAKNESSES from lowest scores:
 - If painkiller score <5: Force founder to find real, acute pain
 - If acquisition score <5: Demand specific plan to get first 10 customers
 - If moat score <4: Don't worry about moat yet, focus on getting traction first
-- If founderDelusion score >7: Inject serious reality check
 - If timeToRevenue score <5: Warn about timeline risks
 
-Return JSON array of 3 objects:
+IMPORTANT: You must respond with ONLY valid JSON. Do not include any explanatory text before or after the JSON. Keep each field to 1-2 sentences.
+
+Return this exact JSON array structure:
 [
   {
     "timeline": "This week" | "Before quitting job" | "In 90 days",
@@ -372,9 +375,9 @@ Red flag criteria:
 - Any score ≤3 is a critical problem
 - Painkiller ≤4 = not solving real pain
 - Acquisition ≤4 = no clear path to customers
-- FounderDelusion ≥7 = dangerous blind spots
 - TimeToRevenue ≤3 = unsustainable timeline
-- Competition ≥8 = too hard to win
+
+IMPORTANT: You must respond with ONLY valid JSON. Do not include any explanatory text before or after the JSON.
 
 Return JSON array of strings (each 2-3 sentences explaining the red flag and why it matters).
 Maximum 5 red flags. Prioritize most critical issues.
@@ -382,7 +385,7 @@ Maximum 5 red flags. Prioritize most critical issues.
 Example format:
 [
   "CRITICAL: No clear painkiller moment. Customers can easily postpone or skip this solution, which means low willingness to pay and high churn risk.",
-  "WARNING: Distribution plan relies on 'content marketing' for a nights/weekends founder. This typically takes 12-18 months to gain traction, creating a burnout risk.",
+  "WARNING: Distribution plan relies on 'content marketing' for a nights/weekends founder. This typically takes 12-18 months to gain traction, creating a burnout risk."
 ]`;
 }
 

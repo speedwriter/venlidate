@@ -19,9 +19,15 @@ import {
 } from "recharts";
 import { Tables } from "@/types/database";
 import { Badge } from "@/components/ui/badge";
-import { AlertTriangle, CheckCircle2, TrendingUp, History, Lightbulb, BarChart3 } from "lucide-react";
+import { AlertTriangle, CheckCircle2, TrendingUp, History, Lightbulb, BarChart3, ChevronDown } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useState, useEffect } from "react";
+import {
+    Accordion,
+    AccordionContent,
+    AccordionItem,
+    AccordionTrigger,
+} from "@/components/ui/accordion";
 
 type Validation = Tables<"validations">;
 type Idea = Tables<"ideas">;
@@ -32,6 +38,34 @@ interface ValidationReportProps {
     history?: Validation[];
     percentile?: number;
 }
+
+const SnapshotField = ({ label, value }: { label: string, value: string }) => {
+    const [expanded, setExpanded] = useState(false);
+    const isLong = value.length > 100;
+
+    return (
+        <div className="space-y-1">
+            <p className="text-[10px] font-bold text-muted-foreground uppercase tracking-wider">{label}</p>
+            <div className="relative">
+                <p className={cn(
+                    "text-xs text-foreground transition-all duration-200",
+                    !expanded && "line-clamp-3"
+                )}>
+                    {value}
+                </p>
+                {isLong && (
+                    <button
+                        onClick={() => setExpanded(!expanded)}
+                        className="flex items-center gap-1 text-[10px] text-muted-foreground/80 hover:text-primary mt-1 transition-colors"
+                    >
+                        {expanded ? "Show less" : "Show more"}
+                        <ChevronDown className={cn("h-3 w-3 transition-transform duration-200", expanded && "rotate-180")} />
+                    </button>
+                )}
+            </div>
+        </div>
+    );
+};
 
 export function ValidationReport({ validation, idea, history = [], percentile }: ValidationReportProps) {
     const [mounted, setMounted] = useState(false);
@@ -256,20 +290,47 @@ export function ValidationReport({ validation, idea, history = [], percentile }:
                                 <CardDescription>Recent validation rounds</CardDescription>
                             </CardHeader>
                             <CardContent className="p-0">
-                                <div className="divide-y border-t">
-                                    {[...history, validation].reverse().map((v, i) => (
-                                        <div key={v.id} className="p-4 flex items-center justify-between">
-                                            <div className="space-y-1">
-                                                <p className="text-sm font-medium">Iteration {([...history, validation].length - i)}</p>
-                                                <p className="text-[10px] text-muted-foreground">
-                                                    {v.created_at ? new Date(v.created_at).toLocaleDateString('en-US', { month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit' }) : "N/A"}
-                                                </p>
-                                            </div>
-                                            <span className="text-lg font-black tracking-tighter" style={{ color: getScoreColor(v.overall_score) }}>
-                                                {v.overall_score}
-                                            </span>
-                                        </div>
-                                    ))}
+                                <div className="border-t">
+                                    <Accordion type="single" collapsible className="w-full">
+                                        {[...history, validation].reverse().map((v, i) => {
+                                            const iterationNumber = [...history, validation].length - i;
+                                            const snapshot = (v.idea_snapshot as any) || null;
+
+                                            return (
+                                                <AccordionItem key={v.id} value={v.id}>
+                                                    <AccordionTrigger className="px-4 hover:no-underline">
+                                                        <div className="flex items-center justify-between w-full pr-4">
+                                                            <div className="text-left space-y-1">
+                                                                <p className="text-sm font-medium">Iteration {iterationNumber}</p>
+                                                                <p className="text-[10px] text-muted-foreground font-normal">
+                                                                    {v.created_at ? new Date(v.created_at).toLocaleDateString('en-US', { month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit' }) : "N/A"}
+                                                                </p>
+                                                            </div>
+                                                            <span className="text-lg font-black tracking-tighter" style={{ color: getScoreColor(v.overall_score) }}>
+                                                                {v.overall_score}
+                                                            </span>
+                                                        </div>
+                                                    </AccordionTrigger>
+                                                    <AccordionContent className="bg-muted/10">
+                                                        {snapshot ? (
+                                                            <div className="px-4 py-3 space-y-4">
+                                                                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                                                    <SnapshotField label="Problem" value={snapshot.problem} />
+                                                                    <SnapshotField label="Solution / Painkiller" value={snapshot.painkillerMoment} />
+                                                                    <SnapshotField label="Target Customer" value={snapshot.targetCustomer} />
+                                                                    <SnapshotField label="Revenue Model" value={snapshot.revenueModel} />
+                                                                </div>
+                                                            </div>
+                                                        ) : (
+                                                            <div className="px-4 py-6 text-center text-xs text-muted-foreground italic">
+                                                                No input snapshot available for this iteration.
+                                                            </div>
+                                                        )}
+                                                    </AccordionContent>
+                                                </AccordionItem>
+                                            );
+                                        })}
+                                    </Accordion>
                                 </div>
                             </CardContent>
                         </Card>

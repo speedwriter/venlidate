@@ -57,6 +57,65 @@ export async function createIdea(formData: FormData) {
 }
 
 /**
+ * Updates an existing idea in the database.
+ */
+export async function updateIdea(ideaId: string, formData: FormData) {
+    const supabase = await createClient()
+    const { data: { user } } = await supabase.auth.getUser()
+
+    if (!user) {
+        return { success: false, error: 'Unauthorized' }
+    }
+
+    const title = formData.get('title') as string
+    const problem = formData.get('problem') as string
+    const targetCustomer = formData.get('targetCustomer') as string
+    const painkillerMoment = formData.get('painkillerMoment') as string
+    const revenueModel = formData.get('revenueModel') as string
+    const unfairAdvantage = formData.get('unfairAdvantage') as string
+    const distributionChannel = formData.get('distributionChannel') as string
+    const timeCommitment = formData.get('timeCommitment') as IdeaFormData['timeCommitment']
+
+    // Basic validation
+    if (!title || !problem || !targetCustomer || !painkillerMoment || !revenueModel || !unfairAdvantage || !distributionChannel || !timeCommitment) {
+        return { success: false, error: 'All fields are required' }
+    }
+
+    // Verify ownership
+    const { data: existingIdea, error: fetchError } = await supabase
+        .from('ideas')
+        .select('id')
+        .eq('id', ideaId)
+        .eq('user_id', user.id)
+        .single()
+
+    if (fetchError || !existingIdea) {
+        return { success: false, error: 'Idea not found or unauthorized' }
+    }
+
+    const { error } = await supabase
+        .from('ideas')
+        .update({
+            title,
+            problem,
+            target_customer: targetCustomer,
+            painkiller_moment: painkillerMoment,
+            revenue_model: revenueModel,
+            unfair_advantage: unfairAdvantage,
+            distribution_channel: distributionChannel,
+            time_commitment: timeCommitment,
+        })
+        .eq('id', ideaId)
+
+    if (error) {
+        console.error('Error updating idea:', error)
+        return { success: false, error: 'Failed to update idea. Please try again.' }
+    }
+
+    return { success: true }
+}
+
+/**
  * Submits an idea for AI validation.
  * Fetches idea data, calls validator, and saves result to validations table.
  */
@@ -124,7 +183,8 @@ export async function submitIdeaForValidation(ideaId: string) {
                 comparable_companies: validation.comparableCompanies,
                 recommendations: validation.recommendations,
                 model_used: modelUsed,
-                processing_time_ms: processingTimeMs
+                processing_time_ms: processingTimeMs,
+                idea_snapshot: ideaData
             })
 
         if (validationError) {
