@@ -4,6 +4,7 @@ import { createClient } from '@/lib/supabase/server'
 import { revalidatePath } from 'next/cache'
 import { validateIdea } from '@/lib/ai/validator'
 import type { IdeaFormData, ValidationResult } from '@/types/validations'
+import { checkValidationQuota, checkIterationQuota } from '@/lib/utils/subscriptions'
 
 /**
  * Creates a new idea in the database.
@@ -137,6 +138,33 @@ export async function submitIdeaForValidation(ideaId: string) {
 
     if (ideaError || !idea) {
         return { success: false, error: 'Idea not found or unauthorized' }
+    }
+
+    // 1. Check Monthly Validation Quota
+    const quota = await checkValidationQuota(user.id, ideaId)
+    if (!quota.allowed) {
+        return {
+            success: false,
+            error: quota.error || 'Monthly validation limit reached.',
+            upgradeRequired: true
+        }
+    }
+
+    // 2. Check Iteration Quota if this is a re-validation
+    const { count: existingValidationsCount } = await supabase
+        .from('validations')
+        .select('*', { count: 'exact', head: true })
+        .eq('idea_id', ideaId)
+
+    if (existingValidationsCount && existingValidationsCount > 0) {
+        const iteration = await checkIterationQuota(ideaId, user.id)
+        if (!iteration.allowed) {
+            return {
+                success: false,
+                error: iteration.error || 'Iteration limit reached for this idea.',
+                upgradeRequired: true
+            }
+        }
     }
 
     try {
@@ -338,6 +366,50 @@ export async function deleteIdea(ideaId: string) {
 
     revalidatePath('/dashboard')
     return { success: true }
+}
+
+/**
+ * Fetches multiple ideas by their IDs, each with its latest validation result.
+ * Verifies ownership for all ideas.
+ */
+export async function getIdeasByIds(ids: string[]) {
+    if (!ids || ids.length === 0) {
+        return { success: true, data: [] }
+    }
+
+    const supabase = await createClient()
+    const { data: { user } } = await supabase.auth.getUser()
+
+    if (!user) {
+        return { success: false, error: 'Unauthorized' }
+    }
+
+    const { data, error } = await supabase
+        .from('ideas')
+        .select(`
+            *,
+            validations (
+                *
+            )
+        `)
+        .in('id', ids)
+        .eq('user_id', user.id)
+        .order('created_at', { foreignTable: 'validations', ascending: false })
+
+    if (error) {
+        console.error('Error fetching ideas by IDs:', error)
+        return { success: false, error: 'Failed to fetch ideas.' }
+    }
+
+    // Map to include only the latest validation for each idea
+    const ideasWithLatestValidation = data.map((idea) => ({
+        ...idea,
+        latest_validation: (idea.validations as any)?.[0] || null,
+        validations: undefined
+    }))
+
+    // Ensure we return them in the same order as requested if possible, or just as they came back
+    return { success: true, data: ideasWithLatestValidation }
 }
 
 /**

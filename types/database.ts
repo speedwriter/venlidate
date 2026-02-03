@@ -12,6 +12,31 @@ export type Database = {
   __InternalSupabase: {
     PostgrestVersion: "14.1"
   }
+  graphql_public: {
+    Tables: {
+      [_ in never]: never
+    }
+    Views: {
+      [_ in never]: never
+    }
+    Functions: {
+      graphql: {
+        Args: {
+          extensions?: Json
+          operationName?: string
+          query?: string
+          variables?: Json
+        }
+        Returns: Json
+      }
+    }
+    Enums: {
+      [_ in never]: never
+    }
+    CompositeTypes: {
+      [_ in never]: never
+    }
+  }
   public: {
     Tables: {
       benchmark_data: {
@@ -89,6 +114,48 @@ export type Database = {
         }
         Relationships: []
       }
+      user_subscriptions: {
+        Row: {
+          billing_period: string | null
+          canceled_at: string | null
+          created_at: string | null
+          email: string | null
+          expires_at: string | null
+          id: string
+          started_at: string
+          status: string
+          tier: string
+          updated_at: string | null
+          user_id: string
+        }
+        Insert: {
+          billing_period?: string | null
+          canceled_at?: string | null
+          created_at?: string | null
+          email?: string | null
+          expires_at?: string | null
+          id?: string
+          started_at?: string
+          status: string
+          tier: string
+          updated_at?: string | null
+          user_id: string
+        }
+        Update: {
+          billing_period?: string | null
+          canceled_at?: string | null
+          created_at?: string | null
+          email?: string | null
+          expires_at?: string | null
+          id?: string
+          started_at?: string
+          status?: string
+          tier?: string
+          updated_at?: string | null
+          user_id?: string
+        }
+        Relationships: []
+      }
       validations: {
         Row: {
           acquisition_reasoning: string
@@ -99,6 +166,7 @@ export type Database = {
           founder_fit_score: number
           id: string
           idea_id: string
+          idea_snapshot: Json | null
           moat_reasoning: string
           moat_score: number
           model_used: string | null
@@ -117,7 +185,6 @@ export type Database = {
           time_to_revenue_score: number
           traffic_light: string
           user_id: string
-          idea_snapshot: Json | null
         }
         Insert: {
           acquisition_reasoning: string
@@ -128,6 +195,7 @@ export type Database = {
           founder_fit_score: number
           id?: string
           idea_id: string
+          idea_snapshot?: Json | null
           moat_reasoning: string
           moat_score: number
           model_used?: string | null
@@ -146,7 +214,6 @@ export type Database = {
           time_to_revenue_score: number
           traffic_light: string
           user_id: string
-          idea_snapshot?: Json | null
         }
         Update: {
           acquisition_reasoning?: string
@@ -157,6 +224,7 @@ export type Database = {
           founder_fit_score?: number
           id?: string
           idea_id?: string
+          idea_snapshot?: Json | null
           moat_reasoning?: string
           moat_score?: number
           model_used?: string | null
@@ -175,7 +243,6 @@ export type Database = {
           time_to_revenue_score?: number
           traffic_light?: string
           user_id?: string
-          idea_snapshot?: Json | null
         }
         Relationships: [
           {
@@ -186,6 +253,27 @@ export type Database = {
             referencedColumns: ["id"]
           },
         ]
+      }
+      waitlist: {
+        Row: {
+          created_at: string | null
+          email: string
+          id: string
+          user_id: string | null
+        }
+        Insert: {
+          created_at?: string | null
+          email: string
+          id?: string
+          user_id?: string | null
+        }
+        Update: {
+          created_at?: string | null
+          email?: string
+          id?: string
+          user_id?: string | null
+        }
+        Relationships: []
       }
     }
     Views: {
@@ -321,6 +409,9 @@ export type CompositeTypes<
     : never
 
 export const Constants = {
+  graphql_public: {
+    Enums: {},
+  },
   public: {
     Enums: {},
   },

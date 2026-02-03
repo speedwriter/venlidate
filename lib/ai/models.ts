@@ -54,7 +54,7 @@ export type GenerateTextResult = {
  * On rate limit or retryable provider errors, tries the next in the chain.
  */
 export async function generateTextWithFallback(options: GenerateTextOptions): Promise<GenerateTextResult> {
-    const { prompt, temperature = 0.3, maxOutputTokens = 500 } = options;
+    const { prompt, temperature = 0.3, maxOutputTokens = 4096 } = options;
     let lastError: unknown;
 
     for (const { getModel, modelId } of FALLBACK_CHAIN) {
@@ -64,6 +64,13 @@ export async function generateTextWithFallback(options: GenerateTextOptions): Pr
                 prompt,
                 temperature,
                 maxOutputTokens,
+                providerOptions: {
+                    google: {
+                        thinkingConfig: {
+                            thinkingBudget: 0,
+                        },
+                    },
+                },
             });
             return { text: response.text, modelUsed: modelId };
         } catch (err) {

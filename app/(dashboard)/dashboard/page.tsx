@@ -4,11 +4,16 @@ import { Card, CardContent } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Plus, Activity, Sparkles } from 'lucide-react'
 import { IdeaCard } from '@/components/features/idea-card'
+import { CompareIdeasButton } from '@/components/features/compare-ideas-button'
+import { getUserTier, TIER_LIMITS } from '@/lib/utils/subscriptions'
+import { createClient } from '@/lib/supabase/server'
 
 export default async function DashboardPage() {
+    const supabase = await createClient()
+    const { data: { user } } = await supabase.auth.getUser()
     const result = await getUserIdeas()
 
-    if (!result.success) {
+    if (!result.success || !user) {
         return (
             <div className="flex flex-col items-center justify-center py-12 text-center">
                 <p className="text-red-500 mb-4">Error: {result.error || 'Failed to load ideas'}</p>
@@ -18,6 +23,9 @@ export default async function DashboardPage() {
     }
 
     const ideas = result.data || []
+    const validatedIdeas = ideas.filter(idea => idea.status === 'validated')
+    const tier = await getUserTier(user.id)
+    const tierLimit = TIER_LIMITS[tier].maxComparisonIdeas
 
     // Sort ideas: Validated first, then by created_at desc
     const sortedIdeas = [...ideas].sort((a, b) => {
@@ -44,12 +52,18 @@ export default async function DashboardPage() {
                         Manage and track your startup validation journey.
                     </p>
                 </div>
-                <Link href="/new-idea">
-                    <Button size="lg" className="rounded-full px-8 shadow-md hover:shadow-lg transition-all gap-2 bg-primary hover:bg-primary/90">
-                        <Plus className="h-5 w-5" />
-                        New Idea
-                    </Button>
-                </Link>
+                <div className="flex items-center gap-3">
+                    <CompareIdeasButton
+                        validatedIdeas={validatedIdeas}
+                        tierLimit={tierLimit}
+                    />
+                    <Link href="/new-idea">
+                        <Button size="lg" className="rounded-full px-8 shadow-md hover:shadow-lg transition-all gap-2 bg-primary hover:bg-primary/90">
+                            <Plus className="h-5 w-5" />
+                            New Idea
+                        </Button>
+                    </Link>
+                </div>
             </div>
 
             {sortedIdeas.length === 0 ? (

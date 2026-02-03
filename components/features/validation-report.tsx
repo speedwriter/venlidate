@@ -11,7 +11,7 @@ import {
     XAxis,
     YAxis,
     CartesianGrid,
-    Tooltip,
+    Tooltip as RechartsTooltip,
     ResponsiveContainer,
     BarChart,
     Bar,
@@ -28,6 +28,17 @@ import {
     AccordionItem,
     AccordionTrigger,
 } from "@/components/ui/accordion";
+import { canExportPDFAction } from "@/app/actions/subscriptions";
+import { exportReportToPDF } from "@/lib/utils/pdf-export";
+import { FileDown, Loader2, Lock } from "lucide-react";
+import { toast } from "sonner";
+import { Button } from "@/components/ui/button";
+import {
+    Tooltip,
+    TooltipContent,
+    TooltipProvider,
+    TooltipTrigger,
+} from "@/components/ui/tooltip";
 
 type Validation = Tables<"validations">;
 type Idea = Tables<"ideas">;
@@ -69,10 +80,35 @@ const SnapshotField = ({ label, value }: { label: string, value: string }) => {
 
 export function ValidationReport({ validation, idea, history = [], percentile }: ValidationReportProps) {
     const [mounted, setMounted] = useState(false);
+    const [canExport, setCanExport] = useState<boolean | null>(null);
+    const [isExporting, setIsExporting] = useState(false);
 
     useEffect(() => {
         setMounted(true);
+        const checkPermission = async () => {
+            const hasPermission = await canExportPDFAction();
+            setCanExport(hasPermission);
+        };
+        checkPermission();
     }, []);
+
+    const handleExport = async () => {
+        if (!canExport) return;
+        setIsExporting(true);
+        try {
+            await exportReportToPDF(idea, validation);
+            toast.success("Report exported successfully", {
+                description: "Your PDF is being downloaded.",
+            });
+        } catch (error) {
+            console.error("Export failed:", error);
+            toast.error("Export failed", {
+                description: "There was an error generating your PDF. Please try again.",
+            });
+        } finally {
+            setIsExporting(false);
+        }
+    };
     const dimensionScores = [
         { name: "Painkiller", score: validation.painkiller_score, reasoning: validation.painkiller_reasoning },
         { name: "Revenue Model", score: validation.revenue_model_score, reasoning: validation.revenue_model_reasoning },
@@ -126,6 +162,42 @@ export function ValidationReport({ validation, idea, history = [], percentile }:
                             {validation.overall_score}<span className="text-2xl text-muted-foreground/50">/100</span>
                         </p>
                     </div>
+                </div>
+
+                {/* Export Button */}
+                <div className="flex items-center gap-2">
+                    <TooltipProvider>
+                        <Tooltip>
+                            <TooltipTrigger asChild>
+                                <div>
+                                    <Button
+                                        variant={canExport ? "default" : "outline"}
+                                        size="sm"
+                                        onClick={handleExport}
+                                        disabled={canExport === false || isExporting}
+                                        className={cn(
+                                            "gap-2 h-10 px-4 font-bold transition-all",
+                                            canExport === false && "opacity-50 grayscale"
+                                        )}
+                                    >
+                                        {isExporting ? (
+                                            <Loader2 className="h-4 w-4 animate-spin" />
+                                        ) : canExport === false ? (
+                                            <Lock className="h-4 w-4" />
+                                        ) : (
+                                            <FileDown className="h-4 w-4" />
+                                        )}
+                                        {isExporting ? "Exporting..." : "Export as PDF"}
+                                    </Button>
+                                </div>
+                            </TooltipTrigger>
+                            {!canExport && canExport !== null && (
+                                <TooltipContent>
+                                    <p>Upgrade to Pro to export reports</p>
+                                </TooltipContent>
+                            )}
+                        </Tooltip>
+                    </TooltipProvider>
                 </div>
             </div>
 
@@ -264,7 +336,7 @@ export function ValidationReport({ validation, idea, history = [], percentile }:
                                                 tickLine={false}
                                                 tick={{ fill: '#888', fontSize: 12 }}
                                             />
-                                            <Tooltip
+                                            <RechartsTooltip
                                                 contentStyle={{ borderRadius: '12px', border: 'none', boxShadow: '0 10px 15px -3px rgb(0 0 0 / 0.1)' }}
                                                 cursor={{ stroke: '#e2e8f0', strokeWidth: 2 }}
                                             />

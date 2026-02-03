@@ -19,10 +19,13 @@ function extractJSON(text: string): string {
 
     // 0. Strip common conversational prefixes that AI models add
     const conversationalPrefixes = [
-        /^Here'?s?\s+(?:my|the|a)\s+(?:evaluation|analysis|assessment|response|answer)[\s:,.]*/i,
-        /^Here\s+is\s+(?:my|the|a)\s+(?:evaluation|analysis|assessment|response|answer)[\s:,.]*/i,
+        /^Here'?s?\s+(?:an?|the)\s+(?:evaluation|analysis|assessment|response|answer|output)[\s:,.]*/i,
+        /^Here\s+is\s+(?:an?|the)\s+(?:evaluation|analysis|assessment|response|answer|output)[\s:,.]*/i,
         /^Based on\s+.*?[:,]\s*/i,
         /^Let me\s+.*?[:,]\s*/i,
+        /^Certainly!/i,
+        /^JSON Output:/i,
+        /^I've evaluated/i,
     ];
 
     for (const prefix of conversationalPrefixes) {
@@ -97,32 +100,38 @@ function safeParseJSON(text: string, type: 'object' | 'array' = 'object'): any {
         console.warn('Raw text:', text.substring(0, 200) + '...');
 
         if (type === 'object') {
-            // Fallback for DimensionScore: Look for "score": 8, Score: 8, etc.
-            const scoreMatch = text.match(/(?:score|rating)"?\s*[:=]\s*"?(\d+)"?/i);
-            const reasoningMatch = text.match(/(?:reasoning|explanation)"?\s*[:=]\s*"?([^"}\]]+)/i); // Capture until quote or brace
-
-            // Additional field for painkiller dimension
-            const realPainCheckMatch = text.match(/(?:realPainCheck|real_pain_check)"?\s*[:=]\s*"?([^"}\]]+)/i);
+            // Fallback for DimensionScore: Look for "score": 8, Score: 8, rating: 8, etc.
+            const scoreMatch = text.match(/(?:"score"|score|rating|rating)"?\s*[:=]\s*"?(\d+)"?/i);
+            const reasoningMatch = text.match(/(?:"reasoning"|reasoning|explanation|analysis)"?\s*[:=]\s*"?((?:[^"]|\\")*)/i);
+            const estimateMatch = text.match(/(?:"estimate"|estimate|timeline)"?\s*[:=]\s*"?((?:[^"]|\\")*)/i);
+            const realPainCheckMatch = text.match(/(?:"realPainCheck"|realPainCheck|real_pain_check)"?\s*[:=]\s*"?((?:[^"]|\\")*)/i);
 
             if (scoreMatch) {
                 let reasoning = 'Reasoning truncated due to model error.';
                 if (reasoningMatch) {
                     reasoning = reasoningMatch[1].trim();
-                    // Clean up trailing comma from the capture if present (regex might catch it)
-                    if (reasoning.endsWith(',')) reasoning = reasoning.slice(0, -1);
+                    // Clean up trailing garbage from truncation
+                    reasoning = reasoning.replace(/[,}\]]$/, '').trim();
+                    if (reasoning.endsWith('"')) reasoning = reasoning.slice(0, -1);
+                    if (reasoning.endsWith('\\')) reasoning = reasoning.slice(0, -1);
                 }
 
                 const result: any = {
                     score: parseInt(scoreMatch[1], 10),
-                    reasoning: reasoning,
+                    reasoning: reasoning || 'Reasoning partially captured.',
                     _isFallback: true
                 };
 
+                // Add estimate if found
+                if (estimateMatch) {
+                    let estimate = estimateMatch[1].trim().replace(/[,}\]]$/, '').replace(/"$/, '').replace(/\\$/, '');
+                    if (estimate) result.estimate = estimate;
+                }
+
                 // Add realPainCheck if found (for painkiller dimension)
                 if (realPainCheckMatch) {
-                    let realPainCheck = realPainCheckMatch[1].trim();
-                    if (realPainCheck.endsWith(',')) realPainCheck = realPainCheck.slice(0, -1);
-                    result.realPainCheck = realPainCheck;
+                    let realPainCheck = realPainCheckMatch[1].trim().replace(/[,}\]]$/, '').replace(/"$/, '').replace(/\\$/, '');
+                    if (realPainCheck) result.realPainCheck = realPainCheck;
                 }
 
                 return result;
@@ -217,7 +226,6 @@ export async function validateIdea(ideaData: IdeaFormData): Promise<{ validation
                 const { text, modelUsed } = await generateTextWithFallback({
                     prompt,
                     temperature: 0.3, // Lower temperature for consistency
-                    maxOutputTokens: 500,
                 });
 
                 // Parse JSON response with safe fallback
@@ -231,7 +239,7 @@ export async function validateIdea(ideaData: IdeaFormData): Promise<{ validation
 
                 // Store score and reasoning
                 const dimensionScore: DimensionScore = {
-                    score: parsed.score || 5,
+                    score: parsed.score ?? 5,
                     reasoning: parsed.reasoning || 'No reasoning provided',
                 };
 
@@ -265,13 +273,13 @@ export async function validateIdea(ideaData: IdeaFormData): Promise<{ validation
 
         // Extract numeric scores for calculations
         const scores = {
-            painkiller: result.painkillerScore?.score || 5,
-            revenueModel: result.revenueModelScore?.score || 5,
-            acquisition: result.acquisitionScore?.score || 5,
-            moat: result.moatScore?.score || 5,
-            founderFit: result.founderFitScore?.score || 5,
-            timeToRevenue: result.timeToRevenueScore?.score || 5,
-            scalability: result.scalabilityScore?.score || 5,
+            painkiller: result.painkillerScore?.score ?? 5,
+            revenueModel: result.revenueModelScore?.score ?? 5,
+            acquisition: result.acquisitionScore?.score ?? 5,
+            moat: result.moatScore?.score ?? 5,
+            founderFit: result.founderFitScore?.score ?? 5,
+            timeToRevenue: result.timeToRevenueScore?.score ?? 5,
+            scalability: result.scalabilityScore?.score ?? 5,
         };
 
         // Calculate overall score using weighted formula
@@ -301,7 +309,7 @@ export async function validateIdea(ideaData: IdeaFormData): Promise<{ validation
                 const { text: redFlagsText } = await generateTextWithFallback({
                     prompt: redFlagsPrompt,
                     temperature: 0.3,
-                    maxOutputTokens: 500,
+                    maxOutputTokens: 1024,
                 });
 
                 const redFlags = safeParseJSON(redFlagsText, 'array');
@@ -338,7 +346,7 @@ export async function validateIdea(ideaData: IdeaFormData): Promise<{ validation
             const { text: recommendationsText } = await generateTextWithFallback({
                 prompt: recommendationsPrompt,
                 temperature: 0.4,
-                maxOutputTokens: 800,
+                maxOutputTokens: 1024,
             });
 
             // The recommendations prompt might return an array of strings OR objects.

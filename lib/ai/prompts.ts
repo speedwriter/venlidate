@@ -1,5 +1,5 @@
 export const VALIDATION_PROMPTS = {
-    painkiller: `You are a skeptical VC evaluating if this is truly a painkiller (0-10).
+  painkiller: `You are a skeptical VC evaluating if this is truly a painkiller (0-10).
 
 Idea details:
 - Problem: {problem}
@@ -32,7 +32,7 @@ Return this exact JSON structure:
   "realPainCheck": "What actually happens if customer does nothing? Be specific."
 }`,
 
-    revenueModel: `Evaluate revenue model viability (0-10) considering FOUNDER REALITY.
+  revenueModel: `Evaluate revenue model viability (0-10) considering FOUNDER REALITY.
 
 Revenue model: {revenueModel}
 Target customer: {targetCustomer}
@@ -51,6 +51,8 @@ HARSH REALITY CHECK:
 - If B2B but founder has no business network → score ≤5
 - If usage-based pricing with no users → chicken-egg problem, score ≤6
 
+IMPORTANT: You must respond with ONLY valid JSON. Do not include any explanatory text, conversational phrases, or commentary before or after the JSON. Do not start with "Here is" or "Here's my". Return only the raw JSON object.
+
 Return JSON:
 {
   "score": number,
@@ -59,7 +61,7 @@ Return JSON:
   "realityCheck": "Can this founder actually execute this pricing model? Why/why not?"
 }`,
 
-    acquisition: `Evaluate customer acquisition feasibility (0-10). BE BRUTALLY REALISTIC.
+  acquisition: `Evaluate customer acquisition feasibility (0-10). BE BRUTALLY REALISTIC.
 
 Distribution channel: {distributionChannel}
 Target customer: {targetCustomer}
@@ -82,6 +84,8 @@ Red flags that score ≤3:
 - Vague answers: "social media," "word of mouth," "going viral"
 - Founder says "build it and they will come"
 
+IMPORTANT: You must respond with ONLY valid JSON. Do not include any explanatory text, conversational phrases, or commentary before or after the JSON. Do not start with "Here is" or "Here's my". Return only the raw JSON object.
+
 Return JSON:
 {
   "score": number,
@@ -90,7 +94,7 @@ Return JSON:
   "timeToFirstCustomer": "Realistic estimate: X weeks/months"
 }`,
 
-    moat: `Evaluate competitive moat (0-10). Consider STAGE-APPROPRIATE defensibility.
+  moat: `Evaluate competitive moat (0-10). Consider STAGE-APPROPRIATE defensibility.
 
 Unfair advantage: {unfairAdvantage}
 Problem: {problem}
@@ -117,6 +121,8 @@ RED FLAGS (score ≤3):
 - Idea can be replicated by ChatGPT wrapper in 2 weeks
 - No switching costs for customers
 
+IMPORTANT: You must respond with ONLY valid JSON. Do not include any explanatory text, conversational phrases, or commentary before or after the JSON. Do not start with "Here is" or "Here's my". Return only the raw JSON object.
+
 Return JSON:
 {
   "score": number,
@@ -125,7 +131,7 @@ Return JSON:
   "copycatRisk": "Could competitor copy this in 6 months? How?"
 }`,
 
-    founderFit: `Evaluate founder-market fit (0-10).
+  founderFit: `Evaluate founder-market fit (0-10).
 
 Unfair advantage: {unfairAdvantage}
 Problem: {problem}
@@ -146,6 +152,8 @@ Red flags:
 - No connection to target customer base
 - Claiming expertise from brief exposure ("I used X once")
 
+IMPORTANT: You must respond with ONLY valid JSON. Do not include any explanatory text, conversational phrases, or commentary before or after the JSON. Do not start with "Here is" or "Here's my". Return only the raw JSON object.
+
 Return JSON:
 {
   "score": number,
@@ -154,7 +162,7 @@ Return JSON:
   "canLearnFast": "Can founder acquire missing knowledge quickly? How?"
 }`,
 
-    timeToRevenue: `Evaluate time-to-revenue RELATIVE to founder situation (0-10).
+  timeToRevenue: `Evaluate time-to-revenue RELATIVE to founder situation (0-10).
 
 Time commitment: {timeCommitment}
 Problem complexity: {problem}
@@ -184,6 +192,8 @@ REALITY CHECKS:
 - If "full-time" + "slow-moving market" (24+ mo) → score ≤2 (runway risk)
 - If complex product + no technical background → add 6-12 months
 
+IMPORTANT: You must respond with ONLY valid JSON. Do not include any explanatory text, conversational phrases, or commentary before or after the JSON. Do not start with "Here is" or "Here's my". Return only the raw JSON object.
+
 Return JSON:
 {
   "score": number,
@@ -193,7 +203,7 @@ Return JSON:
   "burnoutRisk": "High/Medium/Low based on timeline vs commitment"
 }`,
 
-    scalability: `Evaluate scalability (0-10).
+  scalability: `Evaluate scalability (0-10).
 
 Problem: {problem}
 Revenue model: {revenueModel}
@@ -220,6 +230,8 @@ Green flags (score ≥7):
 - Same product for all customers
 - Minimal human intervention after sale
 
+IMPORTANT: You must respond with ONLY valid JSON. Do not include any explanatory text, conversational phrases, or commentary before or after the JSON. Do not start with "Here is" or "Here's my". Return only the raw JSON object.
+
 Return JSON:
 {
   "score": number,
@@ -228,7 +240,7 @@ Return JSON:
   "howToScale": "If scalable, how can this reach 1000+ customers?"
 }`,
 
-    competition: `Evaluate competitive landscape reality (0-10 difficulty score).
+  competition: `Evaluate competitive landscape reality (0-10 difficulty score).
 HIGHER SCORE = MORE COMPETITIVE / HARDER TO WIN.
 
 Problem: {problem}
@@ -262,7 +274,7 @@ Return JSON:
   "redFlags": "Any reason this is unwinnable against competition?"
 }`,
 
-    founderDelusion: `Detect founder blind spots and self-deception (0-10 delusion score).
+  founderDelusion: `Detect founder blind spots and self-deception (0-10 delusion score).
 HIGHER SCORE = MORE DELUDED / MORE SELF-DECEPTION.
 
 Idea details:
@@ -302,11 +314,11 @@ Return JSON:
 };
 
 export function interpolatePrompt(template: string, data: Record<string, string>): string {
-    return template.replace(/\{(\w+)\}/g, (_, key) => data[key] || `{${key}}`);
+  return template.replace(/\{(\w+)\}/g, (_, key) => data[key] || `{${key}}`);
 }
 
 export function COMPARABLE_COMPANIES_PROMPT(data: Record<string, string>): string {
-    const template = `Find 3 REAL comparable companies (not hypothetical) for: {problem} targeting {targetCustomer}.
+  const template = `Find 3 REAL comparable companies (not hypothetical) for: {problem} targeting {targetCustomer}.
 
 REQUIREMENTS:
 - At least 2 must be REAL companies (use actual company names if they exist)
@@ -327,11 +339,11 @@ Return this exact JSON array structure:
 ]
 
 FOCUS ON FAILURES - they're more educational. What killed them? Be specific but concise.`;
-    return interpolatePrompt(template, data);
+  return interpolatePrompt(template, data);
 }
 
 export function RECOMMENDATIONS_PROMPT(scores: Record<string, number>, data: Record<string, string>): string {
-    return `Based on these dimension scores: ${JSON.stringify(scores)}, provide 3 SPECIFIC, ACTIONABLE recommendations.
+  return `Based on these dimension scores: ${JSON.stringify(scores)}, provide 3 SPECIFIC, ACTIONABLE recommendations.
 
 Idea context:
 - Problem: ${data.problem || 'N/A'}
@@ -367,7 +379,7 @@ Return this exact JSON array structure:
 }
 
 export function RED_FLAGS_PROMPT(scores: Record<string, number>): string {
-    return `Identify critical red flags in this startup idea based on these scores: ${JSON.stringify(scores)}.
+  return `Identify critical red flags in this startup idea based on these scores: ${JSON.stringify(scores)}.
 
 Focus on DEAL-BREAKER issues that suggest founder should NOT proceed without major changes.
 
@@ -390,7 +402,7 @@ Example format:
 }
 
 export function OVERALL_SCORE_PROMPT(scores: Record<string, number>): string {
-    return `Based on these dimension scores: ${JSON.stringify(scores)}, provide an overall assessment.
+  return `Based on these dimension scores: ${JSON.stringify(scores)}, provide an overall assessment.
 
 Calculate weighted overall score (0-100):
 - Painkiller: 25% weight (most important - no pain = no business)
@@ -422,57 +434,57 @@ Return JSON:
 
 // Calculate weighted overall score
 export function calculateOverallScore(scores: {
-    painkiller: number,
-    revenueModel: number,
-    acquisition: number,
-    moat: number,
-    founderFit: number,
-    timeToRevenue: number,
-    scalability: number,
-    competition?: number,
-    founderDelusion?: number
+  painkiller: number,
+  revenueModel: number,
+  acquisition: number,
+  moat: number,
+  founderFit: number,
+  timeToRevenue: number,
+  scalability: number,
+  competition?: number,
+  founderDelusion?: number
 }): number {
-    // Weighted scoring (most important first)
-    const weights = {
-        painkiller: 0.25,        // MOST IMPORTANT - no pain = no business
-        acquisition: 0.20,       // Can you get customers? Critical.
-        founderFit: 0.15,        // Can YOU do this?
-        revenueModel: 0.15,      // Will it make money?
-        timeToRevenue: 0.10,     // Can you survive timeline?
-        scalability: 0.10,       // Can it grow?
-        moat: 0.05,              // Don't worry about this early
-    };
+  // Weighted scoring (most important first)
+  const weights = {
+    painkiller: 0.25,        // MOST IMPORTANT - no pain = no business
+    acquisition: 0.20,       // Can you get customers? Critical.
+    founderFit: 0.15,        // Can YOU do this?
+    revenueModel: 0.15,      // Will it make money?
+    timeToRevenue: 0.10,     // Can you survive timeline?
+    scalability: 0.10,       // Can it grow?
+    moat: 0.05,              // Don't worry about this early
+  };
 
-    const weighted = Object.entries(weights).reduce((total, [key, weight]) => {
-        return total + ((scores[key as keyof typeof weights] || 0) * weight);
-    }, 0);
+  const weighted = Object.entries(weights).reduce((total, [key, weight]) => {
+    return total + ((scores[key as keyof typeof weights] || 0) * weight);
+  }, 0);
 
-    // Deduct points for high delusion
-    const delusionPenalty = (scores.founderDelusion || 0) >= 7 ? -10 : 0;
+  // Deduct points for high delusion
+  const delusionPenalty = (scores.founderDelusion || 0) >= 7 ? -10 : 0;
 
-    // Convert to 0-100 scale and apply penalty
-    const finalScore = Math.max(0, Math.min(100, weighted * 10 + delusionPenalty));
+  // Convert to 0-100 scale and apply penalty
+  const finalScore = Math.max(0, Math.min(100, weighted * 10 + delusionPenalty));
 
-    return Math.round(finalScore);
+  return Math.round(finalScore);
 }
 
 // Get rating based on score
 export function getScoreRating(score: number): 'RED' | 'YELLOW' | 'GREEN' | 'STRONG' {
-    if (score >= 76) return 'STRONG';
-    if (score >= 61) return 'GREEN';
-    if (score >= 41) return 'YELLOW';
-    return 'RED';
+  if (score >= 76) return 'STRONG';
+  if (score >= 61) return 'GREEN';
+  if (score >= 41) return 'YELLOW';
+  return 'RED';
 }
 
 // Get verdict based on score and rating
 export function getVerdict(score: number, rating: string): string {
-    if (rating === 'STRONG') {
-        return "Exceptional opportunity with strong fundamentals across all dimensions. Get started immediately and focus on rapid execution.";
-    } else if (rating === 'GREEN') {
-        return "Solid foundation with good potential. Address minor weaknesses while moving forward with validation and building.";
-    } else if (rating === 'YELLOW') {
-        return "Proceed with caution. Critical issues exist that must be addressed before full commitment. Focus on de-risking weakest dimensions.";
-    } else {
-        return "High risk of failure with fundamental flaws. Requires major pivots or reconsideration before proceeding. Consider alternative ideas.";
-    }
+  if (rating === 'STRONG') {
+    return "Exceptional opportunity with strong fundamentals across all dimensions. Get started immediately and focus on rapid execution.";
+  } else if (rating === 'GREEN') {
+    return "Solid foundation with good potential. Address minor weaknesses while moving forward with validation and building.";
+  } else if (rating === 'YELLOW') {
+    return "Proceed with caution. Critical issues exist that must be addressed before full commitment. Focus on de-risking weakest dimensions.";
+  } else {
+    return "High risk of failure with fundamental flaws. Requires major pivots or reconsideration before proceeding. Consider alternative ideas.";
+  }
 }

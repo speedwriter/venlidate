@@ -7,6 +7,19 @@ import * as z from "zod"
 import { useRouter } from "next/navigation"
 import { Loader2, ChevronRight, ChevronLeft, CheckCircle2 } from "lucide-react"
 import { toast } from "sonner"
+import { AlertCircle } from "lucide-react"
+
+import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert"
+import {
+    AlertDialog,
+    AlertDialogAction,
+    AlertDialogCancel,
+    AlertDialogContent,
+    AlertDialogDescription,
+    AlertDialogFooter,
+    AlertDialogHeader,
+    AlertDialogTitle,
+} from "@/components/ui/alert-dialog"
 
 import { Button } from "@/components/ui/button"
 import {
@@ -30,6 +43,7 @@ import {
 import { Progress } from "@/components/ui/progress"
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card"
 import { createIdea, updateIdea, submitIdeaForValidation } from "@/app/actions/ideas"
+import { getUserTierAction, checkValidationQuotaAction } from "@/app/actions/subscriptions"
 
 type FieldName = keyof FormData
 
@@ -61,6 +75,8 @@ export function IdeaForm({ initialData, ideaId }: IdeaFormProps) {
     const [step, setStep] = React.useState(1)
     const [isSubmitting, setIsSubmitting] = React.useState(false)
     const [validationStatus, setValidationStatus] = React.useState<string | null>(null)
+    const [quotaWarning, setQuotaWarning] = React.useState<string | null>(null)
+    const [showUpgradeModal, setShowUpgradeModal] = React.useState(false)
     const router = useRouter()
 
     const form = useForm<FormData>({
@@ -76,6 +92,26 @@ export function IdeaForm({ initialData, ideaId }: IdeaFormProps) {
             timeCommitment: initialData?.timeCommitment || "nights_weekends",
         },
     })
+
+    React.useEffect(() => {
+        async function fetchQuotaStatus() {
+            try {
+                const tier = await getUserTierAction()
+                const quota = await checkValidationQuotaAction(ideaId)
+
+                if (quota.remaining === 0 && tier === 'free') {
+                    setQuotaWarning("You've used all your validations this month. Upgrade to continue.")
+                } else if (quota.remaining === 1) {
+                    setQuotaWarning("This is your last validation this month.")
+                } else if (typeof quota.remaining === 'number' && quota.remaining > 1) {
+                    setQuotaWarning(`You have ${quota.remaining} validations remaining this month.`)
+                }
+            } catch (error) {
+                console.error("Failed to fetch quota status:", error)
+            }
+        }
+        fetchQuotaStatus()
+    }, [ideaId])
 
 
     async function onSubmit(values: FormData) {
@@ -136,7 +172,11 @@ export function IdeaForm({ initialData, ideaId }: IdeaFormProps) {
             const validationResult = await submitIdeaForValidation(targetIdeaId)
 
             if (!validationResult.success) {
-                toast.error(validationResult.error || "AI validation failed")
+                if ((validationResult as any).upgradeRequired) {
+                    setShowUpgradeModal(true)
+                } else {
+                    toast.error(validationResult.error || "AI validation failed")
+                }
                 throw new Error(validationResult.error || "AI validation failed")
             }
 
@@ -189,6 +229,13 @@ export function IdeaForm({ initialData, ideaId }: IdeaFormProps) {
                     </span>
                 </div>
                 <Progress value={progress} className="h-2" />
+                {quotaWarning && (
+                    <Alert variant="warning" className="mt-4">
+                        <AlertCircle className="h-4 w-4" />
+                        <AlertTitle>Subscription Quota</AlertTitle>
+                        <AlertDescription>{quotaWarning}</AlertDescription>
+                    </Alert>
+                )}
             </CardHeader>
             <CardContent>
                 <Form {...form}>
@@ -391,6 +438,23 @@ export function IdeaForm({ initialData, ideaId }: IdeaFormProps) {
                     </p>
                 </div>
             )}
+
+            <AlertDialog open={showUpgradeModal} onOpenChange={setShowUpgradeModal}>
+                <AlertDialogContent>
+                    <AlertDialogHeader>
+                        <AlertDialogTitle>You&apos;ve reached your validation limit</AlertDialogTitle>
+                        <AlertDialogDescription>
+                            Upgrade to Pro for 10 validations/month or Premium for unlimited validations and more features.
+                        </AlertDialogDescription>
+                    </AlertDialogHeader>
+                    <AlertDialogFooter>
+                        <AlertDialogCancel>Maybe later</AlertDialogCancel>
+                        <AlertDialogAction onClick={() => router.push('/pricing')}>
+                            View Pricing
+                        </AlertDialogAction>
+                    </AlertDialogFooter>
+                </AlertDialogContent>
+            </AlertDialog>
         </Card>
     )
 }
