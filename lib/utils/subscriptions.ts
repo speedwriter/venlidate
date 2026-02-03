@@ -1,5 +1,4 @@
 import { createClient } from '@/lib/supabase/server'
-import { Database } from '@/types/database'
 import { cache } from 'react'
 
 export type SubscriptionTier = 'free' | 'pro' | 'premium'
@@ -181,4 +180,66 @@ export async function checkComparisonLimit(userId: string, ideaCount: number): P
 export async function canExportPDF(userId: string): Promise<boolean> {
     const tier = await getUserTier(userId)
     return TIER_LIMITS[tier].canExportPDF
+}
+
+/**
+ * Check if a specific report is accessible based on user's tier and report age.
+ * Free tier: Accessible for 30 days.
+ * Pro/Premium: Always accessible.
+ */
+export async function canAccessReport(userId: string, validationCreatedAt: string): Promise<boolean> {
+    const tier = await getUserTier(userId)
+
+    if (tier === 'pro' || tier === 'premium') {
+        return true
+    }
+
+    const createdDate = new Date(validationCreatedAt)
+    const now = new Date()
+    const diffTime = Math.abs(now.getTime() - createdDate.getTime())
+    const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24))
+
+    return diffDays <= 30
+}
+
+/**
+ * Fetch all validations for user (optionally filtered by ideaId) and filter by accessibility.
+ */
+export async function getAccessibleValidations(userId: string, ideaId?: string) {
+    const supabase = await createClient()
+
+    let query = supabase
+        .from('validations')
+        .select('*')
+        .eq('user_id', userId)
+
+    if (ideaId) {
+        query = query.eq('idea_id', ideaId)
+    }
+
+    const { data: validations, error } = await query.order('created_at', { ascending: false })
+
+    if (error) {
+        console.error('Error fetching validations:', error)
+        return []
+    }
+
+    if (!validations) return []
+
+    // Filter validations based on access control
+    const accessibleValidations = []
+    const tier = await getUserTier(userId)
+
+    if (tier === 'pro' || tier === 'premium') {
+        return validations
+    }
+
+    for (const validation of validations) {
+        const canAccess = await canAccessReport(userId, validation.created_at)
+        if (canAccess) {
+            accessibleValidations.push(validation)
+        }
+    }
+
+    return accessibleValidations
 }

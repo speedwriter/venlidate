@@ -36,3 +36,15 @@ export async function canExportPDFAction() {
     const tier = await getUserTier(user.id)
     return TIER_LIMITS[tier].canExportPDF
 }
+
+export async function canAccessReportAction(validationCreatedAt: string) {
+    const supabase = await createClient()
+    const { data: { user } } = await supabase.auth.getUser()
+
+    if (!user) {
+        return false
+    }
+
+    const { canAccessReport } = await import('@/lib/utils/subscriptions')
+    return await canAccessReport(user.id, validationCreatedAt)
+}

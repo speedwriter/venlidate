@@ -3,8 +3,8 @@
 import { createClient } from '@/lib/supabase/server'
 import { revalidatePath } from 'next/cache'
 import { validateIdea } from '@/lib/ai/validator'
-import type { IdeaFormData, ValidationResult } from '@/types/validations'
-import { checkValidationQuota, checkIterationQuota } from '@/lib/utils/subscriptions'
+import { IdeaFormData, ValidationResult } from '@/types/validations'
+import { checkValidationQuota, checkIterationQuota, canAccessReport, getAccessibleValidations, getUserTier } from '@/lib/utils/subscriptions'
 
 /**
  * Creates a new idea in the database.
@@ -245,6 +245,11 @@ export async function submitIdeaForValidation(ideaId: string) {
  */
 export async function getIdea(ideaId: string) {
     const supabase = await createClient()
+    const { data: { user } } = await supabase.auth.getUser()
+
+    if (!user) {
+        return { success: false, error: 'Unauthorized' }
+    }
 
     const { data, error } = await supabase
         .from('ideas')
@@ -263,7 +268,19 @@ export async function getIdea(ideaId: string) {
         return { success: false, error: 'Idea not found' }
     }
 
-    return { success: true, data }
+    // Access control filtering
+    const accessibleValidations = await getAccessibleValidations(user.id, ideaId)
+    const isLatestInaccessible = data.validations.length > 0 &&
+        !accessibleValidations.find(v => v.id === data.validations[0].id)
+
+    return {
+        success: true,
+        data: {
+            ...data,
+            validations: accessibleValidations.slice(0, 1),
+            isArchived: isLatestInaccessible
+        }
+    }
 }
 
 /**
@@ -295,7 +312,18 @@ export async function getFullIdea(ideaId: string) {
         return { success: false, error: 'Idea not found' }
     }
 
-    return { success: true, data }
+    // Access control filtering
+    const accessibleValidations = await getAccessibleValidations(user.id, ideaId)
+    const isArchived = data.status === 'validated' && accessibleValidations.length === 0
+
+    return {
+        success: true,
+        data: {
+            ...data,
+            validations: accessibleValidations,
+            isArchived
+        }
+    }
 }
 
 /**
@@ -318,6 +346,7 @@ export async function getUserIdeas() {
             status,
             created_at,
             validations (
+                id,
                 overall_score,
                 traffic_light,
                 created_at
@@ -333,10 +362,30 @@ export async function getUserIdeas() {
     }
 
     // Map to include only the latest validation for each idea in the result
-    const ideasWithLatestValidation = data.map((idea) => ({
-        ...idea,
-        latest_validation: (idea.validations as any)?.[0] || null,
-        validations: undefined // Remove the array to keep it clean
+    // and handle access control
+    const ideasWithLatestValidation = await Promise.all(data.map(async (idea) => {
+        const validations = idea.validations as any[]
+        const latestValidation = validations?.[0] || null
+
+        let accessibleLatest = null
+        let isArchived = false
+
+        if (latestValidation) {
+            const canAccess = await canAccessReport(user.id, latestValidation.created_at)
+            if (canAccess) {
+                accessibleLatest = latestValidation
+            } else {
+                isArchived = true
+            }
+        }
+
+        return {
+            ...idea,
+            latest_validation: accessibleLatest,
+            isArchived,
+            archived_at: isArchived ? latestValidation?.created_at : null,
+            validations: undefined // Remove the array to keep it clean
+        }
     }))
 
     return { success: true, data: ideasWithLatestValidation }
@@ -401,14 +450,27 @@ export async function getIdeasByIds(ids: string[]) {
         return { success: false, error: 'Failed to fetch ideas.' }
     }
 
-    // Map to include only the latest validation for each idea
-    const ideasWithLatestValidation = data.map((idea) => ({
-        ...idea,
-        latest_validation: (idea.validations as any)?.[0] || null,
-        validations: undefined
+    // Map to include only the latest validation for each idea and handle access
+    const ideasWithLatestValidation = await Promise.all(data.map(async (idea) => {
+        const validations = idea.validations as any[]
+        const latestValidation = validations?.[0] || null
+
+        let accessibleLatest = null
+        if (latestValidation) {
+            const canAccess = await canAccessReport(user.id, latestValidation.created_at)
+            if (canAccess) {
+                accessibleLatest = latestValidation
+            }
+        }
+
+        return {
+            ...idea,
+            latest_validation: accessibleLatest,
+            isArchived: latestValidation && !accessibleLatest,
+            validations: undefined
+        }
     }))
 
-    // Ensure we return them in the same order as requested if possible, or just as they came back
     return { success: true, data: ideasWithLatestValidation }
 }
 

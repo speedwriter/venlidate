@@ -7,10 +7,7 @@ import {
     Trash2,
     Calendar,
     ArrowRight,
-    MoreVertical,
     AlertTriangle,
-    CheckCircle2,
-    XCircle,
     Loader2
 } from "lucide-react"
 import {
@@ -42,6 +39,7 @@ interface IdeaCardProps {
         problem?: string
         status: string
         created_at: string
+        isArchived?: boolean
         latest_validation?: {
             overall_score: number
             traffic_light: 'red' | 'yellow' | 'green'
@@ -76,7 +74,8 @@ export function IdeaCard({ idea }: IdeaCardProps) {
     }
 
 
-    const isValidated = idea.status === 'validated' && idea.latest_validation
+    const isValidated = idea.status === 'validated' && idea.latest_validation && !idea.isArchived
+    const isArchived = idea.isArchived
 
     return (
         <Card className="group relative flex flex-col h-full overflow-hidden transition-all duration-300 hover:shadow-lg hover:border-primary/20">
@@ -86,7 +85,11 @@ export function IdeaCard({ idea }: IdeaCardProps) {
                         {idea.title}
                     </CardTitle>
                     <div className="flex items-center gap-2 shrink-0">
-                        {isValidated ? (
+                        {isArchived ? (
+                            <Badge variant="secondary" className="bg-amber-100 text-amber-800 border-amber-200 font-bold px-2 py-0.5 border shadow-none">
+                                Archived
+                            </Badge>
+                        ) : isValidated ? (
                             <Badge className={`${getScoreColor(idea.latest_validation!.overall_score)} font-bold px-2 py-0.5 border shadow-none`} variant="secondary">
                                 {idea.latest_validation!.overall_score}
                             </Badge>
@@ -112,7 +115,16 @@ export function IdeaCard({ idea }: IdeaCardProps) {
                     </p>
                 )}
 
-                {!isValidated && (
+                {isArchived && (
+                    <div className="p-3 rounded-lg bg-amber-50 border border-amber-100 flex items-center gap-3">
+                        <AlertTriangle className="h-4 w-4 text-amber-600" />
+                        <span className="text-sm font-medium text-amber-800">
+                            Report archived. Upgrade to restore.
+                        </span>
+                    </div>
+                )}
+
+                {!isValidated && !isArchived && (
                     <div className="p-3 rounded-lg bg-slate-50 border border-slate-100 flex items-center gap-3">
                         <div className="h-2 w-2 rounded-full bg-amber-400 animate-pulse" />
                         <span className="text-sm font-medium text-slate-600">
@@ -123,12 +135,21 @@ export function IdeaCard({ idea }: IdeaCardProps) {
             </CardContent>
 
             <CardFooter className="pt-0 border-t bg-slate-50/50 flex gap-2 p-4">
-                <Link href={`/dashboard/${idea.id}`} className="flex-1">
-                    <Button variant="default" className="w-full gap-2 group/btn font-semibold">
-                        View Report
-                        <ArrowRight className="h-4 w-4 group-hover/btn:translate-x-1 transition-transform" />
-                    </Button>
-                </Link>
+                {isArchived ? (
+                    <Link href="/pricing" className="flex-1">
+                        <Button variant="outline" className="w-full gap-2 group/btn font-semibold border-amber-200 hover:bg-amber-50 text-amber-800">
+                            Upgrade to Restore
+                            <ArrowRight className="h-4 w-4 group-hover/btn:translate-x-1 transition-transform" />
+                        </Button>
+                    </Link>
+                ) : (
+                    <Link href={`/dashboard/${idea.id}`} className="flex-1">
+                        <Button variant="default" className="w-full gap-2 group/btn font-semibold">
+                            View Report
+                            <ArrowRight className="h-4 w-4 group-hover/btn:translate-x-1 transition-transform" />
+                        </Button>
+                    </Link>
+                )}
 
                 <AlertDialog>
                     <AlertDialogTrigger asChild>
@@ -144,9 +165,11 @@ export function IdeaCard({ idea }: IdeaCardProps) {
                     <AlertDialogContent>
                         <AlertDialogHeader>
                             <AlertDialogTitle>Delete Idea</AlertDialogTitle>
-                            <AlertDialogDescription>
-                                Are you sure you want to delete &quot;{idea.title}&quot;? This action cannot be undone and will remove all associated validation reports.
-                            </AlertDialogDescription>
+                            <AlertDialogHeader>
+                                <AlertDialogDescription>
+                                    Are you sure you want to delete &quot;{idea.title}&quot;? This action cannot be undone and will remove all associated validation reports.
+                                </AlertDialogDescription>
+                            </AlertDialogHeader>
                         </AlertDialogHeader>
                         <AlertDialogFooter>
                             <AlertDialogCancel>Cancel</AlertDialogCancel>

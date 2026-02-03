@@ -2,7 +2,7 @@ import Link from 'next/link'
 import { getUserIdeas } from '@/app/actions/ideas'
 import { Card, CardContent } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
-import { Plus, Activity, Sparkles } from 'lucide-react'
+import { Plus, Activity, Sparkles, Lock } from 'lucide-react'
 import { IdeaCard } from '@/components/features/idea-card'
 import { CompareIdeasButton } from '@/components/features/compare-ideas-button'
 import { getUserTier, TIER_LIMITS } from '@/lib/utils/subscriptions'
@@ -23,26 +23,27 @@ export default async function DashboardPage() {
     }
 
     const ideas = result.data || []
-    const validatedIdeas = ideas.filter(idea => idea.status === 'validated')
+    const validatedIdeas = ideas.filter(idea => idea.status === 'validated' && !(idea as any).isArchived)
+    const archivedIdeas = ideas.filter(idea => (idea as any).isArchived)
     const tier = await getUserTier(user.id)
     const tierLimit = TIER_LIMITS[tier].maxComparisonIdeas
 
-    // Sort ideas: Validated first, then by created_at desc
+    // Sort ideas: Validated (not archived) first, then Draft/Validating, then Archived?
+    // User requested: "Mark ideas as 'archived' if all validations are inaccessible"
     const sortedIdeas = [...ideas].sort((a, b) => {
-        // Priority to validated ideas
-        const aValidated = a.status === 'validated' ? 1 : 0
-        const bValidated = b.status === 'validated' ? 1 : 0
+        // Priority: Validated (active) > Draft/Validating > Archived
+        const aStatus = (a as any).isArchived ? -1 : a.status === 'validated' ? 1 : 0
+        const bStatus = (b as any).isArchived ? -1 : b.status === 'validated' ? 1 : 0
 
-        if (aValidated !== bValidated) {
-            return bValidated - aValidated
+        if (aStatus !== bStatus) {
+            return bStatus - aStatus
         }
 
-        // Then sort by created_at desc
         return new Date(b.created_at).getTime() - new Date(a.created_at).getTime()
     })
 
     return (
-        <div className="max-w-7xl mx-auto space-y-8 pb-12">
+        <div className="max-w-7xl mx-auto space-y-12 pb-24">
             <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
                 <div>
                     <h1 className="text-3xl md:text-4xl font-extrabold tracking-tight bg-gradient-to-r from-slate-900 to-slate-700 bg-clip-text text-transparent">
@@ -54,7 +55,7 @@ export default async function DashboardPage() {
                 </div>
                 <div className="flex items-center gap-3">
                     <CompareIdeasButton
-                        validatedIdeas={validatedIdeas}
+                        validatedIdeas={validatedIdeas as any}
                         tierLimit={tierLimit}
                     />
                     <Link href="/new-idea">
@@ -86,8 +87,36 @@ export default async function DashboardPage() {
             ) : (
                 <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
                     {sortedIdeas.map((idea) => (
-                        <IdeaCard key={idea.id} idea={idea} />
+                        <IdeaCard key={idea.id} idea={idea as any} />
                     ))}
+                </div>
+            )}
+
+            {/* Archived Reports Section for Free Tier */}
+            {tier === 'free' && archivedIdeas.length > 0 && (
+                <div className="pt-12 border-t">
+                    <div className="bg-amber-50/50 border border-amber-100 rounded-3xl p-8 md:p-12">
+                        <div className="flex flex-col md:flex-row items-center justify-between gap-8">
+                            <div className="space-y-4 text-center md:text-left">
+                                <div className="inline-flex items-center gap-2 bg-amber-100 text-amber-800 px-4 py-1.5 rounded-full text-sm font-bold border border-amber-200">
+                                    <Lock className="h-4 w-4" />
+                                    {archivedIdeas.length} Archived {archivedIdeas.length === 1 ? 'Report' : 'Reports'}
+                                </div>
+                                <h2 className="text-3xl font-bold text-slate-900">Restore your past validations</h2>
+                                <p className="text-muted-foreground text-lg max-w-xl">
+                                    You have {archivedIdeas.length} archived reports from {
+                                        Array.from(new Set(archivedIdeas.map(i => new Date((i as any).archived_at).toLocaleDateString(undefined, { month: 'short', year: 'numeric' })))).join(', ')
+                                    }.
+                                    Upgrade to Pro to restore all your past validations and never lose an insight.
+                                </p>
+                            </div>
+                            <Link href="/pricing">
+                                <Button size="lg" className="bg-amber-600 hover:bg-amber-700 text-white font-bold px-10 py-7 text-lg rounded-2xl shadow-lg hover:shadow-xl transition-all gap-2">
+                                    Upgrade to Pro
+                                </Button>
+                            </Link>
+                        </div>
+                    </div>
                 </div>
             )}
         </div>
