@@ -32,15 +32,21 @@ export async function exportReportToPDF(idea: Idea, validation: ValidationResult
         };
 
         // 1. Header
+        let currentY = 25;
+
         doc.setFontSize(24);
         doc.setFont('helvetica', 'bold');
         doc.setTextColor(colors.primary[0], colors.primary[1], colors.primary[2]);
-        doc.text(idea.title, 20, 25);
+
+        const titleLines = doc.splitTextToSize(idea.title, 170);
+        doc.text(titleLines, 20, currentY);
+        currentY += (titleLines.length * 9) + 5;
 
         doc.setFontSize(14);
         doc.setFont('helvetica', 'normal');
         doc.setTextColor(colors.muted[0], colors.muted[1], colors.muted[2]);
-        doc.text('Startup Idea Validation Report', 20, 33);
+        doc.text('Startup Idea Validation Report', 20, currentY);
+        currentY += 8;
 
         const dateStr = 'N/A'; // validation.created_at is missing on ValidationResult
         /*
@@ -48,25 +54,29 @@ export async function exportReportToPDF(idea: Idea, validation: ValidationResult
         ? new Date(validation.created_at).toLocaleDateString('en-US', { dateStyle: 'long' })
         : */
         doc.setFontSize(10);
-        doc.text(`Generated on ${dateStr}`, 20, 39);
+        doc.text(`Generated on ${dateStr}`, 20, currentY);
+        currentY += 8;
 
         // 2. Overall Score Section
         doc.setDrawColor(229, 231, 235); // #e5e7eb
-        doc.line(20, 45, 190, 45);
+        doc.line(20, currentY, 190, currentY);
+        currentY += 10;
+
+        const scoreStartY = currentY;
 
         doc.setFontSize(12);
         doc.setFont('helvetica', 'bold');
         doc.setTextColor(colors.text[0], colors.text[1], colors.text[2]);
-        doc.text('OVERALL SCORE', 20, 55);
+        doc.text('OVERALL SCORE', 20, scoreStartY);
 
         doc.setFontSize(48);
         const scoreColor = getScoreColor(validation.overallScore);
         doc.setTextColor(scoreColor[0], scoreColor[1], scoreColor[2]);
-        doc.text(`${validation.overallScore}`, 20, 75);
+        doc.text(`${validation.overallScore}`, 20, scoreStartY + 20);
 
         doc.setFontSize(18);
         doc.setTextColor(colors.muted[0], colors.muted[1], colors.muted[2]);
-        doc.text('/ 100', 50, 75);
+        doc.text('/ 100', 50, scoreStartY + 20);
 
         // Traffic Light Indicator
         const lightColors: Record<string, number[]> = {
@@ -82,11 +92,13 @@ export async function exportReportToPDF(idea: Idea, validation: ValidationResult
 
         const lightColor = (lightColors[validation.trafficLight] || colors.muted) as [number, number, number];
         doc.setFillColor(lightColor[0], lightColor[1], lightColor[2]);
-        doc.roundedRect(80, 60, 100, 15, 2, 2, 'F');
+        doc.roundedRect(80, scoreStartY + 5, 100, 15, 2, 2, 'F');
         doc.setFontSize(12);
         doc.setTextColor(255, 255, 255);
         doc.setFont('helvetica', 'bold');
-        doc.text(lightLabel[validation.trafficLight] || 'Status Unknown', 130, 70, { align: 'center' });
+        doc.text(lightLabel[validation.trafficLight] || 'Status Unknown', 130, scoreStartY + 15, { align: 'center' });
+
+        currentY = scoreStartY + 35;
 
         // 3. Dimensions Table
         // 3. Dimensions Table
@@ -101,7 +113,7 @@ export async function exportReportToPDF(idea: Idea, validation: ValidationResult
         ];
 
         autoTable(doc, {
-            startY: 85,
+            startY: currentY,
             head: [['Dimension', 'Score', 'Reasoning']],
             body: dimensionRows,
             headStyles: { fillColor: colors.primary, textColor: 255, fontStyle: 'bold' },
@@ -115,7 +127,7 @@ export async function exportReportToPDF(idea: Idea, validation: ValidationResult
         });
 
         // 4. Insights Section
-        let currentY = ((doc as unknown as { lastAutoTable: { finalY: number } }).lastAutoTable.finalY) + 15;
+        currentY = ((doc as unknown as { lastAutoTable: { finalY: number } }).lastAutoTable.finalY) + 15;
 
         // Check if we need a new page
         if (currentY > 240) {

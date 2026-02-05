@@ -44,13 +44,16 @@ export const getUserProfile = cache(async (userId: string) => {
         .from('profiles')
         .select('*')
         .eq('user_id', userId)
-        .single()
+        .limit(1)
+        .maybeSingle()
 
     // Also get the user from auth to check metadata fallback
     const { data: { user } } = await supabase.auth.getUser()
 
     if (error || !profile) {
-        console.error('Error fetching user profile:', error?.message)
+        if (error) {
+            console.error('Error fetching user profile:', error.message)
+        }
         // Fallback to metadata if available
         if (user?.user_metadata) {
             return {

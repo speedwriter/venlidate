@@ -112,12 +112,9 @@ export function ValidationReport({ validation, idea, history = [], percentile }:
         }
     };
 
-    const daysAgo = 0; // created_at not present on ValidationResult usually, can we pass it explicitly? or ignore?
-    // Actually ValidationResult doesn't have created_at. We might need to extend it or pass date separately.
-    // For now, let's look at how to get date. History items might have date?
-    // The previous implementation relied on validation.created_at.
-    // If we map from DB, we lose created_at unless we add it to ValidationResult or wrapper.
-    // Let's assume we don't display "days ago" or date for now if missing, or use current date.
+    const daysAgo = validation.created_at
+        ? Math.floor((new Date().getTime() - new Date(validation.created_at).getTime()) / (1000 * 3600 * 24))
+        : 0;
 
     const dimensionScores = [
         { name: "Painkiller", score: validation.painkillerScore.score, reasoning: validation.painkillerScore.reasoning },
@@ -144,7 +141,7 @@ export function ValidationReport({ validation, idea, history = [], percentile }:
         .map((v, index) => ({
             name: `v${index + 1}`,
             score: v.overallScore,
-            date: "N/A", // v.created_at is missing
+            date: v.created_at ? new Date(v.created_at).toLocaleDateString() : 'N/A',
         }));
 
     const getScoreColor = (s: number) => {
@@ -195,7 +192,7 @@ export function ValidationReport({ validation, idea, history = [], percentile }:
                             <TrafficLight trafficLight={validation.trafficLight} />
                             <BenchmarkBadge percentile={percentile || 0} />
                             <span className="text-xs text-muted-foreground italic" suppressHydrationWarning>
-                                Validated on N/A
+                                Validated on {validation.created_at ? new Date(validation.created_at).toLocaleDateString() : 'N/A'}
                             </span>
                         </div>
                     </div>
@@ -420,7 +417,7 @@ export function ValidationReport({ validation, idea, history = [], percentile }:
                                                                 <div className="text-left space-y-1">
                                                                     <p className="text-sm font-medium">Iteration {iterationNumber}</p>
                                                                     <p className="text-[10px] text-muted-foreground font-normal">
-                                                                        N/A
+                                                                        {v.created_at ? new Date(v.created_at).toLocaleDateString() : 'N/A'}
                                                                     </p>
                                                                 </div>
                                                                 <span className="text-lg font-black tracking-tighter" style={{ color: getScoreColor(v.overallScore) }}>

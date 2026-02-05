@@ -20,6 +20,7 @@ export type ValidationResult = {
         similarity: string
     }>
     recommendations: string[]
+    created_at?: string
     ideaSnapshot?: IdeaFormData
 }
 

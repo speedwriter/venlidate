@@ -45,6 +45,7 @@ const mockValidation: unknown = {
         { name: "Planta", outcome: "success", similarity: "Indirect competitor in plant care" },
         { name: "PlantSnap", outcome: "failure", similarity: "Poor accuracy led to high churn" }
     ],
+    created_at: new Date().toISOString(),
 };
 
 const mockHistory: unknown[] = [

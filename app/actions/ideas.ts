@@ -21,6 +21,7 @@ function mapValidationRowToResult(row: Tables<'validations'>): ValidationResult 
         redFlags: row.red_flags as string[],
         comparableCompanies: row.comparable_companies as unknown[] as { name: string, outcome: 'success' | 'failure', similarity: string }[],
         recommendations: row.recommendations as string[],
+        created_at: row.created_at || new Date().toISOString(),
         ideaSnapshot: row.idea_snapshot as IdeaFormData | undefined,
     }
 }
@@ -296,7 +297,7 @@ export async function getIdea(ideaId: string) {
         success: true,
         data: {
             ...data,
-            validations: accessibleValidations.slice(0, 1),
+            validations: accessibleValidations.slice(0, 1).map(v => mapValidationRowToResult(v as unknown as Tables<'validations'>)),
             isArchived: isLatestInaccessible
         }
     }
@@ -339,7 +340,7 @@ export async function getFullIdea(ideaId: string) {
         success: true,
         data: {
             ...data,
-            validations: accessibleValidations,
+            validations: accessibleValidations.map(v => mapValidationRowToResult(v as unknown as Tables<'validations'>)),
             isArchived
         }
     }
