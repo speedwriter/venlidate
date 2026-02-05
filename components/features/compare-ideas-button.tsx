@@ -3,7 +3,7 @@
 import React, { useState } from 'react'
 import { useRouter } from 'next/navigation'
 import { Button } from '@/components/ui/button'
-import { GitCompare, Check, Plus, AlertCircle } from 'lucide-react'
+import { GitCompare, Check, AlertCircle } from 'lucide-react'
 import {
     AlertDialog,
     AlertDialogAction,
@@ -17,8 +17,10 @@ import {
 } from '@/components/ui/alert-dialog'
 import { cn } from '@/lib/utils'
 
+import { IdeaWithValidation } from '@/types/validations'
+
 interface CompareIdeasButtonProps {
-    validatedIdeas: any[]
+    validatedIdeas: IdeaWithValidation[]
     tierLimit: number
 }
 
@@ -81,7 +83,7 @@ export function CompareIdeasButton({ validatedIdeas, tierLimit }: CompareIdeasBu
                         >
                             <div className="flex-1 min-w-0">
                                 <h4 className="font-semibold truncate">{idea.title}</h4>
-                                <p className="text-xs text-muted-foreground">Overall Score: {idea.latest_validation?.overall_score || 'N/A'}</p>
+                                <p className="text-xs text-muted-foreground">Overall Score: {idea.latest_validation?.overallScore || 'N/A'}</p>
                             </div>
                             <div className={cn(
                                 "h-6 w-6 rounded-full border-2 flex items-center justify-center transition-all",

@@ -2,27 +2,36 @@
 
 import { useState, useEffect } from 'react'
 import { createIdea, submitIdeaForValidation, getIdea, getUserIdeas, deleteIdea } from '@/app/actions/ideas'
+import { IdeaWithValidation } from '@/types/validations'
 
 /**
  * Test page for verifying Ideas Server Actions.
  * NOT intended for production use.
  */
 export default function TestIdeasPage() {
-    const [ideas, setIdeas] = useState<any[]>([])
-    const [result, setResult] = useState<any>(null)
+    const [ideas, setIdeas] = useState<IdeaWithValidation[]>([])
+    const [result, setResult] = useState<unknown>(null)
     const [loading, setLoading] = useState(false)
 
     const loadIdeas = async () => {
         const res = await getUserIdeas()
-        if (res.success) {
-            setIdeas(res.data as any[])
+        if (res.success && res.data) {
+            setIdeas(res.data)
         } else {
             setResult(res)
         }
     }
 
     useEffect(() => {
-        loadIdeas()
+        const fetchIdeas = async () => {
+            const res = await getUserIdeas()
+            if (res.success && res.data) {
+                setIdeas(res.data)
+            } else {
+                setResult(res)
+            }
+        }
+        void fetchIdeas()
     }, [])
 
     const handleCreate = async () => {
@@ -117,7 +126,7 @@ export default function TestIdeasPage() {
                                     </div>
                                     {idea.latest_validation && (
                                         <div className="text-right">
-                                            <div className="text-2xl font-bold text-indigo-600">{idea.latest_validation.overall_score}</div>
+                                            <div className="text-2xl font-bold text-indigo-600">{idea.latest_validation.overallScore}</div>
                                             <div className="text-[10px] uppercase font-bold tracking-wider text-gray-400">Score</div>
                                         </div>
                                     )}

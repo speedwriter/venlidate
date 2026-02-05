@@ -3,7 +3,7 @@ import { redirect } from 'next/navigation'
 import Link from 'next/link'
 import { Button } from '@/components/ui/button'
 import { signOut } from '@/app/actions/auth'
-import { LayoutDashboard, PlusCircle, CreditCard, LogOut } from 'lucide-react'
+import { LayoutDashboard, PlusCircle, CreditCard, LogOut, Settings } from 'lucide-react'
 
 export default async function DashboardLayout({
     children,
@@ -45,6 +45,12 @@ export default async function DashboardLayout({
                                 <Button variant="ghost" size="sm" className="gap-2">
                                     <CreditCard className="h-4 w-4" />
                                     Pricing
+                                </Button>
+                            </Link>
+                            <Link href="/settings">
+                                <Button variant="ghost" size="sm" className="gap-2">
+                                    <Settings className="h-4 w-4" />
+                                    Settings
                                 </Button>
                             </Link>
                         </nav>

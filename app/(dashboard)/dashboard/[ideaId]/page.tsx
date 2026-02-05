@@ -13,7 +13,7 @@ import {
     BreadcrumbSeparator
 } from "@/components/ui/breadcrumb"
 import { Button } from "@/components/ui/button"
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
+import { Card, CardContent, CardDescription, CardTitle } from "@/components/ui/card"
 import { CalendarDays, Lightbulb, PlayCircle } from "lucide-react"
 
 interface IdeaDetailPageProps {
@@ -90,7 +90,7 @@ export default async function IdeaDetailPage({ params }: IdeaDetailPageProps) {
                         <div className="space-y-2">
                             <CardTitle className="text-2xl">No validations yet</CardTitle>
                             <CardDescription className="max-w-md mx-auto">
-                                This idea hasn't been analyzed by our AI yet. Validate it now to get deep insights into its potential.
+                                This idea hasn&apos;t been analyzed by our AI yet. Validate it now to get deep insights into its potential.
                             </CardDescription>
                         </div>
                         <RevalidateButton ideaId={idea.id} />
@@ -98,12 +98,13 @@ export default async function IdeaDetailPage({ params }: IdeaDetailPageProps) {
                 </Card>
             ) : (
                 <ValidationReport
-                    idea={idea as any}
-                    validation={latestValidation as any}
-                    history={history as any}
+                    idea={idea}
+                    validation={latestValidation}
+                    history={history}
                     percentile={percentile}
                 />
-            )}
-        </div>
+            )
+            }
+        </div >
     )
 }

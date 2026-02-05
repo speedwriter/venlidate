@@ -2,7 +2,6 @@ import Link from "next/link";
 import { redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
 import {
-  CheckCircle2,
   Target,
   BarChart3,
   Flame,
@@ -162,7 +161,7 @@ export default async function Home() {
               }
             ].map((t, i) => (
               <div key={i} className="p-8 bg-zinc-50 rounded-3xl relative">
-                <p className="text-lg text-zinc-700 italic mb-6">"{t.quote}"</p>
+                <p className="text-lg text-zinc-700 italic mb-6">&quot;{t.quote}&quot;</p>
                 <div className="flex items-center gap-4">
                   <div className="w-12 h-12 bg-blue-200 rounded-full flex-shrink-0" />
                   <div>

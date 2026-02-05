@@ -3,8 +3,27 @@
 import { createClient } from '@/lib/supabase/server'
 import { revalidatePath } from 'next/cache'
 import { validateIdea } from '@/lib/ai/validator'
-import { IdeaFormData, ValidationResult } from '@/types/validations'
-import { checkValidationQuota, checkIterationQuota, canAccessReport, getAccessibleValidations, getUserTier } from '@/lib/utils/subscriptions'
+import { IdeaFormData, ValidationResult, IdeaWithValidation } from '@/types/validations'
+import { checkValidationQuota, checkIterationQuota, canAccessReport, getAccessibleValidations } from '@/lib/utils/subscriptions'
+import { Tables } from '@/types/database'
+
+function mapValidationRowToResult(row: Tables<'validations'>): ValidationResult {
+    return {
+        overallScore: row.overall_score,
+        trafficLight: row.traffic_light as 'red' | 'yellow' | 'green',
+        painkillerScore: { score: row.painkiller_score, reasoning: row.painkiller_reasoning },
+        revenueModelScore: { score: row.revenue_model_score, reasoning: row.revenue_model_reasoning },
+        acquisitionScore: { score: row.acquisition_score, reasoning: row.acquisition_reasoning },
+        moatScore: { score: row.moat_score, reasoning: row.moat_reasoning },
+        founderFitScore: { score: row.founder_fit_score, reasoning: row.founder_fit_reasoning },
+        timeToRevenueScore: { score: row.time_to_revenue_score, reasoning: row.time_to_revenue_reasoning, estimate: row.time_to_revenue_estimate || undefined },
+        scalabilityScore: { score: row.scalability_score, reasoning: row.scalability_reasoning },
+        redFlags: row.red_flags as string[],
+        comparableCompanies: row.comparable_companies as unknown[] as { name: string, outcome: 'success' | 'failure', similarity: string }[],
+        recommendations: row.recommendations as string[],
+        ideaSnapshot: row.idea_snapshot as IdeaFormData | undefined,
+    }
+}
 
 /**
  * Creates a new idea in the database.
@@ -364,7 +383,7 @@ export async function getUserIdeas() {
     // Map to include only the latest validation for each idea in the result
     // and handle access control
     const ideasWithLatestValidation = await Promise.all(data.map(async (idea) => {
-        const validations = idea.validations as any[]
+        const validations = idea.validations
         const latestValidation = validations?.[0] || null
 
         let accessibleLatest = null
@@ -373,7 +392,7 @@ export async function getUserIdeas() {
         if (latestValidation) {
             const canAccess = await canAccessReport(user.id, latestValidation.created_at)
             if (canAccess) {
-                accessibleLatest = latestValidation
+                accessibleLatest = mapValidationRowToResult(latestValidation as unknown as Tables<'validations'>)
             } else {
                 isArchived = true
             }
@@ -452,14 +471,14 @@ export async function getIdeasByIds(ids: string[]) {
 
     // Map to include only the latest validation for each idea and handle access
     const ideasWithLatestValidation = await Promise.all(data.map(async (idea) => {
-        const validations = idea.validations as any[]
+        const validations = idea.validations
         const latestValidation = validations?.[0] || null
 
         let accessibleLatest = null
         if (latestValidation) {
             const canAccess = await canAccessReport(user.id, latestValidation.created_at)
             if (canAccess) {
-                accessibleLatest = latestValidation
+                accessibleLatest = mapValidationRowToResult(latestValidation as unknown as Tables<'validations'>)
             }
         }
 

@@ -2,10 +2,9 @@
 
 import * as React from "react"
 import { useRouter } from "next/navigation"
-import { Loader2, RefreshCw } from "lucide-react"
+import { RefreshCw } from "lucide-react"
 import { Button } from "@/components/ui/button"
-import { revalidateIdea } from "@/app/actions/ideas"
-import { toast } from "sonner"
+// const { toast } = useToast()
 
 interface RevalidateButtonProps {
     ideaId: string

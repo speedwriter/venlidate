@@ -5,8 +5,7 @@ import {
     COMPARABLE_COMPANIES_PROMPT,
     RECOMMENDATIONS_PROMPT,
     RED_FLAGS_PROMPT,
-    calculateOverallScore,
-    getScoreRating
+    calculateOverallScore
 } from './prompts';
 import type { IdeaFormData, ValidationResult, DimensionScore } from '@/types/validations';
 
@@ -90,7 +89,7 @@ function extractJSON(text: string): string {
 /**
  * Helper function to parse JSON safely with robust fallback for truncated/conversational responses.
  */
-function safeParseJSON(text: string, type: 'object' | 'array' = 'object'): any {
+function safeParseJSON(text: string, type: 'object' | 'array' = 'object'): unknown {
     const extracted = extractJSON(text);
 
     try {
@@ -116,7 +115,7 @@ function safeParseJSON(text: string, type: 'object' | 'array' = 'object'): any {
                     if (reasoning.endsWith('\\')) reasoning = reasoning.slice(0, -1);
                 }
 
-                const result: any = {
+                const result: Record<string, unknown> = {
                     score: parseInt(scoreMatch[1], 10),
                     reasoning: reasoning || 'Reasoning partially captured.',
                     _isFallback: true
@@ -124,13 +123,13 @@ function safeParseJSON(text: string, type: 'object' | 'array' = 'object'): any {
 
                 // Add estimate if found
                 if (estimateMatch) {
-                    let estimate = estimateMatch[1].trim().replace(/[,}\]]$/, '').replace(/"$/, '').replace(/\\$/, '');
+                    const estimate = estimateMatch[1].trim().replace(/[,}\]]$/, '').replace(/"$/, '').replace(/\\$/, '');
                     if (estimate) result.estimate = estimate;
                 }
 
                 // Add realPainCheck if found (for painkiller dimension)
                 if (realPainCheckMatch) {
-                    let realPainCheck = realPainCheckMatch[1].trim().replace(/[,}\]]$/, '').replace(/"$/, '').replace(/\\$/, '');
+                    const realPainCheck = realPainCheckMatch[1].trim().replace(/[,}\]]$/, '').replace(/"$/, '').replace(/\\$/, '');
                     if (realPainCheck) result.realPainCheck = realPainCheck;
                 }
 
@@ -161,7 +160,7 @@ function safeParseJSON(text: string, type: 'object' | 'array' = 'object'): any {
                     console.log('✅ Successfully repaired truncated JSON array');
                     return parsed;
                 }
-            } catch (repairError) {
+            } catch {
                 console.warn('⚠️ JSON repair failed, falling back to regex extraction');
             }
 
@@ -229,9 +228,9 @@ export async function validateIdea(ideaData: IdeaFormData): Promise<{ validation
                 });
 
                 // Parse JSON response with safe fallback
-                let parsed: any;
+                let parsed: Record<string, unknown>;
                 try {
-                    parsed = safeParseJSON(text, 'object');
+                    parsed = safeParseJSON(text, 'object') as Record<string, unknown>;
                 } catch (error) {
                     console.error(`❌ Failed to parse response for ${dimension.key}. Raw text:`, text);
                     throw error;
@@ -239,19 +238,19 @@ export async function validateIdea(ideaData: IdeaFormData): Promise<{ validation
 
                 // Store score and reasoning
                 const dimensionScore: DimensionScore = {
-                    score: parsed.score ?? 5,
-                    reasoning: parsed.reasoning || 'No reasoning provided',
+                    score: (parsed.score as number) ?? 5,
+                    reasoning: (parsed.reasoning as string) || 'No reasoning provided',
                 };
 
                 // Add additional fields for timeToRevenue if present
                 if (dimension.key === 'timeToRevenue') {
                     if (parsed.estimate) {
-                        (dimensionScore as any).estimate = parsed.estimate;
+                        (dimensionScore as Record<string, unknown>).estimate = parsed.estimate;
                     } else {
                         // Fallback extraction for estimate
                         const estimateMatch = text.match(/"estimate"\s*:\s*"([^"]*)/);
                         if (estimateMatch) {
-                            (dimensionScore as any).estimate = estimateMatch[1] + (text.includes(`"${estimateMatch[1]}"`) ? '' : '...');
+                            (dimensionScore as Record<string, unknown>).estimate = estimateMatch[1] + (text.includes(`"${estimateMatch[1]}"`) ? '' : '...');
                         }
                     }
                 }

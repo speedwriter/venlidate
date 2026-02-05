@@ -172,7 +172,7 @@ export function IdeaForm({ initialData, ideaId }: IdeaFormProps) {
             const validationResult = await submitIdeaForValidation(targetIdeaId)
 
             if (!validationResult.success) {
-                if ((validationResult as any).upgradeRequired) {
+                if ((validationResult as { success: boolean, error?: string, upgradeRequired?: boolean }).upgradeRequired) {
                     setShowUpgradeModal(true)
                 } else {
                     toast.error(validationResult.error || "AI validation failed")

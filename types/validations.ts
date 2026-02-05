@@ -20,6 +20,7 @@ export type ValidationResult = {
         similarity: string
     }>
     recommendations: string[]
+    ideaSnapshot?: IdeaFormData
 }
 
 export type IdeaFormData = {
@@ -31,4 +32,16 @@ export type IdeaFormData = {
     unfairAdvantage: string
     distributionChannel: string
     timeCommitment: 'nights_weekends' | 'part_time' | 'full_time'
+}
+
+export type IdeaWithValidation = {
+    id: string
+    title: string
+    problem: string
+    status: string
+    created_at: string
+    latest_validation?: ValidationResult | null
+    isArchived?: boolean
+    archived_at?: string | null
+    validations?: unknown[] // Optional if we want to include raw array
 }

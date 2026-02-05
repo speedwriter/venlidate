@@ -1,0 +1,37 @@
+
+> venlidate@0.1.0 lint
+> eslint
+
+
+/Users/terence/Documents/terence-vibe-projects/venlidate/app/(dashboard)/dashboard/[ideaId]/page.tsx
+  15:10  warning  'Button' is defined but never used  @typescript-eslint/no-unused-vars
+
+/Users/terence/Documents/terence-vibe-projects/venlidate/app/actions/ideas.ts
+   6:42  warning  'IdeaWithValidation' is defined but never used  @typescript-eslint/no-unused-vars
+  22:58  error    Unexpected any. Specify a different type        @typescript-eslint/no-explicit-any
+
+/Users/terence/Documents/terence-vibe-projects/venlidate/app/api/cron/cleanup-reports/route.ts
+  43:23  warning  'deletedData' is assigned a value but never used  @typescript-eslint/no-unused-vars
+
+/Users/terence/Documents/terence-vibe-projects/venlidate/app/test-report/page.tsx
+  59:30  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+
+/Users/terence/Documents/terence-vibe-projects/venlidate/components/features/comparison-view.tsx
+   69:73  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  176:74  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+
+/Users/terence/Documents/terence-vibe-projects/venlidate/components/features/validation-report.tsx
+  81:32  warning  'setIsActuallyArchived' is assigned a value but never used  @typescript-eslint/no-unused-vars
+  86:41  warning  'canAccessReportAction' is assigned a value but never used  @typescript-eslint/no-unused-vars
+
+/Users/terence/Documents/terence-vibe-projects/venlidate/lib/supabase/middleware.ts
+  19:58  warning  'options' is defined but never used  @typescript-eslint/no-unused-vars
+
+/Users/terence/Documents/terence-vibe-projects/venlidate/lib/utils/benchmarks.ts
+  13:11  warning  'currentMonth' is assigned a value but never used  @typescript-eslint/no-unused-vars
+
+/Users/terence/Documents/terence-vibe-projects/venlidate/scripts/verify-build.js
+  8:10  warning  'error' is defined but never used  @typescript-eslint/no-unused-vars
+
+✖ 12 problems (4 errors, 8 warnings)
+

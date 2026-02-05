@@ -1,8 +1,9 @@
 import Link from 'next/link'
 import { getUserIdeas } from '@/app/actions/ideas'
+import { IdeaWithValidation } from '@/types/validations'
 import { Card, CardContent } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
-import { Plus, Activity, Sparkles, Lock } from 'lucide-react'
+import { Plus, Sparkles, Lock } from 'lucide-react'
 import { IdeaCard } from '@/components/features/idea-card'
 import { CompareIdeasButton } from '@/components/features/compare-ideas-button'
 import { getUserTier, TIER_LIMITS } from '@/lib/utils/subscriptions'
@@ -22,9 +23,9 @@ export default async function DashboardPage() {
         )
     }
 
-    const ideas = result.data || []
-    const validatedIdeas = ideas.filter(idea => idea.status === 'validated' && !(idea as any).isArchived)
-    const archivedIdeas = ideas.filter(idea => (idea as any).isArchived)
+    const ideas = (result.data || []) as IdeaWithValidation[]
+    const validatedIdeas = ideas.filter(idea => idea.status === 'validated' && !idea.isArchived)
+    const archivedIdeas = ideas.filter(idea => idea.isArchived)
     const tier = await getUserTier(user.id)
     const tierLimit = TIER_LIMITS[tier].maxComparisonIdeas
 
@@ -32,8 +33,8 @@ export default async function DashboardPage() {
     // User requested: "Mark ideas as 'archived' if all validations are inaccessible"
     const sortedIdeas = [...ideas].sort((a, b) => {
         // Priority: Validated (active) > Draft/Validating > Archived
-        const aStatus = (a as any).isArchived ? -1 : a.status === 'validated' ? 1 : 0
-        const bStatus = (b as any).isArchived ? -1 : b.status === 'validated' ? 1 : 0
+        const aStatus = a.isArchived ? -1 : a.status === 'validated' ? 1 : 0
+        const bStatus = b.isArchived ? -1 : b.status === 'validated' ? 1 : 0
 
         if (aStatus !== bStatus) {
             return bStatus - aStatus
@@ -55,7 +56,7 @@ export default async function DashboardPage() {
                 </div>
                 <div className="flex items-center gap-3">
                     <CompareIdeasButton
-                        validatedIdeas={validatedIdeas as any}
+                        validatedIdeas={validatedIdeas}
                         tierLimit={tierLimit}
                     />
                     <Link href="/new-idea">
@@ -87,7 +88,7 @@ export default async function DashboardPage() {
             ) : (
                 <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
                     {sortedIdeas.map((idea) => (
-                        <IdeaCard key={idea.id} idea={idea as any} />
+                        <IdeaCard key={idea.id} idea={idea} />
                     ))}
                 </div>
             )}
@@ -105,7 +106,7 @@ export default async function DashboardPage() {
                                 <h2 className="text-3xl font-bold text-slate-900">Restore your past validations</h2>
                                 <p className="text-muted-foreground text-lg max-w-xl">
                                     You have {archivedIdeas.length} archived reports from {
-                                        Array.from(new Set(archivedIdeas.map(i => new Date((i as any).archived_at).toLocaleDateString(undefined, { month: 'short', year: 'numeric' })))).join(', ')
+                                        Array.from(new Set(archivedIdeas.map(i => new Date(i.archived_at!).toLocaleDateString(undefined, { month: 'short', year: 'numeric' })))).join(', ')
                                     }.
                                     Upgrade to Pro to restore all your past validations and never lose an insight.
                                 </p>

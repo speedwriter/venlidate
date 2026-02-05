@@ -32,19 +32,10 @@ import {
 } from "@/components/ui/alert-dialog"
 import { deleteIdea } from "@/app/actions/ideas"
 
+import { IdeaWithValidation } from "@/types/validations"
+
 interface IdeaCardProps {
-    idea: {
-        id: string
-        title: string
-        problem?: string
-        status: string
-        created_at: string
-        isArchived?: boolean
-        latest_validation?: {
-            overall_score: number
-            traffic_light: 'red' | 'yellow' | 'green'
-        } | null
-    }
+    idea: IdeaWithValidation
 }
 
 export function IdeaCard({ idea }: IdeaCardProps) {
@@ -90,8 +81,8 @@ export function IdeaCard({ idea }: IdeaCardProps) {
                                 Archived
                             </Badge>
                         ) : isValidated ? (
-                            <Badge className={`${getScoreColor(idea.latest_validation!.overall_score)} font-bold px-2 py-0.5 border shadow-none`} variant="secondary">
-                                {idea.latest_validation!.overall_score}
+                            <Badge className={`${getScoreColor(idea.latest_validation!.overallScore)} font-bold px-2 py-0.5 border shadow-none`} variant="secondary">
+                                {idea.latest_validation!.overallScore}
                             </Badge>
                         ) : (
                             <Badge variant="outline" className="text-muted-foreground bg-slate-50 font-medium">

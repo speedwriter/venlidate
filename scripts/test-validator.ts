@@ -61,8 +61,8 @@ async function runTest() {
 
         console.log(`\n  Time to Revenue: ${result.timeToRevenueScore.score}/10`);
         console.log(`    → ${result.timeToRevenueScore.reasoning}`);
-        if ((result.timeToRevenueScore as any).estimate) {
-            console.log(`    ⏱️  Estimate: ${(result.timeToRevenueScore as any).estimate}`);
+        if ((result.timeToRevenueScore as unknown as { estimate?: string }).estimate) {
+            console.log(`    ⏱️  Estimate: ${(result.timeToRevenueScore as unknown as { estimate?: string }).estimate}`);
         }
 
         console.log(`\n  Scalability: ${result.scalabilityScore.score}/10`);

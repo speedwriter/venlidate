@@ -2,10 +2,11 @@ import jsPDF from 'jspdf';
 import autoTable from 'jspdf-autotable';
 import { Tables } from '@/types/database';
 
-type Validation = Tables<'validations'>;
+import { ValidationResult } from '@/types/validations';
+
 type Idea = Tables<'ideas'>;
 
-export async function exportReportToPDF(idea: Idea, validation: Validation): Promise<void> {
+export async function exportReportToPDF(idea: Idea, validation: ValidationResult): Promise<void> {
     try {
         const doc = new jsPDF({
             orientation: 'portrait',
@@ -14,7 +15,8 @@ export async function exportReportToPDF(idea: Idea, validation: Validation): Pro
         });
 
         // Helper for colors
-        const colors = {
+        // Helper for colors
+        const colors: Record<string, [number, number, number]> = {
             primary: [59, 130, 246], // #3b82f6
             text: [31, 41, 55],    // #1f2937
             muted: [107, 114, 128], // #6b7280
@@ -40,9 +42,11 @@ export async function exportReportToPDF(idea: Idea, validation: Validation): Pro
         doc.setTextColor(colors.muted[0], colors.muted[1], colors.muted[2]);
         doc.text('Startup Idea Validation Report', 20, 33);
 
-        const dateStr = validation.created_at
-            ? new Date(validation.created_at).toLocaleDateString('en-US', { dateStyle: 'long' })
-            : 'N/A';
+        const dateStr = 'N/A'; // validation.created_at is missing on ValidationResult
+        /*
+        validation.created_at
+        ? new Date(validation.created_at).toLocaleDateString('en-US', { dateStyle: 'long' })
+        : */
         doc.setFontSize(10);
         doc.text(`Generated on ${dateStr}`, 20, 39);
 
@@ -56,9 +60,9 @@ export async function exportReportToPDF(idea: Idea, validation: Validation): Pro
         doc.text('OVERALL SCORE', 20, 55);
 
         doc.setFontSize(48);
-        const scoreColor = getScoreColor(validation.overall_score);
+        const scoreColor = getScoreColor(validation.overallScore);
         doc.setTextColor(scoreColor[0], scoreColor[1], scoreColor[2]);
-        doc.text(`${validation.overall_score}`, 20, 75);
+        doc.text(`${validation.overallScore}`, 20, 75);
 
         doc.setFontSize(18);
         doc.setTextColor(colors.muted[0], colors.muted[1], colors.muted[2]);
@@ -76,23 +80,24 @@ export async function exportReportToPDF(idea: Idea, validation: Validation): Pro
             red: 'STOP - Major Pivot Needed',
         };
 
-        const lightColor = (lightColors[validation.traffic_light] || colors.muted) as [number, number, number];
+        const lightColor = (lightColors[validation.trafficLight] || colors.muted) as [number, number, number];
         doc.setFillColor(lightColor[0], lightColor[1], lightColor[2]);
         doc.roundedRect(80, 60, 100, 15, 2, 2, 'F');
         doc.setFontSize(12);
         doc.setTextColor(255, 255, 255);
         doc.setFont('helvetica', 'bold');
-        doc.text(lightLabel[validation.traffic_light] || 'Status Unknown', 130, 70, { align: 'center' });
+        doc.text(lightLabel[validation.trafficLight] || 'Status Unknown', 130, 70, { align: 'center' });
 
         // 3. Dimensions Table
+        // 3. Dimensions Table
         const dimensionRows = [
-            ['Painkiller', `${validation.painkiller_score}/100`, validation.painkiller_reasoning],
-            ['Revenue Model', `${validation.revenue_model_score}/100`, validation.revenue_model_reasoning],
-            ['Acquisition', `${validation.acquisition_score}/100`, validation.acquisition_reasoning],
-            ['Moat', `${validation.moat_score}/100`, validation.moat_reasoning],
-            ['Founder Fit', `${validation.founder_fit_score}/100`, validation.founder_fit_reasoning],
-            ['Time to Revenue', `${validation.time_to_revenue_score}/100`, validation.time_to_revenue_reasoning],
-            ['Scalability', `${validation.scalability_score}/100`, validation.scalability_reasoning],
+            ['Painkiller', `${validation.painkillerScore.score}/100`, validation.painkillerScore.reasoning],
+            ['Revenue Model', `${validation.revenueModelScore.score}/100`, validation.revenueModelScore.reasoning],
+            ['Acquisition', `${validation.acquisitionScore.score}/100`, validation.acquisitionScore.reasoning],
+            ['Moat', `${validation.moatScore.score}/100`, validation.moatScore.reasoning],
+            ['Founder Fit', `${validation.founderFitScore.score}/100`, validation.founderFitScore.reasoning],
+            ['Time to Revenue', `${validation.timeToRevenueScore.score}/100`, validation.timeToRevenueScore.reasoning],
+            ['Scalability', `${validation.scalabilityScore.score}/100`, validation.scalabilityScore.reasoning],
         ];
 
         autoTable(doc, {
@@ -110,7 +115,7 @@ export async function exportReportToPDF(idea: Idea, validation: Validation): Pro
         });
 
         // 4. Insights Section
-        let currentY = (doc as any).lastAutoTable.finalY + 15;
+        let currentY = ((doc as unknown as { lastAutoTable: { finalY: number } }).lastAutoTable.finalY) + 15;
 
         // Check if we need a new page
         if (currentY > 240) {
@@ -119,7 +124,7 @@ export async function exportReportToPDF(idea: Idea, validation: Validation): Pro
         }
 
         // Red Flags
-        const redFlags = (validation.red_flags as string[]) || [];
+        const redFlags = validation.redFlags || [];
         if (redFlags.length > 0) {
             doc.setFontSize(14);
             doc.setFont('helvetica', 'bold');
@@ -139,7 +144,8 @@ export async function exportReportToPDF(idea: Idea, validation: Validation): Pro
         }
 
         // Comparable Companies
-        const comps = (validation.comparable_companies as any[]) || [];
+        type ComparableCompany = { name: string; outcome: string; similarity: string };
+        const comps = (validation.comparableCompanies as unknown as ComparableCompany[]) || [];
         if (comps.length > 0) {
             if (currentY > 240) { doc.addPage(); currentY = 25; }
             doc.setFontSize(14);
@@ -160,7 +166,8 @@ export async function exportReportToPDF(idea: Idea, validation: Validation): Pro
         }
 
         // Recommendations
-        const recs = (validation.recommendations as string[]) || [];
+        // Recommendations
+        const recs = validation.recommendations || [];
         if (recs.length > 0) {
             if (currentY > 240) { doc.addPage(); currentY = 25; }
             doc.setFontSize(14);
@@ -180,7 +187,7 @@ export async function exportReportToPDF(idea: Idea, validation: Validation): Pro
         }
 
         // 5. Footer (Page numbers and branding)
-        const pageCount = (doc as any).internal.getNumberOfPages();
+        const pageCount = (doc as unknown as { internal: { getNumberOfPages: () => number } }).internal.getNumberOfPages();
         for (let i = 1; i <= pageCount; i++) {
             doc.setPage(i);
             doc.setFontSize(8);

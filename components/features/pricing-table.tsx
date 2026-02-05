@@ -166,7 +166,7 @@ export function PricingTable({ currentTier }: PricingTableProps) {
                     </div>
                     <div className="space-y-2">
                         <h3 className="font-semibold text-lg">What happens to my data if I downgrade?</h3>
-                        <p className="text-muted-foreground">Your reports are preserved, but access might be limited based on your new tier's storage policy.</p>
+                        <p className="text-muted-foreground">Your reports are preserved, but access might be limited based on your new tier&apos;s storage policy.</p>
                     </div>
                 </div>
             </div>

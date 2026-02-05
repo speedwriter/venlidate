@@ -5,8 +5,7 @@ import { useRouter, useSearchParams } from 'next/navigation'
 import Link from 'next/link'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
-import { Badge } from '@/components/ui/badge'
-import { Plus, Check, ChevronRight, X, AlertCircle } from 'lucide-react'
+import { Plus, Check, ChevronRight } from 'lucide-react'
 import { TrafficLight } from '@/components/features/traffic-light'
 import {
     AlertDialog,
@@ -21,20 +20,22 @@ import {
 } from '@/components/ui/alert-dialog'
 import { cn } from '@/lib/utils'
 
+import { IdeaWithValidation } from '@/types/validations'
+
 interface ComparisonViewProps {
-    ideas: any[] // Array of ideas with latest validations
-    allValidatedIdeas: any[] // All validated ideas for selection
+    ideas: IdeaWithValidation[]
+    allValidatedIdeas: IdeaWithValidation[]
     tierLimit: number
 }
 
 const DIMENSIONS = [
-    { key: 'painkiller_score', label: 'Painkiller' },
-    { key: 'revenue_model_score', label: 'Revenue Model' },
-    { key: 'acquisition_score', label: 'User Acquisition' },
-    { key: 'moat_score', label: 'Moat' },
-    { key: 'founder_fit_score', label: 'Founder Fit' },
-    { key: 'time_to_revenue_score', label: 'Time to Revenue' },
-    { key: 'scalability_score', label: 'Scalability' },
+    { key: 'painkillerScore', label: 'Painkiller' },
+    { key: 'revenueModelScore', label: 'Revenue Model' },
+    { key: 'acquisitionScore', label: 'User Acquisition' },
+    { key: 'moatScore', label: 'Moat' },
+    { key: 'founderFitScore', label: 'Founder Fit' },
+    { key: 'timeToRevenueScore', label: 'Time to Revenue' },
+    { key: 'scalabilityScore', label: 'Scalability' },
 ]
 
 export function ComparisonView({ ideas, allValidatedIdeas, tierLimit }: ComparisonViewProps) {
@@ -65,7 +66,12 @@ export function ComparisonView({ ideas, allValidatedIdeas, tierLimit }: Comparis
     }
 
     const getMaxScoreForDimension = (dimKey: string) => {
-        return Math.max(...ideas.map(idea => idea.latest_validation?.[dimKey] || 0))
+        return Math.max(...ideas.map(idea => {
+            const validation = idea.latest_validation;
+            if (!validation) return 0;
+            const dimension = validation[dimKey as keyof typeof validation] as { score: number } | undefined;
+            return dimension?.score || 0;
+        }))
     }
 
     return (
@@ -107,7 +113,7 @@ export function ComparisonView({ ideas, allValidatedIdeas, tierLimit }: Comparis
                                 >
                                     <div className="flex-1 min-w-0">
                                         <h4 className="font-semibold truncate">{idea.title}</h4>
-                                        <p className="text-xs text-muted-foreground">Score: {idea.latest_validation?.overall_score || 'N/A'}</p>
+                                        <p className="text-xs text-muted-foreground">Score: {idea.latest_validation?.overallScore || 'N/A'}</p>
                                     </div>
                                     <div className={cn(
                                         "h-6 w-6 rounded-full border-2 flex items-center justify-center transition-all",
@@ -162,9 +168,9 @@ export function ComparisonView({ ideas, allValidatedIdeas, tierLimit }: Comparis
                             <Card key={idea.id} className="relative overflow-hidden flex flex-col h-full border-2 transition-all hover:shadow-lg">
                                 <CardHeader className="pb-4">
                                     <div className="flex justify-between items-start mb-2">
-                                        <TrafficLight trafficLight={validation.traffic_light} />
+                                        <TrafficLight trafficLight={validation.trafficLight} />
                                         <div className="text-3xl font-black text-slate-900 leading-none">
-                                            {validation.overall_score}
+                                            {validation.overallScore}
                                         </div>
                                     </div>
                                     <CardTitle className="line-clamp-2 min-h-[3rem]">{idea.title}</CardTitle>
@@ -172,7 +178,8 @@ export function ComparisonView({ ideas, allValidatedIdeas, tierLimit }: Comparis
                                 <CardContent className="space-y-6 flex-1">
                                     <div className="space-y-2">
                                         {DIMENSIONS.map(dim => {
-                                            const score = validation[dim.key] || 0
+                                            const dimension = validation[dim.key as keyof typeof validation] as { score: number } | undefined
+                                            const score = dimension?.score || 0
                                             const isBest = ideas.length > 1 && score === getMaxScoreForDimension(dim.key) && score > 0
 
                                             return (

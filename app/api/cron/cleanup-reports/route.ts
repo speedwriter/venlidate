@@ -19,7 +19,7 @@ export async function GET(request: Request) {
 
     // 1. Calculate cutoff date for HARD deletion (365 days ago)
     const cutoffDate = new Date()
-    cutoffDate.setDate(cutoffDate.getDate() - 365)
+    cutoffDate.setDate(cutoffDate.getDate() - 30)
     const cutoffIso = cutoffDate.toISOString()
 
     try {

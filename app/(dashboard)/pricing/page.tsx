@@ -21,7 +21,7 @@ export default async function PricingPage() {
                 </h1>
                 <p className="max-w-[700px] text-lg text-muted-foreground">
                     Get the data-driven insights you need to validate your product-market fit.
-                    Start for free, upgrade when you're ready to scale.
+                    Start for free, upgrade when you&apos;re ready to scale.
                 </p>
             </div>
 
