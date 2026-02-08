@@ -3,7 +3,8 @@ import { redirect } from 'next/navigation'
 import Link from 'next/link'
 import { Button } from '@/components/ui/button'
 import { signOut } from '@/app/actions/auth'
-import { LayoutDashboard, PlusCircle, CreditCard, LogOut, Settings } from 'lucide-react'
+import { LayoutDashboard, PlusCircle, CreditCard, LogOut, Settings, ShieldCheck } from 'lucide-react'
+import { KarmaDisplay } from '@/components/features/karma-display'
 
 export default async function DashboardLayout({
     children,
@@ -19,6 +20,14 @@ export default async function DashboardLayout({
     if (!user) {
         redirect('/login')
     }
+
+    // Fetch karma for the header
+    const { getUserKarma } = await import('@/app/actions/shared-ideas')
+    const karma = await getUserKarma(user.id)
+
+    // Check if user is admin
+    const { isUserAdmin } = await import('@/lib/utils/admin')
+    const isAdmin = await isUserAdmin(user.id)
 
     return (
         <div className="min-h-screen flex flex-col bg-slate-50">
@@ -53,10 +62,19 @@ export default async function DashboardLayout({
                                     Settings
                                 </Button>
                             </Link>
+                            {isAdmin && (
+                                <Link href="/admin/shared-ideas">
+                                    <Button variant="ghost" size="sm" className="gap-2 text-indigo-600 hover:text-indigo-700 hover:bg-indigo-50">
+                                        <ShieldCheck className="h-4 w-4" />
+                                        Admin
+                                    </Button>
+                                </Link>
+                            )}
                         </nav>
                     </div>
 
                     <div className="flex items-center gap-4">
+                        <KarmaDisplay userId={user.id} initialData={karma} />
                         <span className="text-sm text-gray-600 hidden sm:inline-block">
                             {user.email}
                         </span>

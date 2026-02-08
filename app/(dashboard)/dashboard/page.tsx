@@ -6,7 +6,7 @@ import { Button } from '@/components/ui/button'
 import { Plus, Sparkles, Lock } from 'lucide-react'
 import { IdeaCard } from '@/components/features/idea-card'
 import { CompareIdeasButton } from '@/components/features/compare-ideas-button'
-import { getUserTier, TIER_LIMITS } from '@/lib/utils/subscriptions'
+import { getUserTier, TIER_LIMITS, checkValidationQuota } from '@/lib/utils/subscriptions'
 import { createClient } from '@/lib/supabase/server'
 
 export default async function DashboardPage() {
@@ -27,6 +27,7 @@ export default async function DashboardPage() {
     const validatedIdeas = ideas.filter(idea => idea.status === 'validated' && !idea.isArchived)
     const archivedIdeas = ideas.filter(idea => idea.isArchived)
     const tier = await getUserTier(user.id)
+    const quota = await checkValidationQuota(user.id)
     const tierLimit = TIER_LIMITS[tier].maxComparisonIdeas
 
     // Sort ideas: Validated (not archived) first, then Draft/Validating, then Archived?
@@ -68,6 +69,30 @@ export default async function DashboardPage() {
                 </div>
             </div>
 
+            {tier === 'free' && !quota.allowed && (
+                <div className="bg-gradient-to-r from-blue-50 to-indigo-50 border border-blue-100 rounded-2xl p-6 relative overflow-hidden mb-8">
+                    <div className="absolute top-0 right-0 w-64 h-64 bg-blue-100/50 rounded-full blur-3xl -mr-32 -mt-32 pointer-events-none" />
+                    <div className="relative flex flex-col sm:flex-row items-center justify-between gap-6">
+                        <div className="space-y-2 text-center sm:text-left">
+                            <h3 className="text-lg font-bold text-blue-900 flex items-center gap-2 justify-center sm:justify-start">
+                                <Sparkles className="h-5 w-5 text-blue-600" />
+                                Out of validations?
+                            </h3>
+                            <p className="text-blue-700">
+                                Share your validated ideas with the community to earn <span className="font-bold">free validation credits</span>!
+                            </p>
+                        </div>
+                        <Link href="/dashboard#ideas-grid">
+                            <Button
+                                className="bg-blue-600 hover:bg-blue-700 text-white shadow-md hover:shadow-lg transition-all rounded-xl whitespace-nowrap"
+                            >
+                                View My Ideas
+                            </Button>
+                        </Link>
+                    </div>
+                </div>
+            )}
+
             {sortedIdeas.length === 0 ? (
                 <Card className="border-2 border-dashed border-slate-200 bg-slate-50/50 hover:bg-slate-50 transition-colors">
                     <CardContent className="flex flex-col items-center justify-center py-20 text-center">
@@ -86,7 +111,7 @@ export default async function DashboardPage() {
                     </CardContent>
                 </Card>
             ) : (
-                <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
+                <div id="ideas-grid" className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
                     {sortedIdeas.map((idea) => (
                         <IdeaCard key={idea.id} idea={idea} />
                     ))}

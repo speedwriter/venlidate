@@ -19,6 +19,7 @@ export type QuotaCheck = {
     allowed: boolean
     remaining: number | 'unlimited'
     error?: string
+    usingCredit?: boolean
 }
 
 export type SubscriptionLimits = {

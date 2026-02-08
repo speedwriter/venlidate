@@ -18,7 +18,7 @@ import {
 import { Tables } from "@/types/database";
 import { ValidationResult } from "@/types/validations";
 import { Badge } from "@/components/ui/badge";
-import { AlertTriangle, CheckCircle2, TrendingUp, History, Lightbulb, BarChart3, ChevronDown } from "lucide-react";
+import { AlertTriangle, CheckCircle2, TrendingUp, History, Lightbulb, BarChart3, ChevronDown, ExternalLink } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useState, useEffect } from "react";
 import {
@@ -37,6 +37,7 @@ import {
     TooltipProvider,
     TooltipTrigger,
 } from "@/components/ui/tooltip";
+import { ShareIdeaModal } from "./share-idea-modal";
 
 
 
@@ -45,6 +46,8 @@ interface ValidationReportProps {
     idea: Tables<"ideas"> & { isArchived?: boolean };
     history?: ValidationResult[];
     percentile?: number;
+    isShared?: boolean;
+    sharedIdeaId?: string;
 }
 
 const SnapshotField = ({ label, value }: { label: string, value: string }) => {
@@ -75,11 +78,22 @@ const SnapshotField = ({ label, value }: { label: string, value: string }) => {
     );
 };
 
-export function ValidationReport({ validation, idea, history = [], percentile }: ValidationReportProps) {
+export function ValidationReport({
+    validation,
+    idea,
+    history = [],
+    percentile,
+    isShared: initialIsShared = false,
+    sharedIdeaId: initialSharedIdeaId
+}: ValidationReportProps) {
     const [mounted, setMounted] = useState(false);
     const [canExport, setCanExport] = useState<boolean | null>(null);
     const [isExporting, setIsExporting] = useState(false);
     const [isActuallyArchived] = useState(idea.isArchived || false);
+
+    const [isShared, setIsShared] = useState(initialIsShared);
+    const [sharedIdeaId, setSharedIdeaId] = useState(initialSharedIdeaId);
+    const [isUnsharing, setIsUnsharing] = useState(false);
 
     useEffect(() => {
         setMounted(true);
@@ -109,6 +123,29 @@ export function ValidationReport({ validation, idea, history = [], percentile }:
             });
         } finally {
             setIsExporting(false);
+        }
+    };
+
+    const handleUnshare = async () => {
+        if (!sharedIdeaId) return;
+        setIsUnsharing(true);
+        try {
+            const { unshareIdea } = await import("@/app/actions/shared-ideas");
+            const result = await unshareIdea(sharedIdeaId);
+            if (result.success) {
+                setIsShared(false);
+                setSharedIdeaId(undefined);
+                toast.success("Idea unshared", {
+                    description: "It has been removed from the community showcase.",
+                });
+            } else {
+                toast.error(result.error || "Failed to unshare idea");
+            }
+        } catch (error) {
+            console.error("Unshare failed:", error);
+            toast.error("Unshare failed");
+        } finally {
+            setIsUnsharing(false);
         }
     };
 
@@ -206,8 +243,38 @@ export function ValidationReport({ validation, idea, history = [], percentile }:
                         </div>
                     </div>
 
-                    {/* Export Button */}
+                    {/* Share Button / Shared Status */}
                     <div className="flex items-center gap-2">
+                        {isShared ? (
+                            <div className="flex items-center gap-2">
+                                <Link href="/ideas" className="no-underline">
+                                    <Badge variant="secondary" className="bg-green-100 text-green-700 hover:bg-green-200 border-green-200 gap-1.5 py-1.5 px-3 rounded-xl cursor-pointer">
+                                        <CheckCircle2 className="h-3.5 w-3.5" />
+                                        Shared with Community
+                                        <ExternalLink className="h-3 w-3 ml-0.5 opacity-50" />
+                                    </Badge>
+                                </Link>
+                                <Button
+                                    variant="ghost"
+                                    size="sm"
+                                    onClick={handleUnshare}
+                                    disabled={isUnsharing}
+                                    className="h-9 px-3 text-xs font-bold text-muted-foreground hover:text-red-600 hover:bg-red-50 rounded-xl transition-colors"
+                                >
+                                    {isUnsharing ? <Loader2 className="h-3 w-3 animate-spin mr-1" /> : null}
+                                    Unshare
+                                </Button>
+                            </div>
+                        ) : (validation.id ? (
+                            <ShareIdeaModal
+                                validationId={validation.id}
+                                ideaTitle={idea.title}
+                                onSuccess={() => setIsShared(true)}
+                            />
+                        ) : null)}
+
+                        <div className="w-px h-8 bg-border/50 mx-1" />
+
                         <TooltipProvider>
                             <Tooltip>
                                 <TooltipTrigger asChild>
@@ -218,7 +285,7 @@ export function ValidationReport({ validation, idea, history = [], percentile }:
                                             onClick={handleExport}
                                             disabled={canExport === false || isExporting}
                                             className={cn(
-                                                "gap-2 h-10 px-4 font-bold transition-all",
+                                                "gap-2 h-10 px-4 font-bold transition-all rounded-xl",
                                                 canExport === false && "opacity-50 grayscale"
                                             )}
                                         >

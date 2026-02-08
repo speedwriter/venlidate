@@ -22,6 +22,7 @@ function mapValidationRowToResult(row: Tables<'validations'>): ValidationResult 
         comparableCompanies: row.comparable_companies as unknown[] as { name: string, outcome: 'success' | 'failure', similarity: string }[],
         recommendations: row.recommendations as string[],
         created_at: row.created_at || new Date().toISOString(),
+        id: row.id,
         ideaSnapshot: row.idea_snapshot as IdeaFormData | undefined,
     }
 }
@@ -232,7 +233,7 @@ export async function submitIdeaForValidation(ideaId: string) {
                 recommendations: validation.recommendations,
                 model_used: modelUsed,
                 processing_time_ms: processingTimeMs,
-                idea_snapshot: ideaData
+                used_credit: quota.usingCredit || false
             })
 
         if (validationError) {
@@ -250,10 +251,26 @@ export async function submitIdeaForValidation(ideaId: string) {
             console.error('Failed to update idea status:', updateError)
         }
 
+        let successMessage: string | undefined
+
+        // Consume free credit if used
+        if (quota.usingCredit && typeof quota.remaining === 'number') {
+            const { error: karmaError } = await supabase
+                .from('user_karma')
+                .update({ free_validation_credits: Math.max(0, quota.remaining - 1) })
+                .eq('user_id', user.id)
+
+            if (!karmaError) {
+                successMessage = "Used 1 free validation credit"
+            } else {
+                console.error('Failed to consume free credit:', karmaError)
+            }
+        }
+
         revalidatePath('/dashboard')
         revalidatePath(`/dashboard/${ideaId}`)
 
-        return { success: true, data: validation }
+        return { success: true, data: validation, message: successMessage }
     } catch (error) {
         console.error('Validation process failed:', error)
         return { success: false, error: error instanceof Error ? error.message : 'An error occurred during validation' }

@@ -1,6 +1,7 @@
 import { notFound, redirect } from "next/navigation"
 import Link from "next/link"
 import { getFullIdea } from "@/app/actions/ideas"
+import { createClient } from "@/lib/supabase/server"
 import { ValidationReport } from "@/components/features/validation-report"
 import { RevalidateButton } from "@/components/features/revalidate-button"
 import { calculatePercentile } from "@/lib/utils/benchmarks"
@@ -39,8 +40,20 @@ export default async function IdeaDetailPage({ params }: IdeaDetailPageProps) {
     const history = validations.slice(1)
 
     let percentile = 0
+    let sharedIdea = null
+
     if (latestValidation) {
         percentile = await calculatePercentile(latestValidation.overall_score)
+
+        // Check if this validation is already shared
+        const supabase = await createClient()
+        const { data: shareData } = await supabase
+            .from('shared_ideas')
+            .select('id, status')
+            .eq('validation_id', latestValidation.id)
+            .single()
+
+        sharedIdea = shareData
     }
 
     return (
@@ -102,6 +115,8 @@ export default async function IdeaDetailPage({ params }: IdeaDetailPageProps) {
                     validation={latestValidation}
                     history={history}
                     percentile={percentile}
+                    isShared={!!sharedIdea}
+                    sharedIdeaId={sharedIdea?.id}
                 />
             )
             }

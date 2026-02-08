@@ -21,6 +21,7 @@ export type ValidationResult = {
     }>
     recommendations: string[]
     created_at?: string
+    id?: string
     ideaSnapshot?: IdeaFormData
 }
 

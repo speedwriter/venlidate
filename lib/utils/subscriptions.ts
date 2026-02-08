@@ -83,6 +83,24 @@ export const getUserProfile = cache(async (userId: string) => {
  * This counts unique ideas validated within the current month.
  */
 export async function checkValidationQuota(userId: string, ideaId?: string): Promise<QuotaCheck> {
+    const supabase = await createClient()
+
+    // First, check if user has free validation credits
+    const { data: karma } = await supabase
+        .from('user_karma')
+        .select('free_validation_credits')
+        .eq('user_id', userId)
+        .single()
+
+    if (karma && (karma.free_validation_credits ?? 0) > 0) {
+        return {
+            allowed: true,
+            remaining: karma.free_validation_credits!,
+            usingCredit: true
+        }
+    }
+
+    // If no credits, fall back to tier-based quota
     const tier = await getUserTier(userId)
     const limits = TIER_LIMITS[tier]
 
@@ -90,7 +108,6 @@ export async function checkValidationQuota(userId: string, ideaId?: string): Pro
         return { allowed: true, remaining: 'unlimited' }
     }
 
-    const supabase = await createClient()
     const startOfMonth = new Date()
     startOfMonth.setDate(1)
     startOfMonth.setHours(0, 0, 0, 0)
@@ -100,6 +117,7 @@ export async function checkValidationQuota(userId: string, ideaId?: string): Pro
         .from('validations')
         .select('idea_id')
         .eq('user_id', userId)
+        .eq('used_credit', false) // Only count validations that didn't use a free credit
         .gte('created_at', startOfMonth.toISOString())
 
     if (error) {
@@ -123,7 +141,7 @@ export async function checkValidationQuota(userId: string, ideaId?: string): Pro
     return {
         allowed: false,
         remaining: 0,
-        error: 'Monthly validation limit reached. Upgrade to Pro for more validations.'
+        error: 'Monthly validation limit reached. Share an idea to earn free credits or upgrade to Pro.'
     }
 }
 
@@ -268,6 +286,7 @@ export async function getMonthlyUsage(userId: string): Promise<number> {
         .from('validations')
         .select('idea_id')
         .eq('user_id', userId)
+        .eq('used_credit', false) // Only count quota validations
         .gte('created_at', startOfMonth.toISOString())
 
     if (error) {
