@@ -102,10 +102,11 @@ export function SubscriptionCard({
             </CardContent>
             <CardFooter>
                 {tier === 'free' ? (
-                    <Button className="w-full bg-blue-600 hover:bg-blue-700" onClick={() => window.location.href = '/pricing'}>
-                        Upgrade to Pro
+                    <Button className="w-full bg-slate-200 text-slate-500 cursor-not-allowed" disabled>
+                        Upgrade Coming Soon
                     </Button>
                 ) : (
+
                     <Button variant="outline" className="w-full" onClick={handleManage}>
                         Manage Subscription
                     </Button>

@@ -204,12 +204,16 @@ export function ValidationReport({
                                 </p>
                             </div>
                         </div>
-                        <Link href="/pricing" className="w-full md:w-auto">
+                        {/* <Link href="/pricing" className="w-full md:w-auto">
                             <Button size="lg" className="w-full bg-amber-600 hover:bg-amber-700 text-white font-bold px-8 rounded-2xl shadow-lg hover:shadow-xl transition-all gap-2">
                                 <Sparkles className="h-5 w-5 text-amber-200" />
                                 Upgrade to Pro to Restore
                             </Button>
-                        </Link>
+                        </Link> */}
+                        <Button size="lg" className="w-full bg-slate-200 text-slate-500 font-bold px-8 rounded-2xl cursor-not-allowed" disabled>
+                            Upgrade Coming Soon
+                        </Button>
+
                     </div>
                 </div>
             )}

@@ -101,14 +101,12 @@ export function CompareIdeasButton({ validatedIdeas, tierLimit }: CompareIdeasBu
                     {selectedIds.length > tierLimit && (
                         <Button
                             variant="secondary"
-                            className="mr-auto"
-                            onClick={() => {
-                                setIsOpen(false)
-                                router.push('/pricing')
-                            }}
+                            className="mr-auto cursor-not-allowed opacity-50"
+                            disabled
                         >
-                            Upgrade Plan
+                            Upgrade Coming Soon
                         </Button>
+
                     )}
                     <div className="flex gap-2">
                         <AlertDialogCancel>Cancel</AlertDialogCancel>

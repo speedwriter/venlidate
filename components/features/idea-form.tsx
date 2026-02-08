@@ -451,10 +451,11 @@ export function IdeaForm({ initialData, ideaId }: IdeaFormProps) {
                     </AlertDialogHeader>
                     <AlertDialogFooter>
                         <AlertDialogCancel>Maybe later</AlertDialogCancel>
-                        <AlertDialogAction onClick={() => router.push('/pricing')}>
-                            View Pricing
+                        <AlertDialogAction disabled className="bg-slate-200 text-slate-500 cursor-not-allowed">
+                            Upgrade Coming Soon
                         </AlertDialogAction>
                     </AlertDialogFooter>
+
                 </AlertDialogContent>
             </AlertDialog>
         </Card>

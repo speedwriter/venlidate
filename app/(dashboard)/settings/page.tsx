@@ -151,11 +151,15 @@ export default async function SettingsPage() {
                                     Get unlimited iterations, PDF exports, and more validations with our Pro plan.
                                 </p>
                             </div>
-                            <Link href="/pricing" className="block w-full">
-                                <Button className="w-full bg-white text-blue-600 hover:bg-blue-50">
-                                    View Pricing
-                                </Button>
-                            </Link>
+                            {/* Pricing hidden as per user request */}
+                            {/* 
+<Link href="/pricing" className="block w-full">
+    <Button className="w-full bg-white text-blue-600 hover:bg-blue-50">
+        View Pricing
+    </Button>
+</Link> 
+*/}
+
                         </div>
                     )}
                 </div>

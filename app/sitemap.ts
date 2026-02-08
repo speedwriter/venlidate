@@ -8,7 +8,7 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     const routes = [
         '',
         '/ideas',
-        '/pricing',
+        /* '/pricing', */
         '/login',
     ].map((route) => ({
         url: `https://venlidate.com${route}`,

@@ -173,11 +173,18 @@ export function IdeaDetailModal({
                                                         <Lock className="h-5 w-5 text-slate-400" />
                                                         <span className="text-sm font-black text-slate-800">Locked</span>
                                                     </div>
-                                                    <Link href="/pricing">
-                                                        <Button size="sm" variant="outline" className="text-[10px] h-7 font-black uppercase tracking-wider border-blue-200 text-blue-600 hover:bg-blue-50">
-                                                            {isAuthenticated ? 'Upgrade to Pro' : 'Sign Up Free'}
+                                                    {isAuthenticated ? (
+                                                        <Button size="sm" variant="outline" className="text-[10px] h-7 font-black uppercase tracking-wider border-slate-200 text-slate-500 cursor-not-allowed" disabled>
+                                                            Upgrade Coming Soon
                                                         </Button>
-                                                    </Link>
+                                                    ) : (
+                                                        <Link href="/signup">
+                                                            <Button size="sm" variant="outline" className="text-[10px] h-7 font-black uppercase tracking-wider border-blue-200 text-blue-600 hover:bg-blue-50">
+                                                                Sign Up Free
+                                                            </Button>
+                                                        </Link>
+                                                    )}
+
                                                 </div>
                                             </div>
                                         )}
@@ -195,11 +202,15 @@ export function IdeaDetailModal({
                                             <div className="p-6 bg-slate-50 border-2 border-dashed rounded-2xl text-center space-y-3">
                                                 <Lock className="h-6 w-6 text-slate-300 mx-auto" />
                                                 <p className="text-xs font-bold text-slate-500 uppercase">Available on Premium Plan</p>
-                                                <Link href="/pricing" className="inline-block">
+                                                {/* <Link href="/pricing" className="inline-block">
                                                     <Button variant="outline" size="sm" className="font-bold rounded-xl border-blue-200 text-blue-600 hover:bg-blue-50">
                                                         Upgrade to Premium
                                                     </Button>
-                                                </Link>
+                                                </Link> */}
+                                                <Button variant="outline" size="sm" className="font-bold rounded-xl border-slate-200 text-slate-500 cursor-not-allowed" disabled>
+                                                    Premium Coming Soon
+                                                </Button>
+
                                             </div>
                                         ) : (
                                             <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
@@ -243,11 +254,15 @@ export function IdeaDetailModal({
                                                 </div>
                                                 <div className="flex flex-col items-center text-center space-y-2 pt-2">
                                                     <p className="text-xs font-black text-indigo-900 uppercase">Premium Insights Locked</p>
-                                                    <Link href="/pricing">
+                                                    {/* <Link href="/pricing">
                                                         <Button className="bg-indigo-600 hover:bg-indigo-700 text-white font-bold rounded-xl h-9">
                                                             Go Premium
                                                         </Button>
-                                                    </Link>
+                                                    </Link> */}
+                                                    <Button className="bg-slate-200 text-slate-500 font-bold rounded-xl h-9 cursor-not-allowed" disabled>
+                                                        Scale Coming Soon
+                                                    </Button>
+
                                                 </div>
                                             </div>
                                         ) : (

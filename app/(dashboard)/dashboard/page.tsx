@@ -136,11 +136,15 @@ export default async function DashboardPage() {
                                     Upgrade to Pro to restore all your past validations and never lose an insight.
                                 </p>
                             </div>
-                            <Link href="/pricing">
+                            {/* <Link href="/pricing">
                                 <Button size="lg" className="bg-amber-600 hover:bg-amber-700 text-white font-bold px-10 py-7 text-lg rounded-2xl shadow-lg hover:shadow-xl transition-all gap-2">
                                     Upgrade to Pro
                                 </Button>
-                            </Link>
+                            </Link> */}
+                            <Button size="lg" className="bg-slate-200 text-slate-500 font-bold px-10 py-7 text-lg rounded-2xl cursor-not-allowed" disabled>
+                                Upgrade Coming Soon
+                            </Button>
+
                         </div>
                     </div>
                 </div>
