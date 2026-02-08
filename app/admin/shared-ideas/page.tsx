@@ -4,6 +4,7 @@ import { IdeaApprovedCard } from "@/components/features/idea-approved-card"
 import { AdminIdeaForm } from "@/components/features/admin-idea-form"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { Badge } from "@/components/ui/badge"
+import { SharedIdea } from "@/types/shared-ideas"
 
 export default async function AdminSharedIdeasPage() {
     const [pendingRes, approvedRes, rejectedRes] = await Promise.all([
@@ -45,7 +46,7 @@ export default async function AdminSharedIdeasPage() {
                 <TabsContent value="pending" className="space-y-6">
                     {pendingIdeas && pendingIdeas.length > 0 ? (
                         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                            {pendingIdeas.map((idea: any) => (
+                            {pendingIdeas.map((idea: SharedIdea) => (
                                 <IdeaPendingCard key={idea.id} sharedIdea={idea} />
                             ))}
                         </div>
@@ -60,7 +61,7 @@ export default async function AdminSharedIdeasPage() {
                 <TabsContent value="approved" className="space-y-6">
                     {approvedIdeas && approvedIdeas.length > 0 ? (
                         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                            {approvedIdeas.map((idea: any) => (
+                            {approvedIdeas.map((idea: SharedIdea) => (
                                 <IdeaApprovedCard key={idea.id} sharedIdea={idea} mode="approved" />
                             ))}
                         </div>
@@ -74,7 +75,7 @@ export default async function AdminSharedIdeasPage() {
                 <TabsContent value="rejected" className="space-y-6">
                     {rejectedIdeas && rejectedIdeas.length > 0 ? (
                         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                            {rejectedIdeas.map((idea: any) => (
+                            {rejectedIdeas.map((idea: SharedIdea) => (
                                 <IdeaApprovedCard key={idea.id} sharedIdea={idea} mode="rejected" />
                             ))}
                         </div>

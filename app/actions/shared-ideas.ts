@@ -49,7 +49,7 @@ export async function shareIdea(validationId: string, isAnonymous: boolean = tru
         return { success: false, error: 'This idea is already shared' }
     }
 
-    const idea = validation.ideas as any // Type cast because of join
+    const idea = validation.ideas as { id: string; title: string; problem: string; target_customer: string } // Type cast because of join
 
     // 3. Insert into shared_ideas
     const { data: sharedIdea, error: shareError } = await supabase
@@ -295,7 +295,7 @@ export async function approveSharedIdea(sharedIdeaId: string) {
 /**
  * Rejects a shared idea (Admin only).
  */
-export async function rejectSharedIdea(sharedIdeaId: string, reason?: string) {
+export async function rejectSharedIdea(sharedIdeaId: string) {
     const supabase = await createClient()
     const { data: { user } } = await supabase.auth.getUser()
 
@@ -463,7 +463,7 @@ export async function getSharedIdeaById(id: string) {
 export async function getUserKarma(userId: string) {
     const supabase = await createClient()
 
-    let { data, error } = await supabase
+    const { data, error } = await supabase
         .from('user_karma')
         .select('*')
         .eq('user_id', userId)

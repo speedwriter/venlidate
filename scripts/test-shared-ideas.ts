@@ -158,8 +158,9 @@ async function runTests() {
         await supabase.from('ideas').delete().eq('id', idea.id);
 
         console.log('\n🎉 ALL DATABASE LOGIC VERIFIED SUCCESSFULLY!');
-    } catch (error: any) {
-        console.error('\n❌ TEST FAILED:', error.message || error);
+    } catch (error: unknown) {
+        const message = error instanceof Error ? error.message : String(error)
+        console.error('\n❌ TEST FAILED:', message);
         process.exit(1);
     }
 }

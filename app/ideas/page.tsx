@@ -5,6 +5,13 @@ import { IdeaCard } from '@/components/features/idea-card'
 import { Button } from '@/components/ui/button'
 import { Sparkles, ArrowRight, Lock } from 'lucide-react'
 import Link from 'next/link'
+import { SharedIdea } from '@/types/shared-ideas'
+import type { Metadata } from 'next'
+
+export const metadata: Metadata = {
+    title: "Startup Idea Marketplace - Browse & Discover Validated Opportunities | Venlidate",
+    description: "Explore 200+ startup ideas validated across 7 business fundamentals. Get inspiration for your next project, see what's working, and access deep AI analysis.",
+}
 
 export const dynamic = 'force-dynamic'
 
@@ -65,17 +72,16 @@ export default async function IdeasMarketplace() {
             {/* Ideas Grid */}
             <main className="container mx-auto px-4 py-16">
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-                    {ideas && ideas.map((idea: any) => (
+                    {ideas && ideas.map((idea: SharedIdea) => (
                         <IdeaCard
                             key={idea.id}
                             idea={{
                                 ...idea,
                                 created_at: idea.created_at || new Date().toISOString(),
                                 status: 'approved'
-                            }}
+                            } as any}
                             mode="marketplace"
                             isAuthenticated={isAuthenticated}
-                            // @ts-ignore - passing extra data used by detail modal
                             userTier={userTier}
                         />
                     ))}

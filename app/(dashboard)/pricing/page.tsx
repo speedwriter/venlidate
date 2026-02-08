@@ -116,7 +116,7 @@ export default async function PricingPage() {
                             <Quote className="h-8 w-8 text-primary/20" />
                             <h3 className="font-bold text-xl">The Validator</h3>
                         </div>
-                        <p className="text-muted-foreground mb-4 italic">"Saved me from wasting 6 months on the wrong idea."</p>
+                        <p className="text-muted-foreground mb-4 italic">&ldquo;Saved me from wasting 6 months on the wrong idea.&rdquo;</p>
                         <p className="text-sm">Sarah validated 8 side project ideas before finding her winner. Now building a SaaS that scored 82/100.</p>
                     </div>
                     <div className="bg-card p-6 rounded-lg border shadow-sm">
@@ -124,7 +124,7 @@ export default async function PricingPage() {
                             <Quote className="h-8 w-8 text-primary/20" />
                             <h3 className="font-bold text-xl">The Browser</h3>
                         </div>
-                        <p className="text-muted-foreground mb-4 italic">"Never would have thought of this opportunity on my own."</p>
+                        <p className="text-muted-foreground mb-4 italic">&ldquo;Never would have thought of this opportunity on my own.&rdquo;</p>
                         <p className="text-sm">Mike had skills but no ideas. Browsed the marketplace, found inspiration, and validated his own unique version.</p>
                     </div>
                     <div className="bg-card p-6 rounded-lg border shadow-sm">
@@ -132,7 +132,7 @@ export default async function PricingPage() {
                             <Quote className="h-8 w-8 text-primary/20" />
                             <h3 className="font-bold text-xl">The Sharer</h3>
                         </div>
-                        <p className="text-muted-foreground mb-4 italic">"Sharing forced me to think critically about my ideas."</p>
+                        <p className="text-muted-foreground mb-4 italic">&ldquo;Sharing forced me to think critically about my ideas.&rdquo;</p>
                         <p className="text-sm">Emma shared 3 ideas, earned credits, and helped others. She got valuable feedback through the community.</p>
                     </div>
                 </div>

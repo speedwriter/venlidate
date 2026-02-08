@@ -13,8 +13,13 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "Venlidate",
-  description: "Idea Validation Platform",
+  title: "Venlidate - AI-Powered Startup Idea Validation & Marketplace",
+  description: "Validate startup ideas with AI across 7 business fundamentals. Browse 200+ validated ideas, get actionable insights, and discover opportunities.",
+  openGraph: {
+    title: "Venlidate - AI-Powered Startup Idea Validation",
+    description: "Validate startup ideas with AI across 7 business fundamentals. Know if your idea can scale and monetize in 60 seconds.",
+    type: 'website',
+  }
 };
 
 import { Toaster } from "@/components/ui/sonner";
