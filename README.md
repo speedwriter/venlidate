@@ -116,6 +116,23 @@ Venlidate is a SaaS platform that validates startup ideas using AI-powered analy
    
    Navigate to [http://localhost:3000](http://localhost:3000)
 
+## Stripe Webhook Testing (Local Development)
+
+1. Install Stripe CLI: `brew install stripe/stripe-cli/stripe`
+2. Login: `stripe login`
+3. Start webhook forwarding: `stripe listen --forward-to localhost:3000/api/webhooks/stripe`
+4. Copy the webhook signing secret from the output and add it to `.env.local`:
+   ```env
+   STRIPE_WEBHOOK_SECRET=whsec_your_secret_here
+   ```
+5. In another terminal, start your Next.js dev server: `npm run dev`
+6. Test the integration by triggering events:
+   - `stripe trigger checkout.session.completed`
+   - `stripe trigger customer.subscription.deleted`
+   - `stripe trigger invoice.payment_failed`
+
+Keep `stripe listen` running while testing locally.
+
 ## Environment Variables
 
 ### Required
@@ -258,6 +275,21 @@ SELECT * FROM shared_ideas
 WHERE status = 'approved'
 ORDER BY created_at DESC;
 ```
+
+## Viewing Cancellation Analytics
+
+Admins can view cancellation feedback at `/admin/analytics/cancellations`.
+
+This dashboard shows:
+- **Breakdown of cancellation reasons**: Visual chart and percentage distribution.
+- **Recent user feedback**: Table of latest comments with user tier and reason.
+- **Key insights**: Top reasons for churn at a glance.
+
+Use this data to:
+- Identify product gaps
+- Adjust pricing strategy
+- Prioritize feature development
+- Improve user onboarding
 
 ## Troubleshooting
 

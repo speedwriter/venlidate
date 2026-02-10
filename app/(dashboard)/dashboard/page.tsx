@@ -9,7 +9,12 @@ import { CompareIdeasButton } from '@/components/features/compare-ideas-button'
 import { getUserTier, TIER_LIMITS, checkValidationQuota } from '@/lib/utils/subscriptions'
 import { createClient } from '@/lib/supabase/server'
 
-export default async function DashboardPage() {
+export default async function DashboardPage({
+    searchParams,
+}: {
+    searchParams: Promise<{ [key: string]: string | string[] | undefined }>
+}) {
+    const { success } = await searchParams
     const supabase = await createClient()
     const { data: { user } } = await supabase.auth.getUser()
     const result = await getUserIdeas()
@@ -18,7 +23,9 @@ export default async function DashboardPage() {
         return (
             <div className="flex flex-col items-center justify-center py-12 text-center">
                 <p className="text-red-500 mb-4">Error: {result.error || 'Failed to load ideas'}</p>
-                <Button onClick={() => window.location.reload()}>Try Again</Button>
+                <Link href="/">
+                    <Button>Back Home</Button>
+                </Link>
             </div>
         )
     }
@@ -30,10 +37,8 @@ export default async function DashboardPage() {
     const quota = await checkValidationQuota(user.id)
     const tierLimit = TIER_LIMITS[tier].maxComparisonIdeas
 
-    // Sort ideas: Validated (not archived) first, then Draft/Validating, then Archived?
-    // User requested: "Mark ideas as 'archived' if all validations are inaccessible"
+    // Sort ideas: Validated (not archived) first, then Draft/Validating, then Archived
     const sortedIdeas = [...ideas].sort((a, b) => {
-        // Priority: Validated (active) > Draft/Validating > Archived
         const aStatus = a.isArchived ? -1 : a.status === 'validated' ? 1 : 0
         const bStatus = b.isArchived ? -1 : b.status === 'validated' ? 1 : 0
 
@@ -46,6 +51,28 @@ export default async function DashboardPage() {
 
     return (
         <div className="max-w-7xl mx-auto space-y-12 pb-24">
+            {/* Success Celebration Banner */}
+            {success === 'true' && (
+                <div className="bg-gradient-to-r from-green-500 to-emerald-600 rounded-3xl p-8 mb-12 text-white shadow-xl relative overflow-hidden group animate-in fade-in zoom-in duration-500">
+                    <div className="absolute top-0 right-0 w-64 h-64 bg-white/10 rounded-full blur-3xl -mr-32 -mt-32 transition-transform duration-500 group-hover:scale-110" />
+                    <div className="relative flex flex-col md:flex-row items-center justify-between gap-6">
+                        <div className="space-y-2 text-center md:text-left">
+                            <h2 className="text-3xl font-extrabold flex items-center justify-center md:justify-start gap-3">
+                                <span>🎉</span> Your subscription is now active!
+                            </h2>
+                            <p className="text-green-50 text-lg opacity-90 font-medium whitespace-normal">
+                                Thank you for upgrading. All {tier} features are now unlocked for your account.
+                            </p>
+                        </div>
+                        <Link href="/settings">
+                            <Button className="bg-white text-green-600 hover:bg-green-50 font-bold px-8 py-6 rounded-2xl shadow-lg border-none text-lg transition-all hover:scale-105 active:scale-95">
+                                Manage Subscription
+                            </Button>
+                        </Link>
+                    </div>
+                </div>
+            )}
+
             <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
                 <div>
                     <h1 className="text-3xl md:text-4xl font-extrabold tracking-tight bg-gradient-to-r from-slate-900 to-slate-700 bg-clip-text text-transparent">
@@ -136,15 +163,11 @@ export default async function DashboardPage() {
                                     Upgrade to Pro to restore all your past validations and never lose an insight.
                                 </p>
                             </div>
-                            {/* <Link href="/pricing">
+                            <Link href="/pricing">
                                 <Button size="lg" className="bg-amber-600 hover:bg-amber-700 text-white font-bold px-10 py-7 text-lg rounded-2xl shadow-lg hover:shadow-xl transition-all gap-2">
                                     Upgrade to Pro
                                 </Button>
-                            </Link> */}
-                            <Button size="lg" className="bg-slate-200 text-slate-500 font-bold px-10 py-7 text-lg rounded-2xl cursor-not-allowed" disabled>
-                                Upgrade Coming Soon
-                            </Button>
-
+                            </Link>
                         </div>
                     </div>
                 </div>

@@ -137,10 +137,13 @@ export default async function SettingsPage() {
                 {/* Subscription Card Section */}
                 <div className="space-y-6">
                     <SubscriptionCard
+                        userId={user.id}
                         tier={tier}
                         status={subscription?.status || 'active'}
                         validationsUsed={usageCount}
                         totalValidations={limits.validationsPerMonth}
+                        currentPeriodEnd={subscription?.expires_at || undefined}
+                        stripeCustomerId={subscription?.stripe_customer_id || undefined}
                     />
 
                     {tier === 'free' && (

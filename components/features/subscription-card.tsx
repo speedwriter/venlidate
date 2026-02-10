@@ -7,20 +7,27 @@ import { Button } from '@/components/ui/button'
 import { toast } from 'sonner'
 import { SubscriptionTier, TIER_LIMITS } from '@/types/subscriptions'
 import { CheckCircle2, AlertCircle } from 'lucide-react'
+import { ManageSubscriptionButton } from './manage-subscription-button'
 
 interface SubscriptionCardProps {
+    userId: string
     tier: SubscriptionTier
     status: string
     validationsUsed: number
     iterationsUsed?: Record<string, number> // Not strictly needed for simple progress
     totalValidations: number | 'unlimited'
+    currentPeriodEnd?: string
+    stripeCustomerId?: string | null
 }
 
 export function SubscriptionCard({
+    userId,
     tier,
     status,
     validationsUsed,
     totalValidations,
+    currentPeriodEnd,
+    stripeCustomerId,
 }: SubscriptionCardProps) {
     const limits = TIER_LIMITS[tier]
 
@@ -39,9 +46,6 @@ export function SubscriptionCard({
         ? 0
         : Math.min(100, (validationsUsed / totalValidations) * 100)
 
-    const handleManage = () => {
-        toast.info('Subscription management coming soon.')
-    }
 
     return (
         <Card className="w-full">
@@ -105,10 +109,16 @@ export function SubscriptionCard({
                     <Button className="w-full bg-slate-200 text-slate-500 cursor-not-allowed" disabled>
                         Upgrade Coming Soon
                     </Button>
+                ) : stripeCustomerId ? (
+                    <ManageSubscriptionButton
+                        userId={userId}
+                        tier={tier}
+                        currentPeriodEnd={currentPeriodEnd}
+                        className="w-full"
+                    />
                 ) : (
-
-                    <Button variant="outline" className="w-full" onClick={handleManage}>
-                        Manage Subscription
+                    <Button variant="secondary" className="w-full" disabled>
+                        Contact Support to Manage
                     </Button>
                 )}
             </CardFooter>

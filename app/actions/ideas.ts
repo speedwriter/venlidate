@@ -163,30 +163,23 @@ export async function submitIdeaForValidation(ideaId: string) {
 
     // 1. Check Monthly Validation Quota
     const quota = await checkValidationQuota(user.id, ideaId)
-    if (!quota.allowed) {
+
+    // 2. Check Iteration Quota
+    const iteration = await checkIterationQuota(ideaId, user.id)
+
+    // A validation is allowed if:
+    // - Both quotas allow it (potentially using a credit)
+    if (!quota.allowed || !iteration.allowed) {
         return {
             success: false,
-            error: quota.error || 'Monthly validation limit reached.',
+            error: (!quota.allowed ? quota.error : iteration.error) || 'Quota limit reached.',
             upgradeRequired: true
         }
     }
 
-    // 2. Check Iteration Quota if this is a re-validation
-    const { count: existingValidationsCount } = await supabase
-        .from('validations')
-        .select('*', { count: 'exact', head: true })
-        .eq('idea_id', ideaId)
-
-    if (existingValidationsCount && existingValidationsCount > 0) {
-        const iteration = await checkIterationQuota(ideaId, user.id)
-        if (!iteration.allowed) {
-            return {
-                success: false,
-                error: iteration.error || 'Iteration limit reached for this idea.',
-                upgradeRequired: true
-            }
-        }
-    }
+    // Determine if we should consume a credit
+    const usingCredit = quota.usingCredit || iteration.usingCredit || false
+    const remainingCredits = (quota.usingCredit ? quota.remaining : (iteration.usingCredit ? iteration.remaining : 0)) as number
 
     try {
         const ideaData: IdeaFormData = {
@@ -233,7 +226,7 @@ export async function submitIdeaForValidation(ideaId: string) {
                 recommendations: validation.recommendations,
                 model_used: modelUsed,
                 processing_time_ms: processingTimeMs,
-                used_credit: quota.usingCredit || false
+                used_credit: usingCredit
             })
 
         if (validationError) {
@@ -254,10 +247,10 @@ export async function submitIdeaForValidation(ideaId: string) {
         let successMessage: string | undefined
 
         // Consume free credit if used
-        if (quota.usingCredit && typeof quota.remaining === 'number') {
+        if (usingCredit) {
             const { error: karmaError } = await supabase
                 .from('user_karma')
-                .update({ free_validation_credits: Math.max(0, quota.remaining - 1) })
+                .update({ free_validation_credits: Math.max(0, remainingCredits - 1) })
                 .eq('user_id', user.id)
 
             if (!karmaError) {

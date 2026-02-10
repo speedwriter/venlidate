@@ -184,7 +184,9 @@ export async function unshareIdea(sharedIdeaId: string) {
 export async function getSharedIdeas(
     status: 'approved' | 'pending' | 'rejected' | 'removed' | 'all' = 'approved',
     limit: number = 20,
-    offset: number = 0
+    offset: number = 0,
+    sortBy: 'score' | 'share_date' | 'validation_date' = 'share_date',
+    sortOrder: 'asc' | 'desc' = 'desc'
 ) {
     const supabase = await createClient()
     const { data: { user } } = await supabase.auth.getUser()
@@ -200,7 +202,7 @@ export async function getSharedIdeas(
         .from('shared_ideas')
         .select(`
             *,
-            validations (
+            validations${sortBy === 'validation_date' ? '!inner' : ''} (
                 *
             )
         `)
@@ -209,8 +211,20 @@ export async function getSharedIdeas(
         query = query.eq('status', status)
     }
 
+    // 3. Apply sorting
+    if (sortBy === 'score') {
+        query = query.order('overall_score', { ascending: sortOrder === 'asc' })
+    } else if (sortBy === 'share_date') {
+        query = query.order('created_at', { ascending: sortOrder === 'asc' })
+    } else if (sortBy === 'validation_date') {
+        // Since shared_ideas 1:1 validations, we can order by validation's created_at
+        query = query.order('validations(created_at)', { ascending: sortOrder === 'asc' })
+    } else {
+        // Fallback
+        query = query.order(status === 'approved' ? 'approved_at' : 'created_at', { ascending: false })
+    }
+
     const { data, error } = await query
-        .order(status === 'approved' ? 'approved_at' : 'created_at', { ascending: false })
         .range(offset, offset + limit - 1)
 
     if (error) {

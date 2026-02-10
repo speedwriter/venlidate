@@ -43,7 +43,7 @@ export function MarketplaceComparisonTable() {
                         <TableRow>
                             <TableCell className="font-medium">Save Favourites (Upcoming Feature)</TableCell>
                             <TableCell className="text-center"><X className="mx-auto h-4 w-4 text-muted-foreground" /></TableCell>
-                            <TableCell className="text-center flex items-center justify-center gap-1"><Check className="h-4 w-4 text-primary" /> Up to 10</TableCell>
+                            <TableCell className="text-center"><X className="mx-auto h-4 w-4 text-muted-foreground" /></TableCell>
                             <TableCell className="text-center flex items-center justify-center gap-1"><Check className="h-4 w-4 text-purple-600" /> Unlimited</TableCell>
                         </TableRow>
 

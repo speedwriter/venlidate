@@ -5,12 +5,19 @@ import { AdminIdeaForm } from "@/components/features/admin-idea-form"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { Badge } from "@/components/ui/badge"
 import { SharedIdea } from "@/types/shared-ideas"
+import { AdminSortControls } from "./admin-sort-controls"
 
-export default async function AdminSharedIdeasPage() {
+export default async function AdminSharedIdeasPage(props: {
+    searchParams: Promise<{ [key: string]: string | string[] | undefined }>
+}) {
+    const searchParams = await props.searchParams
+    const sortBy = (searchParams.sortBy as 'score' | 'share_date' | 'validation_date') || 'share_date'
+    const sortOrder = (searchParams.sortOrder as 'asc' | 'desc') || 'desc'
+
     const [pendingRes, approvedRes, rejectedRes] = await Promise.all([
-        getSharedIdeas('pending'),
-        getSharedIdeas('approved'),
-        getSharedIdeas('rejected')
+        getSharedIdeas('pending', 20, 0, sortBy, sortOrder),
+        getSharedIdeas('approved', 20, 0, sortBy, sortOrder),
+        getSharedIdeas('rejected', 20, 0, sortBy, sortOrder)
     ])
 
     const pendingIdeas = pendingRes.success ? pendingRes.data : []
@@ -27,6 +34,8 @@ export default async function AdminSharedIdeasPage() {
                     </p>
                 </div>
             </div>
+
+            <AdminSortControls />
 
             <Tabs defaultValue="pending" className="w-full">
                 <TabsList className="grid w-full grid-cols-4 lg:w-[600px] mb-8">

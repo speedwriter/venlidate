@@ -1,6 +1,6 @@
 import { createClient } from "@/lib/supabase/server"
 import { getUserTier } from "@/lib/utils/subscriptions"
-import { PricingTable, PricingTier } from "@/components/features/pricing-table"
+import { PricingTable } from "@/components/features/pricing-table"
 import { MarketplaceComparisonTable } from "@/components/features/marketplace-comparison-table"
 import { MarketplacePreviewWidget } from "@/components/features/marketplace-preview-widget"
 import { redirect } from "next/navigation"
@@ -14,69 +14,12 @@ export const metadata: Metadata = {
     description: "Choose your plan: Free validation, Pro features, or Premium access to our complete idea marketplace. Share ideas, earn credits, get inspired.",
 }
 
-const pricingTiers: PricingTier[] = [
-    {
-        name: 'Free',
-        price: '$0',
-        billingPeriod: 'forever',
-        description: 'Perfect for testing the waters',
-        features: [
-            '1 validation per month',
-            '1 iteration per idea',
-            'Reports saved for 30 days',
-            'Community benchmarks',
-            '🆕 Browse 10 recent shared ideas',
-            '🆕 Preview idea scores (limited details)',
-            '🆕 Earn free credits by sharing ideas',
-        ],
-        cta: 'Current Plan',
-        highlighted: false,
-    },
-    {
-        name: 'Pro',
-        price: '$39',
-        billingPeriod: 'per month',
-        annualPrice: '$390/year (save $78)',
-        description: 'For aspiring founders with multiple ideas',
-        features: [
-            '10 validations per month',
-            'Unlimited iterations',
-            'Reports saved forever',
-            'Full iteration history',
-            'Compare up to 3 ideas',
-            'Export reports as PDF',
-            '🆕 Browse ideas library',
-            '🆕 See all 7 dimension scores for shared ideas',
-        ],
-        cta: 'Upgrade to Pro',
-        highlighted: true,
-    },
-    {
-        name: 'Premium',
-        price: '$79',
-        billingPeriod: 'per month',
-        annualPrice: '$790/year (save $158)',
-        description: 'For serial validators and consultants',
-        features: [
-            'Unlimited validations',
-            'Unlimited iterations',
-            'Reports saved forever',
-            'Full iteration history',
-            'Compare up to 5 ideas',
-            'Export reports as PDF',
-            'Priority email support',
-            'Early access to new features',
-            '🆕 Browse ideas library',
-            '🆕 See all 7 dimension scores for shared ideas',
-            '🆕 Full AI reasoning for shared ideas',
-            '🆕 Full recommendations and competition for shared ideas',
-        ],
-        cta: 'Upgrade to Premium',
-        highlighted: false,
-    },
-]
-
-export default async function PricingPage() {
+export default async function PricingPage({
+    searchParams,
+}: {
+    searchParams: Promise<{ [key: string]: string | string[] | undefined }>
+}) {
+    const { success, canceled, tier } = await searchParams
     const supabase = await createClient()
     const { data: { user }, error: userError } = await supabase.auth.getUser()
 
@@ -88,21 +31,61 @@ export default async function PricingPage() {
 
     return (
         <div className="container py-12 px-4 max-w-7xl mx-auto">
+            {/* Success/Cancel Messages */}
+            {success === 'true' && (
+                <div className="mb-12 p-6 bg-green-50 border border-green-200 rounded-2xl text-green-800 text-center animate-in fade-in slide-in-from-top-4">
+                    <h2 className="text-2xl font-bold mb-2">🎉 Subscription activated!</h2>
+                    <p className="text-lg">Welcome to <strong>{tier || 'your new plan'}</strong>. You now have full access to all features.</p>
+                </div>
+            )}
+
+            {canceled === 'true' && (
+                <div className="mb-12 p-6 bg-amber-50 border border-amber-200 rounded-2xl text-amber-800 text-center animate-in fade-in slide-in-from-top-4">
+                    <p className="font-bold text-lg">Checkout canceled. No charges were made.</p>
+                    <p>Feel free to reach out if you have any questions about our plans.</p>
+                </div>
+            )}
+
             {/* Hero Section */}
-            <div className="flex flex-col items-center text-center space-y-4 mb-16">
+            <div className="flex flex-col items-center text-center space-y-4 mb-12">
                 <h1 className="text-4xl font-extrabold tracking-tight sm:text-5xl md:text-6xl">
                     Validate Your Ideas. Get Inspired by Others.
                 </h1>
                 <p className="max-w-[700px] text-lg text-muted-foreground">
                     Join 500+ founders validating ideas and discovering opportunities.
                 </p>
+                <div className="flex flex-wrap items-center justify-center gap-6 pt-4 text-sm text-muted-foreground">
+                    <div className="flex items-center gap-2">
+                        <div className="flex -space-x-2">
+                            <div className="w-8 h-8 rounded-full bg-gradient-to-br from-blue-400 to-blue-600 border-2 border-background" />
+                            <div className="w-8 h-8 rounded-full bg-gradient-to-br from-purple-400 to-purple-600 border-2 border-background" />
+                            <div className="w-8 h-8 rounded-full bg-gradient-to-br from-green-400 to-green-600 border-2 border-background" />
+                        </div>
+                        <span className="font-medium">500+ founders</span>
+                    </div>
+                    <div className="flex items-center gap-1">
+                        <span className="text-yellow-500">★★★★★</span>
+                        <span className="font-medium ml-1">4.9/5 rating</span>
+                    </div>
+                    <div className="font-medium">
+                        💡 200+ ideas validated this month
+                    </div>
+                </div>
             </div>
 
             {/* Marketplace Preview Widget */}
             <MarketplacePreviewWidget />
 
             {/* Pricing Table */}
-            <PricingTable currentTier={currentTier} pricingTiers={pricingTiers} />
+            <div className="mb-6">
+                <div className="text-center mb-8">
+                    <p className="text-sm font-medium text-primary">🎉 Limited Time: Get 17% off with annual billing</p>
+                </div>
+                <PricingTable currentTier={currentTier} />
+                <div className="text-center mt-6 text-sm text-muted-foreground">
+                    <p>✓ Cancel anytime • ✓ No hidden fees • ✓ 30-day money-back guarantee</p>
+                </div>
+            </div>
 
             {/* Comparison Table */}
             <MarketplaceComparisonTable />
