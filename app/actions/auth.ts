@@ -54,10 +54,24 @@ export async function signOut() {
     redirect('/login')
 }
 
+import { createAdminClient } from '@/lib/supabase/admin'
+
 export async function resetPassword(formData: FormData) {
     const origin = (await headers()).get('origin')
     const email = formData.get('email') as string
     const supabase = await createClient()
+    const adminSupabase = createAdminClient()
+
+    // Check if user exists in profiles table
+    const { data: profile, error: profileError } = await adminSupabase
+        .from('profiles')
+        .select('id')
+        .eq('email', email)
+        .single()
+
+    if (profileError || !profile) {
+        return { success: false, error: 'No user found with this email address.' }
+    }
 
     const { error } = await supabase.auth.resetPasswordForEmail(email, {
         redirectTo: `${origin}/auth/callback?next=/reset-password/update`,

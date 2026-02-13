@@ -13,12 +13,16 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
+  metadataBase: new URL(process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3000'),
   title: "Venlidate - AI-Powered Startup Idea Validation & Marketplace",
   description: "Validate startup ideas with AI across 7 business fundamentals. Browse 200+ validated ideas, get actionable insights, and discover opportunities.",
   openGraph: {
     title: "Venlidate - AI-Powered Startup Idea Validation",
     description: "Validate startup ideas with AI across 7 business fundamentals. Know if your idea can scale and monetize in 60 seconds.",
     type: 'website',
+  },
+  icons: {
+    icon: '/icon.svg',
   }
 };
 

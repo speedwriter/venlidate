@@ -13,7 +13,7 @@ import {
     BreadcrumbPage,
     BreadcrumbSeparator
 } from "@/components/ui/breadcrumb"
-import { Button } from "@/components/ui/button"
+
 import { Card, CardContent, CardDescription, CardTitle } from "@/components/ui/card"
 import { CalendarDays, Lightbulb, PlayCircle } from "lucide-react"
 
@@ -26,6 +26,8 @@ interface IdeaDetailPageProps {
 export default async function IdeaDetailPage({ params }: IdeaDetailPageProps) {
     const { ideaId } = await params
     const result = await getFullIdea(ideaId)
+    const { getUserTierAction } = await import("@/app/actions/subscriptions")
+    const userTier = await getUserTierAction()
 
     if (!result.success || !result.data) {
         if (result.error === 'Unauthorized') {
@@ -117,6 +119,7 @@ export default async function IdeaDetailPage({ params }: IdeaDetailPageProps) {
                     percentile={percentile}
                     isShared={!!sharedIdea}
                     sharedIdeaId={sharedIdea?.id}
+                    userTier={userTier}
                 />
             )
             }

@@ -22,9 +22,10 @@ interface ShareIdeaModalProps {
     validationId: string
     ideaTitle: string
     onSuccess?: () => void
+    trigger?: React.ReactNode
 }
 
-export function ShareIdeaModal({ validationId, ideaTitle, onSuccess }: ShareIdeaModalProps) {
+export function ShareIdeaModal({ validationId, ideaTitle, onSuccess, trigger }: ShareIdeaModalProps) {
     const [isOpen, setIsOpen] = useState(false)
     const [isAnonymous, setIsAnonymous] = useState(true)
     const [sharedByName, setSharedByName] = useState('')
@@ -54,10 +55,12 @@ export function ShareIdeaModal({ validationId, ideaTitle, onSuccess }: ShareIdea
     return (
         <Dialog open={isOpen} onOpenChange={setIsOpen}>
             <DialogTrigger asChild>
-                <Button variant="outline" className="gap-2 bg-gradient-to-r from-amber-50 to-orange-50 border-amber-200 hover:border-amber-300 text-amber-700 font-semibold shadow-sm transition-all hover:shadow-md h-10 px-4">
-                    <Gift className="h-4 w-4" />
-                    Share with Community
-                </Button>
+                {trigger || (
+                    <Button variant="outline" className="gap-2 bg-gradient-to-r from-amber-50 to-orange-50 border-amber-200 hover:border-amber-300 text-amber-700 font-semibold shadow-sm transition-all hover:shadow-md h-10 px-4">
+                        <Gift className="h-4 w-4" />
+                        Share with Community
+                    </Button>
+                )}
             </DialogTrigger>
             <DialogContent className="sm:max-w-[500px] border-amber-100">
                 <DialogHeader>

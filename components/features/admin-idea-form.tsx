@@ -33,6 +33,7 @@ import { createAdminIdea } from "@/app/actions/shared-ideas"
 const ideaSchema = z.object({
     title: z.string().min(3, "Title must be at least 3 characters").max(100, "Title must be less than 100 characters"),
     problem: z.string().min(20, "Problem description must be at least 20 characters"),
+    solution: z.string().min(20, "Solution must be at least 20 characters"),
     targetCustomer: z.string().min(10, "Target customer must be at least 10 characters"),
     painkillerMoment: z.string().min(10, "Painkiller moment must be at least 10 characters"),
     revenueModel: z.string().min(10, "Revenue model must be at least 10 characters"),
@@ -59,6 +60,7 @@ export function AdminIdeaForm() {
         defaultValues: {
             title: "",
             problem: "",
+            solution: "",
             targetCustomer: "",
             painkillerMoment: "",
             revenueModel: "",
@@ -105,7 +107,7 @@ export function AdminIdeaForm() {
 
     const getFieldsForStep = (s: number) => {
         switch (s) {
-            case 1: return ["title", "problem", "targetCustomer"]
+            case 1: return ["title", "problem", "solution", "targetCustomer"]
             case 2: return ["painkillerMoment", "revenueModel", "distributionChannel"]
             case 3: return ["unfairAdvantage", "timeCommitment"]
             default: return []
@@ -158,6 +160,23 @@ export function AdminIdeaForm() {
                                             <FormControl>
                                                 <Textarea
                                                     placeholder="Describe the problem..."
+                                                    className="min-h-[100px]"
+                                                    {...field}
+                                                />
+                                            </FormControl>
+                                            <FormMessage />
+                                        </FormItem>
+                                    )}
+                                />
+                                <FormField
+                                    control={form.control}
+                                    name="solution"
+                                    render={({ field }) => (
+                                        <FormItem>
+                                            <FormLabel>Proposed Solution</FormLabel>
+                                            <FormControl>
+                                                <Textarea
+                                                    placeholder="Describe the solution..."
                                                     className="min-h-[100px]"
                                                     {...field}
                                                 />

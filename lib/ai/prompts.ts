@@ -3,6 +3,7 @@ export const VALIDATION_PROMPTS = {
 
 Idea details:
 - Problem: {problem}
+- Proposed Solution: {solution}
 - Target customer: {targetCustomer}
 - Claimed painkiller moment: {painkillerMoment}
 
@@ -35,6 +36,7 @@ Return this exact JSON structure:
   revenueModel: `Evaluate revenue model viability (0-10) considering FOUNDER REALITY.
 
 Revenue model: {revenueModel}
+Proposed Solution: {solution}
 Target customer: {targetCustomer}
 Founder background: {unfairAdvantage}
 Time commitment: {timeCommitment}
@@ -64,6 +66,7 @@ Return JSON:
   acquisition: `Evaluate customer acquisition feasibility (0-10). BE BRUTALLY REALISTIC.
 
 Distribution channel: {distributionChannel}
+Proposed Solution: {solution}
 Target customer: {targetCustomer}
 Founder advantage: {unfairAdvantage}
 Time commitment: {timeCommitment}
@@ -98,6 +101,7 @@ Return JSON:
 
 Unfair advantage: {unfairAdvantage}
 Problem: {problem}
+Proposed Solution: {solution}
 
 For PRE-LAUNCH ideas (no customers yet):
 - Don't expect moat yet, but evaluate POTENTIAL for moat
@@ -135,6 +139,7 @@ Return JSON:
 
 Unfair advantage: {unfairAdvantage}
 Problem: {problem}
+Proposed Solution: {solution}
 Target customer: {targetCustomer}
 
 Does founder background match this problem space?
@@ -165,6 +170,7 @@ Return JSON:
   timeToRevenue: `Evaluate time-to-revenue RELATIVE to founder situation (0-10).
 
 Time commitment: {timeCommitment}
+Proposed Solution: {solution}
 Problem complexity: {problem}
 Target customer: {targetCustomer}
 Revenue model: {revenueModel}
@@ -206,6 +212,7 @@ Return JSON:
   scalability: `Evaluate scalability (0-10).
 
 Problem: {problem}
+Proposed Solution: {solution}
 Revenue model: {revenueModel}
 
 Can this grow without linear effort increase?
@@ -244,6 +251,7 @@ Return JSON:
 HIGHER SCORE = MORE COMPETITIVE / HARDER TO WIN.
 
 Problem: {problem}
+Proposed Solution: {solution}
 Target customer: {targetCustomer}
 Unfair advantage: {unfairAdvantage}
 
@@ -279,6 +287,7 @@ HIGHER SCORE = MORE DELUDED / MORE SELF-DECEPTION.
 
 Idea details:
 - Problem: {problem}
+- Proposed Solution: {solution}
 - Target customer: {targetCustomer}
 - Unfair advantage: {unfairAdvantage}
 - Painkiller moment: {painkillerMoment}
@@ -318,7 +327,7 @@ export function interpolatePrompt(template: string, data: Record<string, string>
 }
 
 export function COMPARABLE_COMPANIES_PROMPT(data: Record<string, string>): string {
-  const template = `Find 3 REAL comparable companies (not hypothetical) for: {problem} targeting {targetCustomer}.
+  const template = `Find 3 REAL comparable companies (not hypothetical) for: {problem} with solution {solution} targeting {targetCustomer}.
 
 REQUIREMENTS:
 - At least 2 must be REAL companies (use actual company names if they exist)
@@ -347,6 +356,7 @@ export function RECOMMENDATIONS_PROMPT(scores: Record<string, number>, data: Rec
 
 Idea context:
 - Problem: ${data.problem || 'N/A'}
+- Solution: ${data.solution || 'N/A'}
 - Target customer: ${data.targetCustomer || 'N/A'}
 - Distribution channel: ${data.distributionChannel || 'N/A'}
 
@@ -488,3 +498,96 @@ export function getVerdict(score: number, rating: string): string {
     return "High risk of failure with fundamental flaws. Requires major pivots or reconsideration before proceeding. Consider alternative ideas.";
   }
 }
+
+export const THINKING_QUESTIONS_PROMPT = `
+You are helping a founder improve their startup idea based on a low validation score.
+
+Dimension: {dimension}
+Current Score: {score}/10
+Why it scored low: {reasoning}
+
+Idea context:
+- Problem: {problem}
+- Target customer: {targetCustomer}
+- Revenue model: {revenueModel}
+- Distribution: {distributionChannel}
+
+Generate 2 specific, actionable questions the founder must answer to improve this score.
+
+Questions should:
+- Identify critical assumptions that need validation
+- Be answerable through customer interviews, research, or testing
+- Help distinguish between assumptions and facts
+- Be specific to this idea (not generic startup advice)
+
+Examples of GOOD questions:
+- "Can you name 10 specific companies that would pay $X/month for this? Call 5 of them this week."
+- "What's the smallest version you could build in 2 weeks to test if anyone will use it?"
+- "How will you get your first 100 customers without paid ads? List 3 specific channels."
+
+Examples of BAD questions (too vague):
+- "Have you validated product-market fit?"
+- "Do you have a go-to-market strategy?"
+- "Is there demand for this?"
+
+Return ONLY a JSON array: ["Question 1 that forces concrete action", "Question 2 that identifies assumptions"]
+`;
+
+export const ACTION_PLAN_PROMPT = `
+You are a startup advisor helping a founder prioritize what to work on next.
+
+Validation Scores (0-10 scale):
+- Painkiller vs. Vitamin: {painkillerScore}/10 - {painkillerReasoning}
+- Revenue Model: {revenueModelScore}/10 - {revenueModelReasoning}
+- Customer Acquisition: {acquisitionScore}/10 - {acquisitionReasoning}
+- Competitive Moat: {moatScore}/10 - {moatReasoning}
+- Founder-Market Fit: {founderFitScore}/10 - {founderFitReasoning}
+- Time to Revenue: {timeToRevenueScore}/10 - {timeToRevenueReasoning}
+- Scalability: {scalabilityScore}/10 - {scalabilityReasoning}
+
+Overall Score: {overallScore}/100
+
+Idea Details:
+- Problem: {problem}
+- Target Customer: {targetCustomer}
+- Revenue Model: {revenueModel}
+- Distribution: {distributionChannel}
+- Founder's Advantage: {unfairAdvantage}
+- Time Commitment: {timeCommitment}
+
+Create a prioritized action plan:
+
+1. Identify the top 3 bottlenecks preventing this idea from being viable (lowest scores or highest-impact issues)
+2. For each bottleneck, specify:
+   - What dimension it relates to
+   - The critical question to answer
+   - How to validate it (specific method: customer interviews, landing page, prototype, etc.)
+   - Success criteria (what "validated" looks like)
+   - Estimated days to complete (considering time commitment: nights_weekends = slower, full_time = faster)
+
+3. Provide overall timeline estimate based on time commitment
+4. Define "ready to build" criteria (when can they confidently start building?)
+
+Return ONLY valid JSON with this exact structure:
+{
+  "priorities": [
+    {
+      "rank": 1,
+      "dimension": "Customer Acquisition",
+      "issue": "No clear path to first 100 customers",
+      "criticalQuestion": "Specifically, how will you get your first 100 customers without paid ads?",
+      "validationMethod": "Identify 3 distribution channels, test each with landing page, measure conversion rates",
+      "successCriteria": "One channel shows 5%+ conversion from landing page to email signup",
+      "estimatedDays": 14
+    }
+  ],
+  "overallTimeline": "3-4 weeks to validate core assumptions",
+  "readinessCriteria": "You're ready to build when you have: (1) 20+ customer interviews confirming pain, (2) validated acquisition channel with measurable conversion, (3) 10+ people willing to pay $X"
+}
+
+IMPORTANT: 
+- Be ruthlessly specific (no generic advice)
+- Focus on de-risking (what assumptions could kill this idea?)
+- Prioritize by impact (fix revenue model before optimizing scalability)
+- Adapt timeline to time commitment (nights/weekends = 2-3x longer than full-time)
+`;

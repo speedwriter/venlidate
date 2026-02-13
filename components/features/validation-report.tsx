@@ -6,19 +6,11 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { ScoreCard } from "./score-card";
 import { TrafficLight } from "./traffic-light";
 import { BenchmarkBadge } from "./benchmark-badge";
-import {
-    LineChart,
-    Line,
-    XAxis,
-    YAxis,
-    CartesianGrid,
-    Tooltip as RechartsTooltip,
-    ResponsiveContainer,
-} from "recharts";
+
 import { Tables } from "@/types/database";
 import { ValidationResult } from "@/types/validations";
 import { Badge } from "@/components/ui/badge";
-import { AlertTriangle, CheckCircle2, TrendingUp, History, Lightbulb, BarChart3, ChevronDown, ExternalLink } from "lucide-react";
+import { AlertTriangle, CheckCircle2, TrendingUp, History, Lightbulb, BarChart3, ChevronDown, ExternalLink, Target } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useState, useEffect } from "react";
 import {
@@ -28,7 +20,7 @@ import {
     AccordionTrigger,
 } from "@/components/ui/accordion";
 import { exportReportToPDF } from "@/lib/utils/pdf-export";
-import { FileDown, Loader2, Lock, Sparkles } from "lucide-react";
+import { FileDown, Loader2, Lock } from "lucide-react";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import {
@@ -38,6 +30,13 @@ import {
     TooltipTrigger,
 } from "@/components/ui/tooltip";
 import { ShareIdeaModal } from "./share-idea-modal";
+import { ThinkingQuestionsCard } from "./thinking-questions-card";
+import { ActionPlanCard } from "./action-plan-card";
+import { ActionPlanUpgradeCTA } from "./action-plan-upgrade-cta";
+import { ScoreImprovementBanner } from "./score-improvement-banner";
+import { IterationTimeline } from "./iteration-timeline";
+import { NextStepsCard } from "./next-steps-card";
+
 
 
 
@@ -48,6 +47,7 @@ interface ValidationReportProps {
     percentile?: number;
     isShared?: boolean;
     sharedIdeaId?: string;
+    userTier?: 'free' | 'pro' | 'premium';
 }
 
 const SnapshotField = ({ label, value }: { label: string, value: string }) => {
@@ -84,9 +84,9 @@ export function ValidationReport({
     history = [],
     percentile,
     isShared: initialIsShared = false,
-    sharedIdeaId: initialSharedIdeaId
+    sharedIdeaId: initialSharedIdeaId,
+    userTier = 'free'
 }: ValidationReportProps) {
-    const [mounted, setMounted] = useState(false);
     const [canExport, setCanExport] = useState<boolean | null>(null);
     const [isExporting, setIsExporting] = useState(false);
     const [isActuallyArchived] = useState(idea.isArchived || false);
@@ -96,7 +96,6 @@ export function ValidationReport({
     const [isUnsharing, setIsUnsharing] = useState(false);
 
     useEffect(() => {
-        setMounted(true);
         const checkPermission = async () => {
             const { canExportPDFAction } = await import("@/app/actions/subscriptions");
             const hasPermission = await canExportPDFAction();
@@ -154,32 +153,37 @@ export function ValidationReport({
         : 0;
 
     const dimensionScores = [
-        { name: "Painkiller", score: validation.painkillerScore.score, reasoning: validation.painkillerScore.reasoning },
-        { name: "Revenue Model", score: validation.revenueModelScore.score, reasoning: validation.revenueModelScore.reasoning },
-        { name: "Acquisition", score: validation.acquisitionScore.score, reasoning: validation.acquisitionScore.reasoning },
-        { name: "Moat", score: validation.moatScore.score, reasoning: validation.moatScore.reasoning },
-        { name: "Founder Fit", score: validation.founderFitScore.score, reasoning: validation.founderFitScore.reasoning },
-        { name: "Time to Revenue", score: validation.timeToRevenueScore.score, reasoning: validation.timeToRevenueScore.reasoning },
-        { name: "Scalability", score: validation.scalabilityScore.score, reasoning: validation.scalabilityScore.reasoning },
+        { name: "Painkiller", score: validation.painkillerScore.score, reasoning: validation.painkillerScore.reasoning, dimensionKey: "painkiller" },
+        { name: "Revenue Model", score: validation.revenueModelScore.score, reasoning: validation.revenueModelScore.reasoning, dimensionKey: "revenueModel" },
+        { name: "Acquisition", score: validation.acquisitionScore.score, reasoning: validation.acquisitionScore.reasoning, dimensionKey: "acquisition" },
+        { name: "Moat", score: validation.moatScore.score, reasoning: validation.moatScore.reasoning, dimensionKey: "moat" },
+        { name: "Founder Fit", score: validation.founderFitScore.score, reasoning: validation.founderFitScore.reasoning, dimensionKey: "founderFit" },
+        { name: "Time to Revenue", score: validation.timeToRevenueScore.score, reasoning: validation.timeToRevenueScore.reasoning, dimensionKey: "timeToRevenue" },
+        { name: "Scalability", score: validation.scalabilityScore.score, reasoning: validation.scalabilityScore.reasoning, dimensionKey: "scalability" },
     ];
+
+    function getDimensionDisplayName(key: string): string {
+        const names: Record<string, string> = {
+            painkiller: 'Painkiller vs. Vitamin',
+            revenueModel: 'Revenue Model',
+            acquisition: 'Customer Acquisition',
+            moat: 'Competitive Moat',
+            founderFit: 'Founder-Market Fit',
+            timeToRevenue: 'Time to Revenue',
+            scalability: 'Scalability',
+        }
+        return names[key] || key
+    }
+
+    const totalThinkingQuestions = validation.thinkingQuestions
+        ? Object.values(validation.thinkingQuestions).reduce((acc, curr) => acc + curr.length, 0)
+        : 0;
 
     const redFlags = validation.redFlags || [];
     const recommendations = validation.recommendations || [];
     const comparableCompanies = validation.comparableCompanies || [];
 
-    // History needs careful handling. If we changed history prop to ValidationResult[], it doesn't have created_at.
-    // This breaks the chart logic which sorts by date.
-    // We probably need a type internal to this component: ValidationResult & { created_at?: string, id?: string }
-    // Or ValidationReportProps takes array of { result: ValidationResult, date: string, id: string }
-    // Ideally we update ValidationResult type to optional metadata?
-    // Let's try to just map scores.
 
-    const chartData = [...history, validation]
-        .map((v, index) => ({
-            name: `v${index + 1}`,
-            score: v.overallScore,
-            date: v.created_at ? new Date(v.created_at).toLocaleDateString() : 'N/A',
-        }));
 
     const getScoreColor = (s: number) => {
         if (s < 50) return "#ef4444";
@@ -204,12 +208,6 @@ export function ValidationReport({
                                 </p>
                             </div>
                         </div>
-                        {/* <Link href="/pricing" className="w-full md:w-auto">
-                            <Button size="lg" className="w-full bg-amber-600 hover:bg-amber-700 text-white font-bold px-8 rounded-2xl shadow-lg hover:shadow-xl transition-all gap-2">
-                                <Sparkles className="h-5 w-5 text-amber-200" />
-                                Upgrade to Pro to Restore
-                            </Button>
-                        </Link> */}
                         <Button size="lg" className="w-full bg-slate-200 text-slate-500 font-bold px-8 rounded-2xl cursor-not-allowed" disabled>
                             Upgrade Coming Soon
                         </Button>
@@ -218,10 +216,21 @@ export function ValidationReport({
                 </div>
             )}
 
+            {/* Score Improvement Banner & Timeline */}
+            {(history.length > 0) && (
+                <div className="space-y-6">
+                    <ScoreImprovementBanner
+                        currentScore={validation.overallScore}
+                        previousScore={history[0].overallScore}
+                    />
+                </div>
+            )}
+
             <div className={cn(
                 "transition-all duration-700 space-y-8",
                 isActuallyArchived && "blur-md pointer-events-none select-none opacity-50 grayscale-[0.5]"
             )}>
+
                 {/* Header Section */}
                 <div className="flex flex-col md:flex-row md:items-end justify-between gap-6 pb-6 border-b">
                     <div className="space-y-2">
@@ -315,18 +324,23 @@ export function ValidationReport({
                 </div>
 
                 <Tabs defaultValue="scores" className="w-full">
-                    <TabsList className="grid w-full grid-cols-3 mb-8 h-12 bg-muted/50 p-1">
-                        <TabsTrigger value="scores" className="flex items-center gap-2 data-[state=active]:bg-background data-[state=active]:shadow-sm">
+                    <TabsList className="grid w-full grid-cols-2 md:grid-cols-4 mb-8 h-auto p-1">
+                        <TabsTrigger value="scores" className="flex items-center gap-2 data-[state=active]:bg-background data-[state=active]:shadow-sm py-2">
                             <BarChart3 className="h-4 w-4" />
                             <span className="hidden sm:inline">Scores Breakdown</span>
                             <span className="sm:hidden">Scores</span>
                         </TabsTrigger>
-                        <TabsTrigger value="insights" className="flex items-center gap-2 data-[state=active]:bg-background data-[state=active]:shadow-sm">
+                        <TabsTrigger value="insights" className="flex items-center gap-2 data-[state=active]:bg-background data-[state=active]:shadow-sm py-2">
                             <Lightbulb className="h-4 w-4" />
                             <span className="hidden sm:inline">Deep Insights</span>
                             <span className="sm:hidden">Insights</span>
                         </TabsTrigger>
-                        <TabsTrigger value="history" className="flex items-center gap-2 data-[state=active]:bg-background data-[state=active]:shadow-sm">
+                        <TabsTrigger value="action-plan" className="flex items-center gap-2 data-[state=active]:bg-background data-[state=active]:shadow-sm py-2">
+                            <Target className="h-4 w-4" />
+                            <span className="hidden sm:inline">Personalized Action Plan</span>
+                            <span className="sm:hidden">Plan</span>
+                        </TabsTrigger>
+                        <TabsTrigger value="history" className="flex items-center gap-2 data-[state=active]:bg-background data-[state=active]:shadow-sm py-2">
                             <History className="h-4 w-4" />
                             <span className="hidden sm:inline">Iteration History</span>
                             <span className="sm:hidden">History</span>
@@ -336,7 +350,20 @@ export function ValidationReport({
                     <TabsContent value="scores" className="mt-0">
                         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
                             {dimensionScores.map((dim) => (
-                                <ScoreCard key={dim.name} {...dim} />
+                                <div key={dim.dimensionKey} className="flex flex-col">
+                                    <ScoreCard
+                                        name={dim.name}
+                                        score={dim.score}
+                                        reasoning={dim.reasoning}
+                                    />
+                                    {validation.thinkingQuestions?.[dim.dimensionKey] && (
+                                        <ThinkingQuestionsCard
+                                            questions={validation.thinkingQuestions[dim.dimensionKey]}
+                                            dimensionName={getDimensionDisplayName(dim.dimensionKey)}
+                                            score={dim.score}
+                                        />
+                                    )}
+                                </div>
                             ))}
                         </div>
                     </TabsContent>
@@ -424,50 +451,37 @@ export function ValidationReport({
                         </div>
                     </TabsContent>
 
+                    <TabsContent value="action-plan" className="mt-0 space-y-8">
+                        <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
+                            <div className="space-y-1">
+                                <h2 className="text-2xl font-black tracking-tight">Personalized Action Plan</h2>
+                                <p className="text-muted-foreground">Your step-by-step roadmap to validating and building this idea.</p>
+                            </div>
+                        </div>
+
+                        {userTier === 'free' ? (
+                            <ActionPlanUpgradeCTA />
+                        ) : (
+                            validation.actionPlan ? (
+                                <ActionPlanCard actionPlan={validation.actionPlan} tier={userTier} />
+                            ) : (
+                                <Card className="p-8 text-center bg-muted/30 border-dashed">
+                                    <p className="text-muted-foreground italic">No action plan available for this validation.</p>
+                                </Card>
+                            )
+                        )}
+                    </TabsContent>
+
                     <TabsContent value="history" className="mt-0">
                         <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-                            <Card className="lg:col-span-2">
-                                <CardHeader>
-                                    <CardTitle>Score Progression</CardTitle>
-                                    <CardDescription>How your idea is evolving over time</CardDescription>
-                                </CardHeader>
-                                <CardContent className="h-[350px] pt-4">
-                                    {mounted ? (
-                                        <ResponsiveContainer width="100%" height="100%">
-                                            <LineChart data={chartData} margin={{ top: 5, right: 30, left: 0, bottom: 5 }}>
-                                                <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#f0f0f0" />
-                                                <XAxis
-                                                    dataKey="date"
-                                                    axisLine={false}
-                                                    tickLine={false}
-                                                    tick={{ fill: '#888', fontSize: 12 }}
-                                                    dy={10}
-                                                />
-                                                <YAxis
-                                                    domain={[0, 100]}
-                                                    axisLine={false}
-                                                    tickLine={false}
-                                                    tick={{ fill: '#888', fontSize: 12 }}
-                                                />
-                                                <RechartsTooltip
-                                                    contentStyle={{ borderRadius: '12px', border: 'none', boxShadow: '0 10px 15px -3px rgb(0 0 0 / 0.1)' }}
-                                                    cursor={{ stroke: '#e2e8f0', strokeWidth: 2 }}
-                                                />
-                                                <Line
-                                                    type="monotone"
-                                                    dataKey="score"
-                                                    stroke="#3b82f6"
-                                                    strokeWidth={4}
-                                                    dot={{ r: 6, fill: '#3b82f6', strokeWidth: 2, stroke: '#fff' }}
-                                                    activeDot={{ r: 8, strokeWidth: 0 }}
-                                                />
-                                            </LineChart>
-                                        </ResponsiveContainer>
-                                    ) : (
-                                        <div className="w-full h-full bg-muted/20 animate-pulse rounded-lg" />
-                                    )}
-                                </CardContent>
-                            </Card>
+                            <div className="lg:col-span-2">
+                                <IterationTimeline
+                                    validations={[...history, validation].map(v => ({
+                                        created_at: v.created_at || new Date().toISOString(),
+                                        overall_score: v.overallScore
+                                    }))}
+                                />
+                            </div>
 
                             <Card>
                                 <CardHeader>
@@ -501,7 +515,8 @@ export function ValidationReport({
                                                                 <div className="px-4 py-3 space-y-4">
                                                                     <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                                                                         <SnapshotField label="Problem" value={snapshot.problem} />
-                                                                        <SnapshotField label="Solution / Painkiller" value={snapshot.painkillerMoment} />
+                                                                        {snapshot.solution && <SnapshotField label="Solution" value={snapshot.solution} />}
+                                                                        <SnapshotField label="Painkiller" value={snapshot.painkillerMoment} />
                                                                         <SnapshotField label="Target Customer" value={snapshot.targetCustomer} />
                                                                         <SnapshotField label="Revenue Model" value={snapshot.revenueModel} />
                                                                     </div>
@@ -522,6 +537,20 @@ export function ValidationReport({
                         </div>
                     </TabsContent>
                 </Tabs>
+
+            </div>
+
+            {/* Next Steps Section */}
+            <div className="mt-12">
+                <NextStepsCard
+                    score={validation.overallScore}
+                    tier={userTier}
+                    ideaId={idea.id}
+                    validationId={validation.id || ''}
+                    ideaTitle={idea.title}
+                    unansweredQuestionsCount={totalThinkingQuestions}
+                    hasActionPlan={!!validation.actionPlan}
+                />
             </div>
         </div>
     );

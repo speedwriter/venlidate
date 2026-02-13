@@ -3,6 +3,22 @@ export type DimensionScore = {
     reasoning: string
 }
 
+export type ActionPlanPriority = {
+    rank: number
+    dimension: string
+    issue: string
+    criticalQuestion: string
+    validationMethod: string
+    successCriteria: string
+    estimatedDays: number
+}
+
+export type ActionPlan = {
+    priorities: ActionPlanPriority[]
+    overallTimeline: string
+    readinessCriteria: string
+}
+
 export type ValidationResult = {
     painkillerScore: DimensionScore
     revenueModelScore: DimensionScore
@@ -20,6 +36,8 @@ export type ValidationResult = {
         similarity: string
     }>
     recommendations: string[]
+    thinkingQuestions?: Record<string, string[]> // { dimension: ["q1", "q2"] }
+    actionPlan?: ActionPlan | null
     created_at?: string
     id?: string
     ideaSnapshot?: IdeaFormData
@@ -28,6 +46,7 @@ export type ValidationResult = {
 export type IdeaFormData = {
     title: string
     problem: string
+    solution: string
     targetCustomer: string
     painkillerMoment: string
     revenueModel: string

@@ -17,6 +17,7 @@ import type { IdeaFormData } from '../types/validations';
 const sampleIdea: IdeaFormData = {
     title: 'AI-Powered Code Review Assistant',
     problem: 'Software teams waste 5-10 hours per week on manual code reviews, missing critical bugs and security issues',
+    solution: 'An AI-powered GitHub/GitLab integration that uses LLMs to automatically review code for bugs, security vulnerabilities, and style issues, providing actionable feedback within the PR UI.',
     targetCustomer: 'Engineering teams at Series A-C startups (10-50 developers)',
     painkillerMoment: 'When a critical security vulnerability slips through code review and causes a production incident',
     revenueModel: 'SaaS subscription: $99/developer/month with annual contracts',

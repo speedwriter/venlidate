@@ -5,9 +5,11 @@ import {
     COMPARABLE_COMPANIES_PROMPT,
     RECOMMENDATIONS_PROMPT,
     RED_FLAGS_PROMPT,
+    THINKING_QUESTIONS_PROMPT,
+    ACTION_PLAN_PROMPT,
     calculateOverallScore
 } from './prompts';
-import type { IdeaFormData, ValidationResult, DimensionScore } from '@/types/validations';
+import type { IdeaFormData, ValidationResult, DimensionScore, ActionPlan } from '@/types/validations';
 
 /**
  * Helper function to extract JSON from markdown-wrapped responses
@@ -179,10 +181,111 @@ function safeParseJSON(text: string, type: 'object' | 'array' = 'object'): unkno
 }
 
 /**
+ * Generates thinking questions for a specific dimension if the score is low.
+ */
+export async function generateThinkingQuestions(
+    dimension: string,
+    score: number,
+    reasoning: string,
+    ideaData: IdeaFormData
+): Promise<string[]> {
+    // Only generate questions if score needs improvement (< 7)
+    if (score >= 7) return [];
+
+    const prompt = interpolatePrompt(THINKING_QUESTIONS_PROMPT, {
+        dimension: dimension,
+        score: score.toString(),
+        reasoning: reasoning,
+        problem: ideaData.problem,
+        targetCustomer: ideaData.targetCustomer,
+        revenueModel: ideaData.revenueModel,
+        distributionChannel: ideaData.distributionChannel,
+    });
+
+    try {
+        const { text } = await generateTextWithFallback({
+            prompt: prompt,
+            temperature: 0.8, // Higher temperature for more creative questions
+        });
+
+        // Parse JSON response safely
+        const parsed = safeParseJSON(text, 'array');
+
+        // Validate it's an array of strings
+        if (!Array.isArray(parsed) || parsed.length === 0) {
+            return [];
+        }
+
+        return (parsed as any[])
+            .filter((q): q is string => typeof q === 'string')
+            .slice(0, 2); // Max 2 questions per dimension
+
+    } catch (error) {
+        console.error(`Failed to generate thinking questions for ${dimension}:`, error);
+        return []; // Don't block validation if question generation fails
+    }
+}
+
+/**
+ * Generates a personalized action plan for paid users.
+ */
+export async function generateActionPlan(
+    validationResult: ValidationResult,
+    ideaData: IdeaFormData
+): Promise<ActionPlan | null> {
+    const prompt = interpolatePrompt(ACTION_PLAN_PROMPT, {
+        painkillerScore: validationResult.painkillerScore.score.toString(),
+        painkillerReasoning: validationResult.painkillerScore.reasoning,
+        revenueModelScore: validationResult.revenueModelScore.score.toString(),
+        revenueModelReasoning: validationResult.revenueModelScore.reasoning,
+        acquisitionScore: validationResult.acquisitionScore.score.toString(),
+        acquisitionReasoning: validationResult.acquisitionScore.reasoning,
+        moatScore: validationResult.moatScore.score.toString(),
+        moatReasoning: validationResult.moatScore.reasoning,
+        founderFitScore: validationResult.founderFitScore.score.toString(),
+        founderFitReasoning: validationResult.founderFitScore.reasoning,
+        timeToRevenueScore: validationResult.timeToRevenueScore.score.toString(),
+        timeToRevenueReasoning: validationResult.timeToRevenueScore.reasoning,
+        scalabilityScore: validationResult.scalabilityScore.score.toString(),
+        scalabilityReasoning: validationResult.scalabilityScore.reasoning,
+        overallScore: validationResult.overallScore.toString(),
+        problem: ideaData.problem,
+        targetCustomer: ideaData.targetCustomer,
+        revenueModel: ideaData.revenueModel,
+        distributionChannel: ideaData.distributionChannel,
+        unfairAdvantage: ideaData.unfairAdvantage,
+        timeCommitment: ideaData.timeCommitment,
+    })
+
+    try {
+        const { text } = await generateTextWithFallback({
+            prompt: prompt,
+            temperature: 0.5, // Lower temp for more structured output
+        })
+
+        // Parse JSON response with safe fallback
+        const actionPlan = safeParseJSON(text, 'object') as ActionPlan;
+
+        // Validate structure
+        if (!actionPlan || !actionPlan.priorities || !Array.isArray(actionPlan.priorities)) {
+            throw new Error('Invalid action plan structure')
+        }
+
+        return actionPlan
+    } catch (error) {
+        console.error('Failed to generate action plan:', error)
+        return null // Don't block validation if action plan generation fails
+    }
+}
+
+/**
  * Main validation function that scores a startup idea across multiple dimensions
  * using AI-powered analysis.
  */
-export async function validateIdea(ideaData: IdeaFormData): Promise<{ validation: ValidationResult; modelUsed: string }> {
+export async function validateIdea(
+    ideaData: IdeaFormData,
+    userTier: 'free' | 'pro' | 'premium' = 'free'
+): Promise<{ validation: ValidationResult; modelUsed: string }> {
     const startTime = Date.now();
     console.log('🚀 Starting validation for:', ideaData.title);
 
@@ -193,6 +296,7 @@ export async function validateIdea(ideaData: IdeaFormData): Promise<{ validation
         // Prepare data for interpolation
         const interpolationData: Record<string, string> = {
             problem: ideaData.problem,
+            solution: ideaData.solution,
             targetCustomer: ideaData.targetCustomer,
             painkillerMoment: ideaData.painkillerMoment,
             revenueModel: ideaData.revenueModel,
@@ -378,6 +482,44 @@ export async function validateIdea(ideaData: IdeaFormData): Promise<{ validation
         } catch (error) {
             console.error('❌ Error generating recommendations:', error);
             result.recommendations = ['Unable to generate recommendations. Please review scores and take appropriate action.'];
+        }
+
+        // Generate thinking questions for dimensions that scored < 7
+        console.log('🤔 Generating thinking questions...');
+        const thinkingQuestions: Record<string, string[]> = {};
+
+        const dimensionData = [
+            { name: 'painkiller', score: scores.painkiller, reasoning: result.painkillerScore?.reasoning || '' },
+            { name: 'revenueModel', score: scores.revenueModel, reasoning: result.revenueModelScore?.reasoning || '' },
+            { name: 'acquisition', score: scores.acquisition, reasoning: result.acquisitionScore?.reasoning || '' },
+            { name: 'moat', score: scores.moat, reasoning: result.moatScore?.reasoning || '' },
+            { name: 'founderFit', score: scores.founderFit, reasoning: result.founderFitScore?.reasoning || '' },
+            { name: 'timeToRevenue', score: scores.timeToRevenue, reasoning: result.timeToRevenueScore?.reasoning || '' },
+            { name: 'scalability', score: scores.scalability, reasoning: result.scalabilityScore?.reasoning || '' },
+        ];
+
+        for (const dimension of dimensionData) {
+            if (dimension.score < 7) {
+                const questions = await generateThinkingQuestions(
+                    dimension.name,
+                    dimension.score,
+                    dimension.reasoning,
+                    ideaData
+                );
+
+                if (questions.length > 0) {
+                    thinkingQuestions[dimension.name] = questions;
+                }
+            }
+        }
+
+        result.thinkingQuestions = thinkingQuestions;
+
+        // Generate personalized action plan for paid users
+        if (userTier === 'pro' || userTier === 'premium') {
+            console.log('📋 Generating action plan...');
+            const actionPlan = await generateActionPlan(result as ValidationResult, ideaData);
+            result.actionPlan = actionPlan;
         }
 
         const endTime = Date.now();

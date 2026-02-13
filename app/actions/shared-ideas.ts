@@ -27,6 +27,7 @@ export async function shareIdea(validationId: string, isAnonymous: boolean = tru
                 id,
                 title,
                 problem,
+                solution,
                 target_customer
             )
         `)
@@ -49,7 +50,13 @@ export async function shareIdea(validationId: string, isAnonymous: boolean = tru
         return { success: false, error: 'This idea is already shared' }
     }
 
-    const idea = validation.ideas as { id: string; title: string; problem: string; target_customer: string } // Type cast because of join
+    const idea = validation.ideas as {
+        id: string;
+        title: string;
+        problem: string;
+        solution: string;
+        target_customer: string
+    } // Type cast because of join
 
     // 3. Insert into shared_ideas
     const { data: sharedIdea, error: shareError } = await supabase
@@ -60,6 +67,7 @@ export async function shareIdea(validationId: string, isAnonymous: boolean = tru
             user_id: user.id,
             title: idea.title,
             problem: idea.problem,
+            solution: idea.solution,
             target_customer: idea.target_customer,
             overall_score: validation.overall_score,
             traffic_light: validation.traffic_light,
@@ -87,6 +95,7 @@ export async function shareIdea(validationId: string, isAnonymous: boolean = tru
         .from('user_karma')
         .upsert({
             user_id: user.id,
+            email: user.email,
             ideas_shared: (currentKarma?.ideas_shared || 0) + 1,
             free_validation_credits: (currentKarma?.free_validation_credits || 0) + 1,
             updated_at: new Date().toISOString()
@@ -156,6 +165,7 @@ export async function unshareIdea(sharedIdeaId: string) {
         .from('user_karma')
         .upsert({
             user_id: user.id,
+            email: user.email,
             ideas_shared: Math.max(0, (karma?.ideas_shared || 1) - 1),
             free_validation_credits: Math.max(0, (karma?.free_validation_credits || 1) - 1),
             updated_at: new Date().toISOString()
@@ -416,6 +426,7 @@ export async function createAdminIdea(ideaData: IdeaFormData) {
                 user_id: user.id,
                 title: ideaData.title,
                 problem: ideaData.problem,
+                solution: ideaData.solution,
                 target_customer: ideaData.targetCustomer,
                 overall_score: validation.overallScore,
                 traffic_light: validation.trafficLight,
@@ -487,7 +498,10 @@ export async function getUserKarma(userId: string) {
         // Record doesn't exist, create it
         const { data: newData, error: insertError } = await supabase
             .from('user_karma')
-            .insert({ user_id: userId })
+            .insert({
+                user_id: userId,
+                email: (await supabase.auth.getUser()).data.user?.email
+            })
             .select('*')
             .single()
 

@@ -52,8 +52,18 @@ export default function PricingTierCard({
         try {
             const result = await createCheckoutSession(priceId, tier)
 
-            if (!result.success || !result.url) {
+            if (!result.success) {
+                // If user is not authenticated, redirect to signup with plan parameter
+                if (result.error === 'Not authenticated') {
+                    router.push(`/signup?plan=${tier}`)
+                    return
+                }
+
                 throw new Error(result.error || 'Failed to create checkout session')
+            }
+
+            if (!result.url) {
+                throw new Error('Failed to create checkout session')
             }
 
             // Redirect to Stripe Checkout
@@ -92,35 +102,25 @@ export default function PricingTierCard({
 
             <CardContent className="flex-grow flex flex-col">
                 <div className="mb-6">
-                    <div className="flex items-baseline gap-1">
+                    <div className="flex items-baseline gap-2">
                         <span className="text-4xl font-bold tracking-tight">{price}</span>
                         <span className="text-muted-foreground">/{billingPeriod}</span>
                     </div>
 
-                    {annualPrice && (
-                        <div className="mt-4 inline-flex p-1 bg-muted rounded-lg w-full max-w-[200px]">
-                            <button
-                                onClick={() => onBillingCycleChange('monthly')}
-                                className={cn(
-                                    "flex-1 px-3 py-1.5 text-xs font-medium rounded-md transition-all",
-                                    billingCycle === 'monthly'
-                                        ? "bg-white shadow-sm text-foreground"
-                                        : "text-muted-foreground hover:text-foreground"
-                                )}
-                            >
-                                Monthly
-                            </button>
-                            <button
-                                onClick={() => onBillingCycleChange('annual')}
-                                className={cn(
-                                    "flex-1 px-3 py-1.5 text-xs font-medium rounded-md transition-all",
-                                    billingCycle === 'annual'
-                                        ? "bg-white shadow-sm text-foreground"
-                                        : "text-muted-foreground hover:text-foreground"
-                                )}
-                            >
-                                Annual
-                            </button>
+                    {/* Show annual savings if applicable */}
+                    {annualPrice && billingCycle === 'annual' && tier !== 'free' && (
+                        <div className="mt-2 space-y-1">
+                            <div className="flex items-center gap-2">
+                                <span className="text-sm text-muted-foreground line-through">
+                                    {tier === 'pro' ? '$39' : '$79'}/month
+                                </span>
+                                <Badge variant="secondary" className="bg-green-100 text-green-700">
+                                    Save {tier === 'pro' ? '$78' : '$156'}/year
+                                </Badge>
+                            </div>
+                            <p className="text-xs text-muted-foreground">
+                                Billed {tier === 'pro' ? '$390' : '$790'} annually
+                            </p>
                         </div>
                     )}
                 </div>

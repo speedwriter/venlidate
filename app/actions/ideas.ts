@@ -3,7 +3,7 @@
 import { createClient } from '@/lib/supabase/server'
 import { revalidatePath } from 'next/cache'
 import { validateIdea } from '@/lib/ai/validator'
-import { IdeaFormData, ValidationResult, IdeaWithValidation } from '@/types/validations'
+import { IdeaFormData, ValidationResult, IdeaWithValidation, ActionPlan } from '@/types/validations'
 import { checkValidationQuota, checkIterationQuota, canAccessReport, getAccessibleValidations } from '@/lib/utils/subscriptions'
 import { Tables } from '@/types/database'
 
@@ -24,6 +24,8 @@ function mapValidationRowToResult(row: Tables<'validations'>): ValidationResult 
         created_at: row.created_at || new Date().toISOString(),
         id: row.id,
         ideaSnapshot: row.idea_snapshot as IdeaFormData | undefined,
+        thinkingQuestions: row.thinking_questions as Record<string, string[]> || undefined,
+        actionPlan: (row as any).action_plan as ActionPlan | null | undefined,
     }
 }
 
@@ -41,6 +43,7 @@ export async function createIdea(formData: FormData) {
 
     const title = formData.get('title') as string
     const problem = formData.get('problem') as string
+    const solution = formData.get('solution') as string
     const targetCustomer = formData.get('targetCustomer') as string
     const painkillerMoment = formData.get('painkillerMoment') as string
     const revenueModel = formData.get('revenueModel') as string
@@ -49,7 +52,7 @@ export async function createIdea(formData: FormData) {
     const timeCommitment = formData.get('timeCommitment') as IdeaFormData['timeCommitment']
 
     // Basic validation
-    if (!title || !problem || !targetCustomer || !painkillerMoment || !revenueModel || !unfairAdvantage || !distributionChannel || !timeCommitment) {
+    if (!title || !problem || !solution || !targetCustomer || !painkillerMoment || !revenueModel || !unfairAdvantage || !distributionChannel || !timeCommitment) {
         return { success: false, error: 'All fields are required' }
     }
 
@@ -59,6 +62,7 @@ export async function createIdea(formData: FormData) {
             user_id: user.id,
             title,
             problem,
+            solution,
             target_customer: targetCustomer,
             painkiller_moment: painkillerMoment,
             revenue_model: revenueModel,
@@ -91,6 +95,7 @@ export async function updateIdea(ideaId: string, formData: FormData) {
 
     const title = formData.get('title') as string
     const problem = formData.get('problem') as string
+    const solution = formData.get('solution') as string
     const targetCustomer = formData.get('targetCustomer') as string
     const painkillerMoment = formData.get('painkillerMoment') as string
     const revenueModel = formData.get('revenueModel') as string
@@ -99,7 +104,7 @@ export async function updateIdea(ideaId: string, formData: FormData) {
     const timeCommitment = formData.get('timeCommitment') as IdeaFormData['timeCommitment']
 
     // Basic validation
-    if (!title || !problem || !targetCustomer || !painkillerMoment || !revenueModel || !unfairAdvantage || !distributionChannel || !timeCommitment) {
+    if (!title || !problem || !solution || !targetCustomer || !painkillerMoment || !revenueModel || !unfairAdvantage || !distributionChannel || !timeCommitment) {
         return { success: false, error: 'All fields are required' }
     }
 
@@ -120,6 +125,7 @@ export async function updateIdea(ideaId: string, formData: FormData) {
         .update({
             title,
             problem,
+            solution,
             target_customer: targetCustomer,
             painkiller_moment: painkillerMoment,
             revenue_model: revenueModel,
@@ -181,10 +187,15 @@ export async function submitIdeaForValidation(ideaId: string) {
     const usingCredit = quota.usingCredit || iteration.usingCredit || false
     const remainingCredits = (quota.usingCredit ? quota.remaining : (iteration.usingCredit ? iteration.remaining : 0)) as number
 
+    // Get user tier for action plan generation
+    const { getUserTier } = await import('@/lib/utils/subscriptions')
+    const userTier = await getUserTier(user.id)
+
     try {
         const ideaData: IdeaFormData = {
             title: idea.title,
             problem: idea.problem,
+            solution: idea.solution,
             targetCustomer: idea.target_customer,
             painkillerMoment: idea.painkiller_moment,
             revenueModel: idea.revenue_model,
@@ -194,7 +205,7 @@ export async function submitIdeaForValidation(ideaId: string) {
         }
 
         const startTime = Date.now()
-        const { validation, modelUsed } = await validateIdea(ideaData)
+        const { validation, modelUsed } = await validateIdea(ideaData, userTier)
         const endTime = Date.now()
         const processingTimeMs = endTime - startTime
 
@@ -224,9 +235,12 @@ export async function submitIdeaForValidation(ideaId: string) {
                 red_flags: validation.redFlags,
                 comparable_companies: validation.comparableCompanies,
                 recommendations: validation.recommendations,
+                thinking_questions: validation.thinkingQuestions || {},
+                action_plan: validation.actionPlan,
                 model_used: modelUsed,
                 processing_time_ms: processingTimeMs,
-                used_credit: usingCredit
+                used_credit: usingCredit,
+                idea_snapshot: ideaData
             })
 
         if (validationError) {
@@ -250,7 +264,10 @@ export async function submitIdeaForValidation(ideaId: string) {
         if (usingCredit) {
             const { error: karmaError } = await supabase
                 .from('user_karma')
-                .update({ free_validation_credits: Math.max(0, remainingCredits - 1) })
+                .update({
+                    free_validation_credits: Math.max(0, remainingCredits - 1),
+                    email: user.email
+                })
                 .eq('user_id', user.id)
 
             if (!karmaError) {

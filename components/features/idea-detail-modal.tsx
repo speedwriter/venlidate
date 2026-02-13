@@ -25,7 +25,10 @@ import {
     X
 } from 'lucide-react'
 import Link from 'next/link'
+import { ActionPlanCard } from './action-plan-card'
+import { ActionPlanUpgradeCTA } from './action-plan-upgrade-cta'
 import { cn } from '@/lib/utils'
+import type { ActionPlan } from '@/types/validations'
 
 interface SharedIdeaDetail {
     id: string
@@ -298,6 +301,25 @@ export function IdeaDetailModal({
                                                     </div>
                                                 </div>
                                             </div>
+                                        )}
+                                    </section>
+
+                                    {/* Action Plan Section */}
+                                    <section className="space-y-4 pt-4 border-t">
+                                        <h3 className="text-sm font-black uppercase tracking-wider text-slate-800 flex items-center gap-2">
+                                            <Target className="h-4 w-4 text-blue-500" />
+                                            Personalized Action Plan
+                                        </h3>
+                                        {!isPro ? (
+                                            <ActionPlanUpgradeCTA />
+                                        ) : (
+                                            validation?.action_plan ? (
+                                                <ActionPlanCard actionPlan={validation.action_plan} tier={userTier} />
+                                            ) : (
+                                                <div className="p-6 bg-slate-50 border-2 border-dashed rounded-2xl text-center">
+                                                    <p className="text-xs text-slate-400 italic">No action plan available for this validation.</p>
+                                                </div>
+                                            )
                                         )}
                                     </section>
                                 </div>

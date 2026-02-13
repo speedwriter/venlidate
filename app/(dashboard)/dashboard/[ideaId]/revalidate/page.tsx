@@ -64,6 +64,7 @@ export default async function RevalidateIdeaPage({ params }: RevalidateIdeaPageP
                 initialData={{
                     title: idea.title,
                     problem: idea.problem,
+                    solution: idea.solution,
                     targetCustomer: idea.target_customer,
                     painkillerMoment: idea.painkiller_moment,
                     revenueModel: idea.revenue_model,

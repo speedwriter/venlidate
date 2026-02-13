@@ -20,8 +20,7 @@ export function RevalidateButton({ ideaId }: RevalidateButtonProps) {
     return (
         <Button
             onClick={handleRevalidate}
-            variant="outline"
-            className="flex items-center gap-2"
+            className="gap-2 h-10 px-4 font-bold transition-all rounded-xl shadow-lg hover:shadow-xl"
         >
             <RefreshCw className="h-4 w-4" />
             Revalidate Idea
