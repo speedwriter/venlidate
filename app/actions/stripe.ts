@@ -10,7 +10,9 @@ import { createAdminClient } from '@/lib/supabase/admin'
  */
 export async function createCheckoutSession(
     priceId: string,
-    tier: 'pro' | 'premium'
+    tier: 'pro' | 'premium',
+    successUrl?: string,
+    cancelUrl?: string
 ) {
     try {
         const supabase = await createClient()
@@ -105,8 +107,8 @@ export async function createCheckoutSession(
                 },
             ],
             mode: 'subscription',
-            success_url: `${process.env.NEXT_PUBLIC_APP_URL}/dashboard?success=true`,
-            cancel_url: `${process.env.NEXT_PUBLIC_APP_URL}/pricing?canceled=true`,
+            success_url: successUrl || `${process.env.NEXT_PUBLIC_APP_URL}/dashboard?success=true`,
+            cancel_url: cancelUrl || `${process.env.NEXT_PUBLIC_APP_URL}/pricing?canceled=true`,
             metadata: {
                 user_id: userId,
                 tier: tier,

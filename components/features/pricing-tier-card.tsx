@@ -23,6 +23,7 @@ interface PricingTierCardProps {
     tier?: 'free' | 'pro' | 'premium'
     isCurrentPlan: boolean
     billingCycle: 'monthly' | 'annual'
+    redirectTo?: string
 }
 
 export default function PricingTierCard({
@@ -38,6 +39,7 @@ export default function PricingTierCard({
     tier,
     isCurrentPlan,
     billingCycle,
+    redirectTo,
 }: PricingTierCardProps) {
     const [isLoading, setIsLoading] = useState(false)
     const router = useRouter()
@@ -48,12 +50,22 @@ export default function PricingTierCard({
         setIsLoading(true)
 
         try {
-            const result = await createCheckoutSession(priceId, tier)
+            const successUrl = redirectTo
+                ? `${window.location.origin}${redirectTo}?success=true`
+                : undefined
+            const cancelUrl = redirectTo
+                ? `${window.location.origin}${redirectTo}?canceled=true`
+                : undefined
+
+            const result = await createCheckoutSession(priceId, tier, successUrl, cancelUrl)
 
             if (!result.success) {
                 // If user is not authenticated, redirect to signup with plan parameter
                 if (result.error === 'Not authenticated') {
-                    router.push(`/signup?plan=${tier}`)
+                    const signupUrl = redirectTo
+                        ? `/signup?plan=${tier}&redirectTo=${encodeURIComponent(redirectTo)}`
+                        : `/signup?plan=${tier}`
+                    router.push(signupUrl)
                     return
                 }
 

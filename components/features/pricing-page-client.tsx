@@ -11,6 +11,7 @@ import FeatureComparisonTable from "@/components/features/feature-comparison-tab
 import PricingTierCard from "@/components/features/pricing-tier-card"
 import { STRIPE_CONFIG } from '@/lib/stripe/constants'
 import { ManageSubscriptionButton } from "@/components/features/manage-subscription-button"
+import { useSearchParams } from 'next/navigation'
 
 interface PricingPageClientProps {
     currentTier: string
@@ -20,6 +21,8 @@ interface PricingPageClientProps {
 
 export default function PricingPageClient({ currentTier, userId, showCTA = true }: PricingPageClientProps) {
     const [billingCycle, setBillingCycle] = React.useState<'monthly' | 'annual'>('monthly')
+    const searchParams = useSearchParams()
+    const redirectTo = searchParams.get('redirectTo') || undefined
 
     const freeTierFeatures = [
         "1 validation per month",
@@ -113,6 +116,7 @@ export default function PricingPageClient({ currentTier, userId, showCTA = true 
                     tier="free"
                     isCurrentPlan={currentTier === 'free'}
                     billingCycle={billingCycle}
+                    redirectTo={redirectTo}
                 />
                 <PricingTierCard
                     name="Pro"
@@ -127,6 +131,7 @@ export default function PricingPageClient({ currentTier, userId, showCTA = true 
                     tier="pro"
                     isCurrentPlan={currentTier === 'pro'}
                     billingCycle={billingCycle}
+                    redirectTo={redirectTo}
                 />
                 <PricingTierCard
                     name="Premium"
@@ -141,6 +146,7 @@ export default function PricingPageClient({ currentTier, userId, showCTA = true 
                     tier="premium"
                     isCurrentPlan={currentTier === 'premium'}
                     billingCycle={billingCycle}
+                    redirectTo={redirectTo}
                 />
             </div>
 

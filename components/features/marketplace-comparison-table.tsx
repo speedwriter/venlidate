@@ -37,7 +37,7 @@ export function MarketplaceComparisonTable() {
                         <TableRow>
                             <TableCell className="font-medium">View idea details</TableCell>
                             <TableCell className="text-center">Preview only</TableCell>
-                            <TableCell className="text-center">Full scores</TableCell>
+                            <TableCell className="text-center">Full reasoning</TableCell>
                             <TableCell className="text-center">Full reasoning</TableCell>
                         </TableRow>
                         <TableRow>

@@ -197,9 +197,11 @@ export function IdeaDetailModal({
                                                         <span className="text-sm font-black text-slate-800">Locked</span>
                                                     </div>
                                                     {isAuthenticated ? (
-                                                        <Button size="sm" variant="outline" className="text-[10px] h-7 font-black uppercase tracking-wider border-slate-200 text-slate-500 cursor-not-allowed" disabled>
-                                                            Upgrade Coming Soon
-                                                        </Button>
+                                                        <Link href={`/dashboard/subscription?redirectTo=${pathname}`}>
+                                                            <Button size="sm" variant="outline" className="text-[10px] h-7 font-black uppercase tracking-wider border-blue-200 text-blue-600 hover:bg-blue-50">
+                                                                Upgrade to Unlock
+                                                            </Button>
+                                                        </Link>
                                                     ) : (
                                                         <Link href={`/login?redirectTo=${pathname}`}>
                                                             <Button size="sm" variant="outline" className="text-[10px] h-7 font-black uppercase tracking-wider border-blue-200 text-blue-600 hover:bg-blue-50">
@@ -221,19 +223,15 @@ export function IdeaDetailModal({
                                     {/* Comparable Companies */}
                                     <section className="space-y-4">
                                         <h3 className="text-sm font-black uppercase tracking-wider text-slate-800">Comparable Companies</h3>
-                                        {!isPremium ? (
+                                        {!isPro ? (
                                             <div className="p-6 bg-slate-50 border-2 border-dashed rounded-2xl text-center space-y-3">
                                                 <Lock className="h-6 w-6 text-slate-300 mx-auto" />
-                                                <p className="text-xs font-bold text-slate-500 uppercase">Available on Premium Plan</p>
-                                                {/* <Link href="/pricing" className="inline-block">
+                                                <p className="text-xs font-bold text-slate-500 uppercase">Available on Pro & Premium Plans</p>
+                                                <Link href={`/dashboard/subscription?redirectTo=${pathname}`} className="inline-block">
                                                     <Button variant="outline" size="sm" className="font-bold rounded-xl border-blue-200 text-blue-600 hover:bg-blue-50">
-                                                        Upgrade to Premium
+                                                        Upgrade to Unlock
                                                     </Button>
-                                                </Link> */}
-                                                <Button variant="outline" size="sm" className="font-bold rounded-xl border-slate-200 text-slate-500 cursor-not-allowed" disabled>
-                                                    Premium Coming Soon
-                                                </Button>
-
+                                                </Link>
                                             </div>
                                         ) : (
                                             <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
@@ -265,7 +263,7 @@ export function IdeaDetailModal({
                                             <Sparkles className="h-4 w-4 text-indigo-500" />
                                             Detailed AI Reasoning
                                         </h3>
-                                        {!isPremium ? (
+                                        {!isPro ? (
                                             <div className="p-6 bg-indigo-50 border border-indigo-100 rounded-2xl space-y-4">
                                                 <div className="flex items-center gap-3">
                                                     <div className="h-2 w-2 rounded-full bg-indigo-300 animate-pulse" />
@@ -276,15 +274,12 @@ export function IdeaDetailModal({
                                                     <div className="h-2 w-full max-w-[150px] bg-indigo-100 rounded" />
                                                 </div>
                                                 <div className="flex flex-col items-center text-center space-y-2 pt-2">
-                                                    <p className="text-xs font-black text-indigo-900 uppercase">Premium Insights Locked</p>
-                                                    {/* <Link href="/pricing">
+                                                    <p className="text-xs font-black text-indigo-900 uppercase">Detailed Analysis Locked</p>
+                                                    <Link href={`/dashboard/subscription?redirectTo=${pathname}`}>
                                                         <Button className="bg-indigo-600 hover:bg-indigo-700 text-white font-bold rounded-xl h-9">
-                                                            Go Premium
+                                                            Upgrade to Unlock
                                                         </Button>
-                                                    </Link> */}
-                                                    <Button className="bg-slate-200 text-slate-500 font-bold rounded-xl h-9 cursor-not-allowed" disabled>
-                                                        Scale Coming Soon
-                                                    </Button>
+                                                    </Link>
 
                                                 </div>
                                             </div>
@@ -331,7 +326,7 @@ export function IdeaDetailModal({
                                             Personalized Action Plan
                                         </h3>
                                         {!isPro ? (
-                                            <ActionPlanUpgradeCTA />
+                                            <ActionPlanUpgradeCTA redirectTo={pathname} />
                                         ) : (
                                             validation?.action_plan ? (
                                                 <ActionPlanCard actionPlan={validation.action_plan} tier={userTier} />

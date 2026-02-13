@@ -8,7 +8,7 @@ import { Lock, Zap, ArrowRight, CheckCircle2 } from 'lucide-react'
 import Link from 'next/link'
 
 
-export function ActionPlanUpgradeCTA() {
+export function ActionPlanUpgradeCTA({ redirectTo }: { redirectTo?: string }) {
     return (
         <Card className="relative overflow-hidden border-dashed border-2 bg-muted/5 p-4 md:p-8">
             <div className="absolute inset-0 bg-grid-slate-200/50 [mask-image:linear-gradient(to_bottom,white,transparent)] dark:bg-grid-slate-800/50" />
@@ -58,7 +58,7 @@ export function ActionPlanUpgradeCTA() {
                         </div>
                     </div>
 
-                    <Link href="/dashboard/subscription" className="block w-full">
+                    <Link href={redirectTo ? `/dashboard/subscription?redirectTo=${redirectTo}` : "/dashboard/subscription"} className="block w-full">
                         <Button size="lg" className="w-full h-14 text-lg font-bold gap-2 shadow-lg shadow-primary/20 hover:scale-[1.02] transition-transform">
                             <Zap className="h-5 w-5 fill-current" />
                             Upgrade to Pro to Unlock
