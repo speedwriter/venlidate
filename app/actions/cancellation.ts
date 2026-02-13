@@ -27,6 +27,7 @@ export async function saveCancellationFeedback(
             .from('cancellation_feedback')
             .insert({
                 user_id: user.id,
+                user_email: user.email || null,
                 reason: reason,
                 feedback: feedback || null,
                 tier: currentTier,
@@ -47,7 +48,7 @@ export async function saveCancellationFeedback(
 export type CancellationStats = {
     total: number
     byReason: Array<{ reason: string; count: number; percentage: number }>
-    recentFeedback: Array<{ reason: string; feedback: string; tier: string; created_at: string }>
+    recentFeedback: Array<{ reason: string; feedback: string; tier: string; user_email: string; created_at: string }>
 }
 
 export async function getCancellationStats(): Promise<{ success: boolean; data?: CancellationStats; error?: string }> {
@@ -115,6 +116,7 @@ export async function getCancellationStats(): Promise<{ success: boolean; data?:
                 reason: item.reason,
                 feedback: item.feedback || '',
                 tier: item.tier || 'unknown',
+                user_email: item.user_email || 'unknown',
                 created_at: item.created_at
             }))
 

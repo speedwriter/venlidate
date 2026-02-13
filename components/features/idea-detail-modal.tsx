@@ -27,6 +27,7 @@ import { ActionPlanCard } from './action-plan-card'
 import { ActionPlanUpgradeCTA } from './action-plan-upgrade-cta'
 import { cn } from '@/lib/utils'
 import { ActionPlan } from '@/types/validations'
+import { usePathname } from 'next/navigation'
 
 export interface SharedIdeaDetail {
     id: string
@@ -75,6 +76,7 @@ export function IdeaDetailModal({
 }: IdeaDetailModalProps) {
     const isPro = userTier === 'pro' || userTier === 'premium'
     const isPremium = userTier === 'premium'
+    const pathname = usePathname()
 
     const truncate = (text: string, sentences: number = 2) => {
         if (!text) return ''
@@ -158,7 +160,7 @@ export function IdeaDetailModal({
                                     {!isAuthenticated && (
                                         <div className="p-4 bg-blue-50 rounded-2xl border border-blue-100 space-y-3">
                                             <p className="text-sm font-bold text-blue-900">Sign up free to see the full analysis</p>
-                                            <Link href="/login" className="block">
+                                            <Link href={`/login?redirectTo=${pathname}`} className="block">
                                                 <Button className="w-full bg-blue-600 hover:bg-blue-700 text-white font-bold rounded-xl h-10">
                                                     Sign Up Free
                                                 </Button>
@@ -199,7 +201,7 @@ export function IdeaDetailModal({
                                                             Upgrade Coming Soon
                                                         </Button>
                                                     ) : (
-                                                        <Link href="/signup">
+                                                        <Link href={`/login?redirectTo=${pathname}`}>
                                                             <Button size="sm" variant="outline" className="text-[10px] h-7 font-black uppercase tracking-wider border-blue-200 text-blue-600 hover:bg-blue-50">
                                                                 Sign Up Free
                                                             </Button>

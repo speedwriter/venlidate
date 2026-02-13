@@ -2,12 +2,17 @@ import { createClient } from '@/lib/supabase/server'
 import { redirect } from 'next/navigation'
 import { SignupForm } from '@/components/features/signup-form'
 
-export default async function SignupPage() {
+export default async function SignupPage({
+    searchParams,
+}: {
+    searchParams: Promise<{ redirectTo?: string }>
+}) {
+    const { redirectTo } = await searchParams
     const supabase = await createClient()
     const { data: { user } } = await supabase.auth.getUser()
 
     if (user) {
-        redirect('/dashboard')
+        redirect(redirectTo || '/dashboard')
     }
 
     return (

@@ -48,7 +48,7 @@ export default async function IdeasMarketplace() {
                                 </Button>
                             </Link>
                         ) : (
-                            <Link href="/login" className="w-full sm:w-auto">
+                            <Link href="/login?redirectTo=/ideas" className="w-full sm:w-auto">
                                 <Button size="lg" className="w-full h-14 px-8 bg-blue-600 hover:bg-blue-700 text-white font-black rounded-2xl gap-2 shadow-xl">
                                     Sign Up Free to See All
                                     <ArrowRight className="h-4 w-4" />
@@ -106,7 +106,7 @@ export default async function IdeasMarketplace() {
                                 Sign up free to browse 200+ validated ideas, or validate your own idea to earn access.
                             </p>
                             <div className="flex flex-col sm:flex-row items-center justify-center gap-4 pt-4">
-                                <Link href="/login" className="w-full sm:w-auto text-blue-600">
+                                <Link href="/login?redirectTo=/ideas" className="w-full sm:w-auto text-blue-600">
                                     <Button size="lg" className="w-full h-14 px-8 bg-white hover:bg-slate-50 text-blue-600 font-black rounded-2xl shadow-xl">
                                         Sign Up Free
                                     </Button>

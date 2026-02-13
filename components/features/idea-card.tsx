@@ -43,9 +43,12 @@ interface IdeaCardProps {
     userTier?: string
 }
 
+import { usePathname } from "next/navigation"
+
 export function IdeaCard({ idea, mode = 'dashboard', isAuthenticated = true, userTier = 'free' }: IdeaCardProps) {
     const [isDeleting, setIsDeleting] = React.useState(false)
     const router = useRouter()
+    const pathname = usePathname()
     const [isModalOpen, setIsModalOpen] = React.useState(false)
 
     async function handleDelete() {
@@ -91,7 +94,7 @@ export function IdeaCard({ idea, mode = 'dashboard', isAuthenticated = true, use
             >
                 {!isDashboard && !isAuthenticated && (
                     <div className="absolute inset-x-0 bottom-0 z-20 p-4 bg-gradient-to-t from-slate-900/80 to-transparent flex flex-col items-center justify-end opacity-0 group-hover:opacity-100 transition-opacity">
-                        <Link href="/login">
+                        <Link href={`/login?redirectTo=${pathname}`}>
                             <Button size="sm" className="bg-white text-slate-900 hover:bg-slate-100 font-black rounded-xl gap-2 shadow-xl mb-4">
                                 <Lock className="h-3.5 w-3.5" />
                                 Sign up to see more
@@ -185,7 +188,7 @@ export function IdeaCard({ idea, mode = 'dashboard', isAuthenticated = true, use
                                 <ArrowRight className="h-4 w-4 group-hover/btn:translate-x-1 transition-transform" />
                             </Button>
                         ) : (
-                            <Link href="/login" className="w-full" onClick={(e) => e.stopPropagation()}>
+                            <Link href={`/login?redirectTo=${pathname}`} className="w-full" onClick={(e) => e.stopPropagation()}>
                                 <Button variant="outline" className="w-full gap-2 group/btn font-semibold bg-white text-slate-900">
                                     <Lock className="h-4 w-4" />
                                     Login to View

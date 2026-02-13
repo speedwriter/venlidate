@@ -31,7 +31,11 @@ const formSchema = z.object({
     path: ["confirmPassword"],
 })
 
+import { useSearchParams } from 'next/navigation'
+
 export function SignupForm() {
+    const searchParams = useSearchParams()
+    const redirectTo = searchParams.get('redirectTo') || undefined
     const [error, setError] = useState<string | null>(null)
     const [success, setSuccess] = useState<string | null>(null)
     const [isLoading, setIsLoading] = useState(false)
@@ -59,7 +63,7 @@ export function SignupForm() {
             formData.append('email', values.email)
             formData.append('password', values.password)
 
-            const result = await signUp(formData)
+            const result = await signUp(formData, redirectTo)
 
             if (result && !result.success) {
                 setError(result.error || 'Something went wrong')
@@ -70,6 +74,9 @@ export function SignupForm() {
                 form.reset()
             }
         } catch (e) {
+            if (e && typeof e === 'object' && 'digest' in e && typeof e.digest === 'string' && e.digest.startsWith('NEXT_REDIRECT')) {
+                throw e;
+            }
             console.error(e)
             setError('An unexpected error occurred.')
             toast.error('Something went wrong. Please try again.')
@@ -185,7 +192,7 @@ export function SignupForm() {
             <CardFooter className="flex justify-center text-sm text-muted-foreground">
                 <div>
                     Already have an account?{' '}
-                    <NextLink href="/login" className="text-primary hover:underline font-medium">
+                    <NextLink href={redirectTo ? `/login?redirectTo=${redirectTo}` : "/login"} className="text-primary hover:underline font-medium">
                         Sign in
                     </NextLink>
                 </div>

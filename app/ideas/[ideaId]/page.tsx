@@ -121,7 +121,7 @@ export default async function IdeaPage({ params }: PageProps) {
                             </div>
                         </div>
                         <div className="flex items-center gap-3 w-full sm:w-auto">
-                            <Link href="/login" className="flex-1 sm:flex-none">
+                            <Link href={`/login?redirectTo=/ideas/${ideaId}`} className="flex-1 sm:flex-none">
                                 <Button className="w-full bg-blue-600 hover:bg-blue-700 text-white font-black rounded-xl h-12 px-8 shadow-lg">
                                     Sign Up Free
                                 </Button>

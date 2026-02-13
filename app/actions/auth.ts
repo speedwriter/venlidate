@@ -4,7 +4,7 @@ import { createClient } from '@/lib/supabase/server'
 import { redirect } from 'next/navigation'
 import { headers } from 'next/headers'
 
-export async function signIn(formData: FormData) {
+export async function signIn(formData: FormData, redirectTo?: string) {
     const email = formData.get('email') as string
     const password = formData.get('password') as string
     const supabase = await createClient()
@@ -18,10 +18,10 @@ export async function signIn(formData: FormData) {
         return { success: false, error: error.message }
     }
 
-    redirect('/dashboard')
+    redirect(redirectTo || '/dashboard')
 }
 
-export async function signUp(formData: FormData) {
+export async function signUp(formData: FormData, redirectTo?: string) {
     const origin = (await headers()).get('origin')
     const email = formData.get('email') as string
     const password = formData.get('password') as string
@@ -29,11 +29,15 @@ export async function signUp(formData: FormData) {
     const lastName = formData.get('lastName') as string
     const supabase = await createClient()
 
+    const emailRedirectTo = redirectTo 
+        ? `${origin}/auth/callback?next=${encodeURIComponent(redirectTo)}`
+        : `${origin}/auth/callback`
+
     const { error } = await supabase.auth.signUp({
         email,
         password,
         options: {
-            emailRedirectTo: `${origin}/auth/callback`,
+            emailRedirectTo,
             data: {
                 first_name: firstName,
                 last_name: lastName,

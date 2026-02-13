@@ -26,7 +26,11 @@ const formSchema = z.object({
     password: z.string().min(6, { message: 'Password must be at least 6 characters.' }),
 })
 
+import { useSearchParams } from 'next/navigation'
+
 export function LoginForm() {
+    const searchParams = useSearchParams()
+    const redirectTo = searchParams.get('redirectTo') || undefined
     const [error, setError] = useState<string | null>(null)
     const [isLoading, setIsLoading] = useState(false)
 
@@ -48,21 +52,21 @@ export function LoginForm() {
             formData.append('email', values.email)
             formData.append('password', values.password)
 
-            const result = await signIn(formData)
+            const result = await signIn(formData, redirectTo)
 
             if (result && !result.success) {
                 setError(result.error || 'Invalid email or password')
                 toast.error(result.error || 'Something went wrong. Please try again.')
-                setIsLoading(false)
             }
         } catch (e) {
             // Redirect errors are expected and should not be handled as errors here
-            if (e instanceof Error && e.message.includes('NEXT_REDIRECT')) {
+            if (e && typeof e === 'object' && 'digest' in e && typeof e.digest === 'string' && e.digest.startsWith('NEXT_REDIRECT')) {
                 throw e;
             }
             console.error(e)
             setError('An unexpected error occurred.')
             toast.error('Something went wrong. Please try again.')
+        } finally {
             setIsLoading(false)
         }
     }
@@ -127,7 +131,7 @@ export function LoginForm() {
             <CardFooter className="flex flex-col space-y-2 text-sm text-center text-muted-foreground">
                 <div>
                     Don&apos;t have an account?{' '}
-                    <NextLink href="/signup" className="text-primary hover:underline font-medium">
+                    <NextLink href={redirectTo ? `/signup?redirectTo=${redirectTo}` : "/signup"} className="text-primary hover:underline font-medium">
                         Sign up
                     </NextLink>
                 </div>
