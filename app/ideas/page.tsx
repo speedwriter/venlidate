@@ -107,7 +107,7 @@ export default async function IdeasMarketplace() {
                             </p>
                             <div className="flex flex-col sm:flex-row items-center justify-center gap-4 pt-4">
                                 <Link href="/login" className="w-full sm:w-auto text-blue-600">
-                                    <Button size="lg" className="w-full h-14 px-8 bg-white hover:bg-slate-50 font-black rounded-2xl shadow-xl">
+                                    <Button size="lg" className="w-full h-14 px-8 bg-white hover:bg-slate-50 text-blue-600 font-black rounded-2xl shadow-xl">
                                         Sign Up Free
                                     </Button>
                                 </Link>

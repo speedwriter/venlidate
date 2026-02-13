@@ -186,7 +186,7 @@ export function IdeaCard({ idea, mode = 'dashboard', isAuthenticated = true, use
                             </Button>
                         ) : (
                             <Link href="/login" className="w-full" onClick={(e) => e.stopPropagation()}>
-                                <Button variant="outline" className="w-full gap-2 group/btn font-semibold bg-white">
+                                <Button variant="outline" className="w-full gap-2 group/btn font-semibold bg-white text-slate-900">
                                     <Lock className="h-4 w-4" />
                                     Login to View
                                 </Button>
