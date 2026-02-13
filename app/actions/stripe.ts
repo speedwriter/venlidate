@@ -1,10 +1,9 @@
 'use server'
 
 import { stripe } from '@/lib/stripe/config'
-import { STRIPE_CONFIG } from '@/lib/stripe/config'
 import { createClient } from '@/lib/supabase/server'
 import { createAdminClient } from '@/lib/supabase/admin'
-import { redirect } from 'next/navigation'
+
 
 /**
  * Creates a Stripe Checkout Session for a subscription tier.
@@ -55,8 +54,9 @@ export async function createCheckoutSession(
                 } else {
                     stripeCustomerId = cid
                 }
-            } catch (err: any) {
-                if (err.code === 'resource_missing') {
+            } catch (err) {
+                const stripeErr = err as { code?: string };
+                if (stripeErr.code === 'resource_missing') {
                     stripeCustomerId = null
                 } else {
                     throw err
@@ -114,9 +114,9 @@ export async function createCheckoutSession(
         })
 
         return { success: true, sessionId: session.id, url: session.url }
-    } catch (error: any) {
+    } catch (error) {
         console.error('Error creating checkout session:', error)
-        return { success: false, error: error.message || 'Payment initialization failed' }
+        return { success: false, error: (error as Error).message || 'Payment initialization failed' }
     }
 }
 
@@ -140,7 +140,12 @@ export async function createBillingPortalSession() {
 
         if (subError || !subscription?.stripe_customer_id) {
             console.error('Error fetching subscription info or customer ID missing:', subError)
-            return { success: false, error: 'No active subscription found. Please subscribe first.' }
+            // Redirect to subscription page (or pricing if subscription doesn't exist)
+            // for users without a Stripe ID (e.g. manually added Premium users)
+            return {
+                success: true,
+                url: `${process.env.NEXT_PUBLIC_APP_URL}/dashboard/subscription`
+            }
         }
 
         // Verify customer exists in Stripe
@@ -149,11 +154,21 @@ export async function createBillingPortalSession() {
             if (customer.deleted) {
                 return { success: false, error: 'Stripe customer record not found. Please contact support.' }
             }
-        } catch (err: any) {
-            if (err.code === 'resource_missing') {
+        } catch (err: unknown) {
+            const stripeErr = err as { code?: string };
+            if (stripeErr.code === 'resource_missing') {
                 return { success: false, error: 'Stripe customer record not found. Please contact support.' }
             }
             throw err
+        }
+
+        // If no subscription ID (e.g. test user or manual upgrade), redirect to subscription page
+        // instead of trying to open Stripe portal or showing an error
+        if (!subscription.stripe_subscription_id) {
+            return {
+                success: true,
+                url: `${process.env.NEXT_PUBLIC_APP_URL}/dashboard/subscription`
+            }
         }
 
         const session = await stripe.billingPortal.sessions.create({
@@ -174,9 +189,9 @@ export async function createBillingPortalSession() {
         })
 
         return { success: true, url: session.url }
-    } catch (error: any) {
+    } catch (error: unknown) {
         console.error('Error creating billing portal session:', error)
-        return { success: false, error: error.message || 'Failed to open billing portal' }
+        return { success: false, error: (error as Error).message || 'Failed to open billing portal' }
     }
 }
 
@@ -227,7 +242,12 @@ export async function getSubscriptionStatus(userId: string) {
             )
 
             // TypeScript sometimes wraps the response in a Response object depending on version
-            const sub = subscription as any
+            const sub = subscription as unknown as {
+                status: string;
+                current_period_end: number;
+                cancel_at_period_end: boolean;
+                items: { data: { price: { id: string } }[] }
+            }
 
             return {
                 success: true,
@@ -239,8 +259,9 @@ export async function getSubscriptionStatus(userId: string) {
                     priceId: sub.items.data[0].price.id,
                 }
             }
-        } catch (err: any) {
-            if (err.code === 'resource_missing') {
+        } catch (err: unknown) {
+            const stripeErr = err as { code?: string };
+            if (stripeErr.code === 'resource_missing') {
                 // Subscription was likely deleted in Stripe
                 return {
                     success: true,
@@ -255,8 +276,8 @@ export async function getSubscriptionStatus(userId: string) {
             }
             throw err
         }
-    } catch (error: any) {
+    } catch (error: unknown) {
         console.error('Error getting subscription status:', error)
-        return { success: false, error: error.message || 'Failed to fetch subscription status' }
+        return { success: false, error: (error as Error).message || 'Failed to fetch subscription status' }
     }
 }

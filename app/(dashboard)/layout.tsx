@@ -50,15 +50,13 @@ export default async function DashboardLayout({
                                     New Idea
                                 </Button>
                             </Link>
-                            {/* Pricing link hidden as per user request */}
-                            {/* 
-<Link href="/pricing">
-    <Button variant="ghost" size="sm" className="gap-2">
-        <CreditCard className="h-4 w-4" />
-        Pricing
-    </Button>
-</Link> 
-*/}
+
+                            <Link href="/dashboard/subscription">
+                                <Button variant="ghost" size="sm" className="gap-2">
+                                    <CreditCard className="h-4 w-4" />
+                                    Subscription
+                                </Button>
+                            </Link>
 
                             <Link href="/settings">
                                 <Button variant="ghost" size="sm" className="gap-2">

@@ -4,7 +4,7 @@ import * as React from "react"
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardFooter, CardHeader, CardTitle } from "@/components/ui/card"
-import { Check, X, Calendar, User, Info } from "lucide-react"
+import { Check, X, Calendar, User } from "lucide-react"
 import { approveSharedIdea, rejectSharedIdea } from "@/app/actions/shared-ideas"
 import { toast } from "sonner"
 import { useRouter } from "next/navigation"
@@ -21,7 +21,17 @@ import {
 } from "@/components/ui/alert-dialog"
 
 interface IdeaPendingCardProps {
-    sharedIdea: any // Using any for now to handle joined data
+    sharedIdea: {
+        id: string
+        title: string
+        overall_score: number
+        created_at: string
+        is_anonymous: boolean
+        shared_by_name: string | null
+        traffic_light: 'red' | 'yellow' | 'green' | null
+        problem: string
+        target_customer: string
+    }
     onApprove?: () => void
     onReject?: () => void
 }

@@ -10,7 +10,7 @@ import {
     SelectValue,
 } from "@/components/ui/select"
 import { Label } from "@/components/ui/label"
-import { ArrowDownAZ, ArrowUpAZ, SortAsc, SortDesc } from "lucide-react"
+import { SortAsc, SortDesc } from "lucide-react"
 
 export function AdminSortControls() {
     const router = useRouter()

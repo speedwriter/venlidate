@@ -10,12 +10,15 @@ import BillingCycleToggle from "@/components/features/billing-cycle-toggle"
 import FeatureComparisonTable from "@/components/features/feature-comparison-table"
 import PricingTierCard from "@/components/features/pricing-tier-card"
 import { STRIPE_CONFIG } from '@/lib/stripe/constants'
+import { ManageSubscriptionButton } from "@/components/features/manage-subscription-button"
 
 interface PricingPageClientProps {
     currentTier: string
+    userId?: string
+    showCTA?: boolean
 }
 
-export default function PricingPageClient({ currentTier }: PricingPageClientProps) {
+export default function PricingPageClient({ currentTier, userId, showCTA = true }: PricingPageClientProps) {
     const [billingCycle, setBillingCycle] = React.useState<'monthly' | 'annual'>('monthly')
 
     const freeTierFeatures = [
@@ -84,6 +87,14 @@ export default function PricingPageClient({ currentTier }: PricingPageClientProp
                 <p className="max-w-[700px] text-xl text-muted-foreground">
                     Start free. Upgrade when you need action plans and unlimited validations. No credit card required.
                 </p>
+
+                {(currentTier === 'pro' || currentTier === 'premium') && userId && (
+                    <div className="pt-4">
+                        <ManageSubscriptionButton
+                            tier={currentTier as 'pro' | 'premium'}
+                        />
+                    </div>
+                )}
             </div>
 
             {/* Billing Toggle */}
@@ -102,7 +113,6 @@ export default function PricingPageClient({ currentTier }: PricingPageClientProp
                     tier="free"
                     isCurrentPlan={currentTier === 'free'}
                     billingCycle={billingCycle}
-                    onBillingCycleChange={setBillingCycle}
                 />
                 <PricingTierCard
                     name="Pro"
@@ -111,13 +121,12 @@ export default function PricingPageClient({ currentTier }: PricingPageClientProp
                     annualPrice="$33"
                     description="For aspiring founders with multiple ideas"
                     features={proTierFeatures}
-                    cta="Start Free Trial"
+                    cta="Start Pro Subscription Now"
                     highlighted={true}
                     priceId={getProPriceId()}
                     tier="pro"
                     isCurrentPlan={currentTier === 'pro'}
                     billingCycle={billingCycle}
-                    onBillingCycleChange={setBillingCycle}
                 />
                 <PricingTierCard
                     name="Premium"
@@ -126,13 +135,12 @@ export default function PricingPageClient({ currentTier }: PricingPageClientProp
                     annualPrice="$66"
                     description="For serial validators and consultants"
                     features={premiumTierFeatures}
-                    cta="Start Free Trial"
+                    cta="Start Premium Subscription Now"
                     highlighted={false}
                     priceId={getPremiumPriceId()}
                     tier="premium"
                     isCurrentPlan={currentTier === 'premium'}
                     billingCycle={billingCycle}
-                    onBillingCycleChange={setBillingCycle}
                 />
             </div>
 
@@ -294,25 +302,27 @@ export default function PricingPageClient({ currentTier }: PricingPageClientProp
             </div>
 
             {/* Final CTA */}
-            <div className="max-w-6xl mx-auto py-20 bg-gradient-to-r from-primary to-primary/80 rounded-2xl px-8 text-center">
-                <h2 className="text-3xl font-bold text-white mb-6">
-                    Start Validating Today. Build Tomorrow.
-                </h2>
-                <div className="flex flex-col sm:flex-row items-center justify-center gap-4 mb-4">
-                    <Button asChild size="lg" variant="secondary">
-                        <Link href="/signup">Start Free</Link>
-                    </Button>
-                    <Button asChild size="lg" variant="outline" className="bg-white/10 text-white border-white hover:bg-white/20">
-                        <Link href="/signup?plan=pro">Try Pro Free</Link>
-                    </Button>
-                    <Button asChild size="lg" variant="outline" className="bg-white/10 text-white border-white hover:bg-white/20">
-                        <Link href="/signup?plan=premium">Try Premium Free</Link>
-                    </Button>
+            {showCTA && (
+                <div className="max-w-6xl mx-auto py-20 bg-gradient-to-r from-primary to-primary/80 rounded-2xl px-8 text-center">
+                    <h2 className="text-3xl font-bold text-white mb-6">
+                        Start Validating Today. Build Tomorrow.
+                    </h2>
+                    <div className="flex flex-col sm:flex-row items-center justify-center gap-4 mb-4">
+                        <Button asChild size="lg" variant="secondary">
+                            <Link href="/signup">Start Free</Link>
+                        </Button>
+                        <Button asChild size="lg" variant="outline" className="bg-white/10 text-white border-white hover:bg-white/20">
+                            <Link href="/signup?plan=pro">Try Pro Free</Link>
+                        </Button>
+                        <Button asChild size="lg" variant="outline" className="bg-white/10 text-white border-white hover:bg-white/20">
+                            <Link href="/signup?plan=premium">Try Premium Free</Link>
+                        </Button>
+                    </div>
+                    <p className="text-white/90 text-sm">
+                        Join 500+ founders who stopped guessing and started building with confidence.
+                    </p>
                 </div>
-                <p className="text-white/90 text-sm">
-                    Join 500+ founders who stopped guessing and started building with confidence.
-                </p>
-            </div>
+            )}
         </div>
     )
 }

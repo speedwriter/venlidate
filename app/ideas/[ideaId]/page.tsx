@@ -4,9 +4,9 @@ import { getUserTierAction } from '@/app/actions/subscriptions'
 import { notFound } from 'next/navigation'
 import { Metadata } from 'next'
 import { Button } from '@/components/ui/button'
-import { Sparkles, ArrowRight, Lock, ChevronLeft } from 'lucide-react'
+import { Lock, ChevronLeft } from 'lucide-react'
 import Link from 'next/link'
-import { IdeaDetailModal } from '@/components/features/idea-detail-modal'
+import { IdeaDetailModal, SharedIdeaDetail } from '@/components/features/idea-detail-modal'
 
 interface PageProps {
     params: Promise<{ ideaId: string }>
@@ -98,7 +98,7 @@ export default async function IdeaPage({ params }: PageProps) {
                         Actually, better to have a dedicated DetailView component.
                     */}
                     <IdeaDetailModal
-                        sharedIdea={idea as any}
+                        sharedIdea={idea as unknown as SharedIdeaDetail}
                         isAuthenticated={isAuthenticated}
                         userTier={userTier}
                         isOpen={true}

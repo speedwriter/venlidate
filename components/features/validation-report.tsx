@@ -281,7 +281,6 @@ export function ValidationReport({
                         ) : (validation.id ? (
                             <ShareIdeaModal
                                 validationId={validation.id}
-                                ideaTitle={idea.title}
                                 onSuccess={() => setIsShared(true)}
                             />
                         ) : null)}
@@ -547,7 +546,6 @@ export function ValidationReport({
                     tier={userTier}
                     ideaId={idea.id}
                     validationId={validation.id || ''}
-                    ideaTitle={idea.title}
                     unansweredQuestionsCount={totalThinkingQuestions}
                     hasActionPlan={!!validation.actionPlan}
                 />

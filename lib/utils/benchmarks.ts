@@ -10,7 +10,7 @@ export async function calculatePercentile(userScore: number): Promise<number> {
 
     // 1. Get current month in 'YYYY-MM' format
     const now = new Date();
-    const currentMonth = now.toISOString().substring(0, 7); // 'YYYY-MM'
+
 
     // Get start and end of current month for filtering validations
     const startOfMonth = new Date(now.getFullYear(), now.getMonth(), 1).toISOString();

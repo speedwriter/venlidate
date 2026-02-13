@@ -163,7 +163,7 @@ test.describe('SEO Checks', () => {
 
         // Check OG tags - allow fallback to standard meta if property is not found
         const ogTitle = await page.locator('meta[property="og:title"], meta[name="og:title"]').getAttribute('content').catch(() => null)
-        const ogDescription = await page.locator('meta[property="og:description"], meta[name="og:description"]').getAttribute('content').catch(() => null)
+        await page.locator('meta[property="og:description"], meta[name="og:description"]').getAttribute('content').catch(() => null)
 
         // If explicitly tested, we expect them or fallback
         if (ogTitle) expect(ogTitle.length).toBeGreaterThan(0)

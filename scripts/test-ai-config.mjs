@@ -11,10 +11,10 @@ const openrouter = createOpenRouter({
 });
 
 const models = [
+    { name: 'Google Gemini 2.5 Flash Lite', getModel: () => google('gemini-2.5-flash-lite'), id: 'gemini-2.5-flash-lite' },
     { name: 'Google Gemini 2.0 Flash', getModel: () => google('gemini-2.0-flash'), id: 'gemini-2.0-flash' },
-    { name: 'Google Gemini 1.5 Flash', getModel: () => google('gemini-1.5-flash'), id: 'gemini-1.5-flash' },
-    { name: 'OpenRouter Gemini 2.0 Flash Free', getModel: () => openrouter('google/gemini-2.0-flash-exp:free'), id: 'openrouter:google/gemini-2.0-flash-exp:free' },
-    { name: 'OpenRouter Gemini 1.5 Flash', getModel: () => openrouter('google/gemini-flash-1.5'), id: 'openrouter:google/gemini-flash-1.5' },
+    { name: 'OpenRouter Gemini 2.5 Flash', getModel: () => openrouter('google/gemini-2.5-flash'), id: 'openrouter:google/gemini-2.5-flash' },
+    { name: 'OpenRouter Gemini 2.0 Flash', getModel: () => openrouter('google/gemini-2.0-flash-001'), id: 'openrouter:google/gemini-2.0-flash-001' },
     { name: 'DeepSeek Chat', getModel: () => deepseek('deepseek-chat'), id: 'deepseek-chat' },
 ];
 

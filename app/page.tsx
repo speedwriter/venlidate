@@ -3,7 +3,7 @@ import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/com
 import { Badge } from '@/components/ui/badge'
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from '@/components/ui/accordion'
 import Link from 'next/link'
-import { CheckCircle, TrendingUp, Lightbulb, Users, ArrowRight, Star, TrendingDown, ClipboardCheck, Map, Rocket, Lock, Target, ShieldCheck } from 'lucide-react'
+import { CheckCircle, TrendingUp, Users, Star, TrendingDown, ClipboardCheck, Map, Rocket, Lock, Target } from 'lucide-react'
 import { HeroAnimation } from '@/components/features/hero-animation'
 import { ComparisonTable } from '@/components/features/comparison-table'
 import { PricingPreviewSection } from '@/components/features/pricing-preview-section'
@@ -415,7 +415,7 @@ export default async function LandingPage() {
             <AccordionItem value="item-2">
               <AccordionTrigger className="text-left text-lg">Can&apos;t I just ask ChatGPT to validate my idea?</AccordionTrigger>
               <AccordionContent className="text-slate-600 text-base leading-relaxed">
-                You could. But ChatGPT will often be overly positive ("hallucinating helpfulness") and won&apos;t give you a structured framework. We force you to think through 7 critical dimensions and track your improvement over time with specific scoring algorithms.
+                You could. But ChatGPT will often be overly positive (&quot;hallucinating helpfulness&quot;) and won&apos;t give you a structured framework. We force you to think through 7 critical dimensions and track your improvement over time with specific scoring algorithms.
               </AccordionContent>
             </AccordionItem>
             <AccordionItem value="item-3">

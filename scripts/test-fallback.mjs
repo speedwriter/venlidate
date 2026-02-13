@@ -1,18 +1,13 @@
 import dotenv from 'dotenv';
 import { generateText } from 'ai';
 import { google } from '@ai-sdk/google';
-import { createOpenRouter } from '@openrouter/ai-sdk-provider';
 
 dotenv.config({ path: '.env.local' });
-
-const openrouter = createOpenRouter({
-    apiKey: process.env.OPENROUTER_API_KEY ?? '',
-});
 
 // Mocking the behavior of the FALLBACK_CHAIN
 const FALLBACK_CHAIN = [
     { name: 'Fake Failing Model', getModel: () => google('non-existent-model'), id: 'fake-fail' },
-    { name: 'Working OpenRouter Model', getModel: () => openrouter('google/gemini-2.0-flash-exp:free'), id: 'openrouter:free' },
+    { name: 'Working Google Model', getModel: () => google('gemini-2.5-flash-lite'), id: 'google:gemini-2.5' },
 ];
 
 function isRetryableError(err) {

@@ -1,12 +1,12 @@
 'use client'
 
 import React from 'react'
-import { Card, CardHeader, CardTitle, CardContent, CardFooter } from '@/components/ui/card'
+import { Card, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
 import { Lock, Zap, ArrowRight, CheckCircle2 } from 'lucide-react'
 import Link from 'next/link'
-import { cn } from '@/lib/utils'
+
 
 export function ActionPlanUpgradeCTA() {
     return (
@@ -26,8 +26,8 @@ export function ActionPlanUpgradeCTA() {
                         Unlock Your Personalized Roadmap
                     </CardTitle>
                     <p className="text-muted-foreground text-lg leading-relaxed">
-                        Don't leave your launch to chance. Get a step-by-step
-                        action plan tailored specifically to your idea's weaknesses and score.
+                        Don&apos;t leave your launch to chance. Get a step-by-step
+                        action plan tailored specifically to your idea&apos;s weaknesses and score.
                     </p>
                 </div>
 
@@ -58,7 +58,7 @@ export function ActionPlanUpgradeCTA() {
                         </div>
                     </div>
 
-                    <Link href="/pricing" className="block w-full">
+                    <Link href="/dashboard/subscription" className="block w-full">
                         <Button size="lg" className="w-full h-14 text-lg font-bold gap-2 shadow-lg shadow-primary/20 hover:scale-[1.02] transition-transform">
                             <Zap className="h-5 w-5 fill-current" />
                             Upgrade to Pro to Unlock

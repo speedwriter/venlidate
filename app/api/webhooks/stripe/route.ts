@@ -34,8 +34,9 @@ export async function POST(req: Request) {
             const session = event.data.object as Stripe.Checkout.Session
 
             // Get user_id from metadata
-            const userId = session.metadata?.user_id
-            const tier = session.metadata?.tier as 'pro' | 'premium'
+            const metadata = session.metadata as Record<string, unknown>
+            const userId = metadata?.user_id as string
+            const tier = metadata?.tier as 'pro' | 'premium'
 
             if (!userId || !tier) {
                 console.error('Missing metadata in checkout session')
@@ -91,15 +92,15 @@ export async function POST(req: Request) {
             }
 
             // Update subscription
-            const sub = subscription as any
+            const sub = subscription as Stripe.Subscription
             await supabase
                 .from('user_subscriptions')
                 .update({
                     tier: tier,
                     status: sub.status,
                     stripe_price_id: priceId,
-                    stripe_current_period_end: new Date(sub.current_period_end * 1000).toISOString(),
-                    stripe_cancel_at_period_end: sub.cancel_at_period_end,
+                    stripe_current_period_end: new Date((sub as unknown as { current_period_end: number }).current_period_end * 1000).toISOString(),
+                    stripe_cancel_at_period_end: (sub as unknown as { cancel_at_period_end: boolean }).cancel_at_period_end,
                 })
                 .eq('user_id', userSub.user_id)
 

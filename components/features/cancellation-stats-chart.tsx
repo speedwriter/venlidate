@@ -1,10 +1,29 @@
 'use client'
 
-import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer, Cell } from 'recharts'
+import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Cell } from 'recharts'
 import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card'
 
 interface CancellationStatsChartProps {
     data: Array<{ reason: string; count: number; percentage: number }>
+}
+
+
+interface TooltipPayload {
+    value: number
+    payload: { percentage: number }
+}
+
+const CustomTooltip = ({ active, payload, label }: { active?: boolean; payload?: TooltipPayload[]; label?: string }) => {
+    if (active && payload && payload.length) {
+        return (
+            <div className="bg-white p-2 border rounded shadow-sm text-sm">
+                <p className="font-semibold capitalize">{label}</p>
+                <p className="text-blue-600">Count: {payload[0].value}</p>
+                <p className="text-gray-500">Percentage: {payload[0].payload.percentage}%</p>
+            </div>
+        )
+    }
+    return null
 }
 
 export function CancellationStatsChart({ data }: CancellationStatsChartProps) {
@@ -14,19 +33,6 @@ export function CancellationStatsChart({ data }: CancellationStatsChartProps) {
         percentage: item.percentage,
         fullReason: item.reason
     }))
-
-    const CustomTooltip = ({ active, payload, label }: any) => {
-        if (active && payload && payload.length) {
-            return (
-                <div className="bg-white p-2 border rounded shadow-sm text-sm">
-                    <p className="font-semibold capitalize">{label}</p>
-                    <p className="text-blue-600">Count: {payload[0].value}</p>
-                    <p className="text-gray-500">Percentage: {payload[0].payload.percentage}%</p>
-                </div>
-            )
-        }
-        return null
-    }
 
     return (
         <Card className="w-full">

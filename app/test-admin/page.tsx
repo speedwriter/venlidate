@@ -1,6 +1,5 @@
 import { isUserAdmin } from '@/lib/utils/admin'
 import { createClient } from '@/lib/supabase/server'
-import { redirect } from 'next/navigation'
 
 export default async function TestAdminPage() {
     const supabase = await createClient()

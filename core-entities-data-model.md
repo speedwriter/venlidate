@@ -56,7 +56,7 @@ validations:
   recommendations: jsonb (array of recommendation strings)
   
   -- Metadata
-  model_used: text (default: 'gemini-2.0-flash-exp')
+  model_used: text (default: 'gemini-2.5-flash-lite')
   processing_time_ms: integer
   created_at: timestamptz
 
@@ -122,7 +122,7 @@ Language: TypeScript (strict mode)
 Database: Supabase (PostgreSQL)
 Auth: Supabase Auth
 Styling: Tailwind CSS + shadcn/ui
-AI: Vercel AI SDK + Gemini 2.0 Flash
+AI: Vercel AI SDK + Gemini 2.5 Flash Lite
 Deployment: Vercel
 Analytics: Vercel Analytics (optional)
 ```

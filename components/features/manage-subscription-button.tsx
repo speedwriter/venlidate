@@ -6,10 +6,9 @@ import { CancellationSurveyModal } from '@/components/features/cancellation-surv
 import { saveCancellationFeedback } from '@/app/actions/cancellation'
 import { createBillingPortalSession } from '@/app/actions/stripe'
 import { toast } from 'sonner'
-import { Settings } from 'lucide-react'
+
 
 interface ManageSubscriptionButtonProps {
-    userId: string
     tier: 'pro' | 'premium' | string
     currentPeriodEnd?: string
     variant?: 'default' | 'destructive' | 'outline' | 'secondary' | 'ghost' | 'link'
@@ -17,7 +16,6 @@ interface ManageSubscriptionButtonProps {
 }
 
 export function ManageSubscriptionButton({
-    userId,
     tier,
     currentPeriodEnd,
     variant = 'outline',
@@ -62,9 +60,10 @@ export function ManageSubscriptionButton({
             // Redirect to Stripe
             window.location.href = result.url
 
-        } catch (error: any) {
-            console.error('Billing portal error:', error)
-            toast.error('Failed to open billing portal. Please try again.')
+        } catch (error: unknown) {
+            console.error('Error opening billing portal:', error)
+            toast.error((error as Error).message || 'Failed to open billing portal')
+        } finally {
             setIsLoading(false)
         }
     }

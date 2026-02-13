@@ -7,7 +7,6 @@ import {
     Trash2,
     Calendar,
     ArrowRight,
-    AlertTriangle,
     Loader2,
     Lock
 } from "lucide-react"
@@ -35,7 +34,7 @@ import { deleteIdea } from "@/app/actions/ideas"
 import { IdeaWithValidation } from "@/types/validations"
 import { cn } from "@/lib/utils"
 import { TrafficLight } from "./traffic-light"
-import { IdeaDetailModal } from "./idea-detail-modal"
+import { IdeaDetailModal, SharedIdeaDetail } from "./idea-detail-modal"
 
 interface IdeaCardProps {
     idea: IdeaWithValidation
@@ -71,8 +70,8 @@ export function IdeaCard({ idea, mode = 'dashboard', isAuthenticated = true, use
         return "bg-red-100 text-red-800 border-red-200"
     }
 
-    const score = idea.latest_validation?.overallScore || (idea as any).overall_score
-    const trafficLight = idea.latest_validation?.trafficLight || (idea as any).traffic_light
+    const score = idea.latest_validation?.overallScore || (idea as unknown as { overall_score: number }).overall_score
+    const trafficLight = idea.latest_validation?.trafficLight || (idea as unknown as { traffic_light: 'red' | 'yellow' | 'green' }).traffic_light
     const isValidated = idea.status === 'validated' || (idea.status === 'approved' && (!!idea.latest_validation || !!score))
 
     const isDashboard = mode === 'dashboard'
@@ -200,7 +199,7 @@ export function IdeaCard({ idea, mode = 'dashboard', isAuthenticated = true, use
             {/* Marketplace Modal - Outside Card to prevent bubbling */}
             {!isDashboard && isAuthenticated && (
                 <IdeaDetailModal
-                    sharedIdea={idea as any}
+                    sharedIdea={idea as unknown as SharedIdeaDetail}
                     isAuthenticated={isAuthenticated}
                     userTier={userTier as "free" | "pro" | "premium"}
                     isOpen={isModalOpen}

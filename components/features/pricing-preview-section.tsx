@@ -1,10 +1,8 @@
 'use client'
-
-import { useState } from 'react'
 import PricingTierCard from './pricing-tier-card'
 
 export function PricingPreviewSection() {
-    const [billingCycle, setBillingCycle] = useState<'monthly' | 'annual'>('monthly')
+    const billingCycle = 'monthly'
 
     return (
         <div className="grid md:grid-cols-3 gap-8 max-w-5xl mx-auto">
@@ -24,7 +22,6 @@ export function PricingPreviewSection() {
                 tier="free"
                 isCurrentPlan={false}
                 billingCycle={billingCycle}
-                onBillingCycleChange={setBillingCycle}
             />
             <PricingTierCard
                 name="Pro"
@@ -44,7 +41,6 @@ export function PricingPreviewSection() {
                 tier="pro"
                 isCurrentPlan={false}
                 billingCycle={billingCycle}
-                onBillingCycleChange={setBillingCycle}
             />
             <PricingTierCard
                 name="Premium"
@@ -68,7 +64,6 @@ export function PricingPreviewSection() {
                 priceId={undefined} // Force link mode
                 isCurrentPlan={false}
                 billingCycle={billingCycle}
-                onBillingCycleChange={setBillingCycle}
             />
         </div>
     )

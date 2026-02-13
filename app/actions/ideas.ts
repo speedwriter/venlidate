@@ -3,7 +3,7 @@
 import { createClient } from '@/lib/supabase/server'
 import { revalidatePath } from 'next/cache'
 import { validateIdea } from '@/lib/ai/validator'
-import { IdeaFormData, ValidationResult, IdeaWithValidation, ActionPlan } from '@/types/validations'
+import { IdeaFormData, ValidationResult, ActionPlan } from '@/types/validations'
 import { checkValidationQuota, checkIterationQuota, canAccessReport, getAccessibleValidations } from '@/lib/utils/subscriptions'
 import { Tables } from '@/types/database'
 
@@ -25,7 +25,7 @@ function mapValidationRowToResult(row: Tables<'validations'>): ValidationResult 
         id: row.id,
         ideaSnapshot: row.idea_snapshot as IdeaFormData | undefined,
         thinkingQuestions: row.thinking_questions as Record<string, string[]> || undefined,
-        actionPlan: (row as any).action_plan as ActionPlan | null | undefined,
+        actionPlan: (row as Record<string, unknown>).action_plan as ActionPlan | null | undefined,
     }
 }
 

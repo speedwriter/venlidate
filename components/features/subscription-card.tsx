@@ -4,7 +4,7 @@ import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle }
 import { Badge } from '@/components/ui/badge'
 import { Progress } from '@/components/ui/progress'
 import { Button } from '@/components/ui/button'
-import { toast } from 'sonner'
+import Link from 'next/link'
 import { SubscriptionTier, TIER_LIMITS } from '@/types/subscriptions'
 import { CheckCircle2, AlertCircle } from 'lucide-react'
 import { ManageSubscriptionButton } from './manage-subscription-button'
@@ -21,7 +21,6 @@ interface SubscriptionCardProps {
 }
 
 export function SubscriptionCard({
-    userId,
     tier,
     status,
     validationsUsed,
@@ -106,12 +105,13 @@ export function SubscriptionCard({
             </CardContent>
             <CardFooter>
                 {tier === 'free' ? (
-                    <Button className="w-full bg-slate-200 text-slate-500 cursor-not-allowed" disabled>
-                        Upgrade Coming Soon
+                    <Button asChild className="w-full">
+                        <Link href="/dashboard/subscription">
+                            Upgrade Now
+                        </Link>
                     </Button>
-                ) : stripeCustomerId ? (
+                ) : (stripeCustomerId || tier === 'premium' || tier === 'pro') ? (
                     <ManageSubscriptionButton
-                        userId={userId}
                         tier={tier}
                         currentPeriodEnd={currentPeriodEnd}
                         className="w-full"

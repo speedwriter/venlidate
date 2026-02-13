@@ -6,7 +6,7 @@ Venlidate is a SaaS platform that validates startup ideas using AI-powered analy
 ## Features
 
 ### Core Validation
-- **AI-Powered Analysis**: Leverages Google's Gemini 2.0 Flash for comprehensive idea evaluation
+- **AI-Powered Analysis**: Leverages multi LLM approach for a comprehensive idea evaluation
 - **7-Dimension Scoring**: Evaluates ideas across Market Opportunity, Problem-Solution Fit, Competitive Advantage, Business Model Viability, Execution Feasibility, Market Timing, and Scalability Potential
 - **Traffic Light System**: Visual scoring (Red: 0-40, Yellow: 41-69, Green: 70-100)
 - **Iteration Tracking**: Monitor score changes over time as you refine your idea
@@ -41,7 +41,7 @@ Venlidate is a SaaS platform that validates startup ideas using AI-powered analy
 ### Backend
 - **Database**: Supabase (PostgreSQL)
 - **Authentication**: Supabase Auth
-- **AI**: Vercel AI SDK + Google Gemini 2.0 Flash
+- **AI**: Vercel AI SDK + Google Gemini 2.5 Flash Lite
 - **PDF Generation**: jsPDF
 - **Deployment**: Vercel
 
@@ -330,8 +330,9 @@ Use this data to:
 
 For issues or questions:
 - Open a GitHub issue
-- Email: [your-email@example.com]
-- Twitter: [@yourhandle]
+- Email: contact@venlidate.com
+- Twitter: @venlidate
+- Instagram: @venlidate
 
 ## Roadmap
 

@@ -11,7 +11,7 @@ A SaaS tool that uses AI to analyze startup ideas against 7 business model funda
 - Database: Supabase PostgreSQL
 - Auth: Supabase Auth (email/password)
 - Styling: Tailwind CSS + shadcn/ui
-- AI: Vercel AI SDK + Gemini 2.0 Flash
+- AI: Vercel AI SDK + Gemini 2.5 Flash Lite
 - Deployment: Vercel
 
 ## File Structure
@@ -71,7 +71,7 @@ A SaaS tool that uses AI to analyze startup ideas against 7 business model funda
 - Use Supabase server client for all authenticated queries
 
 ### AI Integration
-- Default model: gemini-2.0-flash-exp
+- Default model: gemini-2.5-flash-lite
 - Always use Vercel AI SDK for AI operations
 - Store GOOGLE_GENERATIVE_AI_API_KEY in environment variables (not NEXT_PUBLIC_)
 - Set reasonable token limits (max_tokens: 2000)
@@ -180,7 +180,7 @@ NEXT_PUBLIC_APP_URL=http://localhost:3000
 
 ## Phase 3: Project Context Primer
 
-This Next.js 15 application implements an AI-powered startup idea validation platform using a structured three-layer architecture. The data layer uses Supabase PostgreSQL with Row Level Security policies enforcing user isolation across ideas and validations tables. The AI validation engine leverages Gemini 2.0 Flash through Vercel AI SDK, executing seven dimension-specific prompts that return structured JSON containing scores (0-10) and reasoning strings. These validations are cached in the database to prevent redundant API calls.
+This Next.js 15 application implements an AI-powered startup idea validation platform using a structured three-layer architecture. The data layer uses Supabase PostgreSQL with Row Level Security policies enforcing user isolation across ideas and validations tables. The AI validation engine leverages Gemini 2.5 Flash Lite through Vercel AI SDK, executing seven dimension-specific prompts that return structured JSON containing scores (0-10) and reasoning strings. These validations are cached in the database to prevent redundant API calls.
 
 The application uses Server Components by default for optimal performance, with Client Components reserved for forms (react-hook-form integration), charts (recharts for iteration history), and interactive elements. Authentication flows through Supabase Auth with middleware protecting all `/dashboard` routes. Server Actions in the `/app/actions` directory handle all mutations, implementing a consistent pattern: validate auth, validate input with Zod, execute database operation, revalidate path, return structured result.
 

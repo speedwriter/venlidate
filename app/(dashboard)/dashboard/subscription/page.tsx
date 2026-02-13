@@ -19,5 +19,5 @@ export default async function PricingPage() {
     // Allow both logged-in and logged-out users
     const currentTier = user ? await getUserTier(user.id) : 'free'
 
-    return <PricingPageClient currentTier={currentTier} />
+    return <PricingPageClient currentTier={currentTier} userId={user?.id} showCTA={false} />
 }

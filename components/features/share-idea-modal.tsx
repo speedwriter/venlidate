@@ -20,12 +20,11 @@ import { Label } from '@/components/ui/label'
 
 interface ShareIdeaModalProps {
     validationId: string
-    ideaTitle: string
     onSuccess?: () => void
     trigger?: React.ReactNode
 }
 
-export function ShareIdeaModal({ validationId, ideaTitle, onSuccess, trigger }: ShareIdeaModalProps) {
+export function ShareIdeaModal({ validationId, onSuccess, trigger }: ShareIdeaModalProps) {
     const [isOpen, setIsOpen] = useState(false)
     const [isAnonymous, setIsAnonymous] = useState(true)
     const [sharedByName, setSharedByName] = useState('')

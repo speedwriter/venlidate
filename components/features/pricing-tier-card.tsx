@@ -23,7 +23,6 @@ interface PricingTierCardProps {
     tier?: 'free' | 'pro' | 'premium'
     isCurrentPlan: boolean
     billingCycle: 'monthly' | 'annual'
-    onBillingCycleChange: (cycle: 'monthly' | 'annual') => void
 }
 
 export default function PricingTierCard({
@@ -39,7 +38,6 @@ export default function PricingTierCard({
     tier,
     isCurrentPlan,
     billingCycle,
-    onBillingCycleChange,
 }: PricingTierCardProps) {
     const [isLoading, setIsLoading] = useState(false)
     const router = useRouter()

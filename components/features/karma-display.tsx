@@ -1,7 +1,7 @@
 'use client'
 
 import { useState, useEffect } from 'react'
-import { Award, Zap, Share2, Loader2, CreditCard } from 'lucide-react'
+import { Zap, Share2, Loader2 } from 'lucide-react'
 import { getUserKarma } from '@/app/actions/shared-ideas'
 import { Tables } from '@/types/database'
 import { cn } from '@/lib/utils'

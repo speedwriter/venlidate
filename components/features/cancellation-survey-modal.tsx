@@ -37,7 +37,6 @@ export function CancellationSurveyModal({
     isOpen,
     onClose,
     onSubmit,
-    tier,
     currentPeriodEnd,
 }: CancellationSurveyModalProps) {
     const [selectedReason, setSelectedReason] = useState<string>('')
@@ -76,14 +75,14 @@ export function CancellationSurveyModal({
                 <DialogHeader>
                     <DialogTitle>Before you go...</DialogTitle>
                     <DialogDescription>
-                        We're sorry to see you leave. Help us improve by sharing why you're canceling.
+                        We&apos;re sorry to see you leave. Help us improve by sharing why you&apos;re canceling.
                     </DialogDescription>
                 </DialogHeader>
 
                 <div className="grid gap-6 py-4">
                     <div className="grid gap-3">
                         <Label className="text-base font-medium">
-                            What's the main reason you're considering canceling?
+                            What&apos;s the main reason you&apos;re considering canceling?
                         </Label>
                         <RadioGroup value={selectedReason} onValueChange={setSelectedReason} className="gap-2">
                             {CANCELLATION_REASONS.map((reason) => (

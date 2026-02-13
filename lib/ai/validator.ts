@@ -216,7 +216,7 @@ export async function generateThinkingQuestions(
             return [];
         }
 
-        return (parsed as any[])
+        return (parsed as unknown[])
             .filter((q): q is string => typeof q === 'string')
             .slice(0, 2); // Max 2 questions per dimension
 

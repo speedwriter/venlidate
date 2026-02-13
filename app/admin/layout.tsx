@@ -2,7 +2,7 @@ import { createClient } from '@/lib/supabase/server'
 import { isUserAdmin } from '@/lib/utils/admin'
 import { redirect, notFound } from 'next/navigation'
 import Link from 'next/link'
-import { LayoutDashboard, Users, BarChart3, MessageSquare } from 'lucide-react'
+import { Users, BarChart3, MessageSquare } from 'lucide-react'
 
 export default async function AdminLayout({
     children,

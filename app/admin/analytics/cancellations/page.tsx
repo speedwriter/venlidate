@@ -4,7 +4,7 @@ import { isUserAdmin } from '@/lib/utils/admin'
 import { getCancellationStats } from '@/app/actions/cancellation'
 import { CancellationStatsChart } from '@/components/features/cancellation-stats-chart'
 import { Card, CardHeader, CardTitle, CardContent, CardDescription } from '@/components/ui/card'
-import { Table, TableBody, TableCaption, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table'
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table'
 import { Badge } from '@/components/ui/badge'
 
 export default async function CancellationAnalyticsPage() {

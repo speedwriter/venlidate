@@ -6,6 +6,7 @@ import { Button } from '@/components/ui/button'
 import { Sparkles, ArrowRight, Lock } from 'lucide-react'
 import Link from 'next/link'
 import { SharedIdea } from '@/types/shared-ideas'
+import { IdeaWithValidation } from '@/types/validations'
 import type { Metadata } from 'next'
 
 export const metadata: Metadata = {
@@ -79,7 +80,7 @@ export default async function IdeasMarketplace() {
                                 ...idea,
                                 created_at: idea.created_at || new Date().toISOString(),
                                 status: 'approved'
-                            } as any}
+                            } as unknown as IdeaWithValidation}
                             mode="marketplace"
                             isAuthenticated={isAuthenticated}
                             userTier={userTier}

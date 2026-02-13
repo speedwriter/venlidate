@@ -4,11 +4,9 @@ import { Card, CardContent } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
 import { TrafficLight } from "./traffic-light"
 import { Button } from "@/components/ui/button"
-import { RefreshCw, Sparkles, AlertCircle, CheckCircle2 } from "lucide-react"
-import { useState } from "react"
-import { useRouter } from "next/navigation"
-import { revalidateIdea } from "@/app/actions/ideas"
-import { toast } from "sonner"
+import { RefreshCw, Sparkles } from "lucide-react"
+
+
 import { cn } from "@/lib/utils"
 import Link from "next/link"
 
@@ -21,12 +19,6 @@ interface ValidationSummaryProps {
 }
 
 export function ValidationSummary({ ideaId, overallScore, trafficLight, questionCount }: ValidationSummaryProps) {
-    const [isRevalidating, setIsRevalidating] = useState(false)
-    const router = useRouter()
-
-    const handleRevalidate = () => {
-        router.push(`/dashboard/${ideaId}/revalidate`)
-    }
 
     const getStatusInfo = () => {
         if (overallScore >= 70) {

@@ -2,7 +2,6 @@
 
 import { useState, useEffect } from 'react'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
-import { Badge } from '@/components/ui/badge'
 import { CheckCircle, AlertTriangle, ArrowRight, TrendingUp, Lightbulb, Target } from 'lucide-react'
 import { cn } from '@/lib/utils'
 
@@ -95,7 +94,7 @@ function ValidationCard({ score, color, title, feedback }: {
     score: number
     color: 'yellow' | 'green'
     title: string
-    feedback: { icon: any, text: string, color: string }[]
+    feedback: { icon: React.ElementType, text: string, color: string }[]
 }) {
     const isGreen = color === 'green'
 

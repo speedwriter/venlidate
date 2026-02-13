@@ -12,7 +12,6 @@ interface NextStepsCardProps {
     tier: 'free' | 'pro' | 'premium'
     ideaId: string
     validationId: string
-    ideaTitle: string
     unansweredQuestionsCount: number
     hasActionPlan: boolean
 }
@@ -22,7 +21,6 @@ export function NextStepsCard({
     tier,
     ideaId,
     validationId,
-    ideaTitle,
     unansweredQuestionsCount,
     hasActionPlan
 }: NextStepsCardProps) {
@@ -66,7 +64,6 @@ export function NextStepsCard({
                 <CardFooter className="gap-3">
                     <ShareIdeaModal
                         validationId={validationId}
-                        ideaTitle={ideaTitle}
                         trigger={
                             <Button className="w-full bg-green-600 hover:bg-green-700 text-white">
                                 <Share2 className="mr-2 h-4 w-4" />
@@ -186,7 +183,7 @@ export function NextStepsCard({
                     <Button
                         variant="outline"
                         className="w-full border-red-200 hover:bg-red-100 hover:text-red-700 dark:border-red-800 dark:hover:bg-red-900/20"
-                        onClick={() => router.push('/pricing')}
+                        onClick={() => router.push('/dashboard/subscription')}
                     >
                         <Lock className="mr-2 h-4 w-4" />
                         Unlock Action Plan

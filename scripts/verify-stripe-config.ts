@@ -59,9 +59,9 @@ async function verifyStripeConfig() {
                 console.log(`✅ ${price.name}: ${price.id}`)
                 console.log(`   ${amount} ${currency}/${interval}`)
             }
-        } catch (error: any) {
+        } catch (error: unknown) {
             console.error(`❌ Failed to retrieve ${price.name} (${price.id})`)
-            console.error(`   Error: ${error.message}`)
+            console.error(`   Error: ${(error as Error).message}`)
             hasErrors = true
         }
     }

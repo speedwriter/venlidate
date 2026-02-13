@@ -13,7 +13,16 @@ import { TrafficLight } from "./traffic-light"
 import { createClient } from "@/lib/supabase/client"
 
 interface IdeaApprovedCardProps {
-    sharedIdea: any
+    sharedIdea: {
+        id: string
+        title: string
+        overall_score: number
+        created_at: string
+        is_anonymous: boolean
+        shared_by_name: string | null
+        traffic_light: 'red' | 'yellow' | 'green' | null
+        problem: string
+    }
     mode?: 'approved' | 'rejected' | 'removed'
 }
 

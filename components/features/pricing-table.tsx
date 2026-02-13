@@ -126,7 +126,6 @@ export function PricingTable({ currentTier }: PricingTableProps) {
                         {...tierData}
                         isCurrentPlan={currentTier.toLowerCase() === tierData.tier.toLowerCase()}
                         billingCycle={billingCycle}
-                        onBillingCycleChange={setBillingCycle}
                     />
                 ))}
             </div>

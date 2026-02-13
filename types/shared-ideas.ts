@@ -48,5 +48,5 @@ export interface SharedIdea {
     approved_by: string | null
     created_at: string
     updated_at: string
-    validations?: any
+    validations?: SharedIdeaValidation | SharedIdeaValidation[] | null
 }

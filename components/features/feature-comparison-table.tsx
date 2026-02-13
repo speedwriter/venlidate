@@ -2,7 +2,6 @@
 
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table'
 import { Check, X } from 'lucide-react'
-import { cn } from '@/lib/utils'
 
 export default function FeatureComparisonTable() {
     return (

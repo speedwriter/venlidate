@@ -1,10 +1,9 @@
 'use client'
 
-import { useState } from 'react'
+import * as React from 'react'
 import {
     Dialog,
     DialogContent,
-    DialogHeader,
     DialogTitle,
     DialogDescription,
 } from '@/components/ui/dialog'
@@ -21,23 +20,42 @@ import {
     Users,
     TrendingUp,
     Clock,
-    BarChart,
-    X
+    BarChart
 } from 'lucide-react'
 import Link from 'next/link'
 import { ActionPlanCard } from './action-plan-card'
 import { ActionPlanUpgradeCTA } from './action-plan-upgrade-cta'
 import { cn } from '@/lib/utils'
-import type { ActionPlan } from '@/types/validations'
+import { ActionPlan } from '@/types/validations'
 
-interface SharedIdeaDetail {
+export interface SharedIdeaDetail {
     id: string
     title: string
     problem: string
     target_customer: string
     overall_score: number
     traffic_light: 'red' | 'yellow' | 'green'
-    validations?: any // Joined validation data
+    validations?: Array<{
+        [key: string]: unknown
+        painkiller_score: number
+        revenue_model_score: number
+        acquisition_score: number
+        moat_score: number
+        founder_fit_score: number
+        time_to_revenue_score: number
+        scalability_score: number
+        painkiller_reasoning: string
+        revenue_model_reasoning: string
+        acquisition_reasoning: string
+        moat_reasoning: string
+        founder_fit_reasoning: string
+        time_to_revenue_reasoning: string
+        scalability_reasoning: string
+        red_flags: string[]
+        comparable_companies: Array<{ name: string, outcome: string }>
+        recommendations: string[]
+        action_plan: ActionPlan | null
+    }>
 }
 
 interface IdeaDetailModalProps {
@@ -154,7 +172,7 @@ export function IdeaDetailModal({
                                     <div className="space-y-3 relative">
                                         {dimensions.map((dim) => {
                                             const Icon = dim.icon
-                                            const score = validation ? validation[dim.key] : null
+                                            const score = validation ? (validation as Record<string, number>)[dim.key] : null
                                             return (
                                                 <div key={dim.name} className="flex items-center justify-between p-3 bg-slate-50 rounded-xl border border-slate-100">
                                                     <div className="flex items-center gap-3">
@@ -217,7 +235,7 @@ export function IdeaDetailModal({
                                             </div>
                                         ) : (
                                             <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                                                {validation?.comparable_companies?.map((co: any, i: number) => {
+                                                {validation?.comparable_companies?.map((co: { name: string, outcome: string }, i: number) => {
                                                     const isSuccess = co.outcome?.toLowerCase() === 'success'
                                                     const bgColor = isSuccess ? 'bg-emerald-50' : 'bg-red-50'
                                                     const borderColor = isSuccess ? 'border-emerald-100' : 'border-red-100'
@@ -274,7 +292,7 @@ export function IdeaDetailModal({
                                                     <div key={dim.name} className="space-y-1">
                                                         <p className="text-[10px] font-black text-slate-400 uppercase">{dim.name} Reasoning</p>
                                                         <p className="text-xs text-slate-700 italic">
-                                                            {validation?.[dim.key.replace('_score', '_reasoning')] || 'No reasoning available.'}
+                                                            {(validation as Record<string, string>)?.[dim.key.replace('_score', '_reasoning')] || 'No reasoning available.'}
                                                         </p>
                                                     </div>
                                                 ))}

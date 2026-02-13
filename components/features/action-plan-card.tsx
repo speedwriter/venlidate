@@ -169,7 +169,7 @@ export function ActionPlanCard({ actionPlan, tier }: ActionPlanCardProps) {
                     <CardHeader>
                         <CardTitle className="text-lg font-bold flex items-center gap-2">
                             <Target className="h-5 w-5 text-primary" />
-                            You're Ready to Build When...
+                            You&apos;re Ready to Build When...
                         </CardTitle>
                     </CardHeader>
                     <CardContent>

@@ -40,7 +40,7 @@ export async function GET(request: Request) {
         // 3. Delete ancient reports for these free tier users
         // Note: The requirement mentioned checking if they've EVER been pro.
         // Without clear subscription history, we rely on current tier.
-        const { data: deletedData, error: deleteError, count } = await supabase
+        const { error: deleteError, count } = await supabase
             .from('validations')
             .delete({ count: 'exact' })
             .lt('created_at', cutoffIso)
