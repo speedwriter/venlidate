@@ -27,6 +27,8 @@ export const metadata: Metadata = {
 };
 
 import { Toaster } from "@/components/ui/sonner";
+import { PostHogProvider } from "@/components/posthog-provider";
+import { Suspense } from "react";
 
 export default function RootLayout({
   children,
@@ -38,8 +40,12 @@ export default function RootLayout({
       <body
         className={`${geistSans.variable} ${geistMono.variable} antialiased`}
       >
-        {children}
-        <Toaster position="top-center" richColors />
+        <Suspense fallback={null}>
+          <PostHogProvider>
+            {children}
+            <Toaster position="top-center" richColors />
+          </PostHogProvider>
+        </Suspense>
       </body>
     </html>
   );
