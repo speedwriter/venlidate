@@ -1,5 +1,3 @@
-import { google } from '@ai-sdk/google';
-import { generateText } from 'ai';
 import { generateTextWithFallback } from './models';
 import {
     VALIDATION_PROMPTS,

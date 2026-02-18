@@ -31,6 +31,7 @@ export interface SharedIdeaDetail {
     id: string
     title: string
     problem: string
+    solution: string
     target_customer: string
     overall_score: number
     traffic_light: 'red' | 'yellow' | 'green'
@@ -72,8 +73,7 @@ export function IdeaDetailModal({
     isOpen,
     onOpenChange
 }: IdeaDetailModalProps) {
-    const isPro = userTier === 'pro' || userTier === 'premium'
-    const isPremium = userTier === 'premium'
+    const isPro = userTier === 'pro';
     const pathname = usePathname()
 
     const truncate = (text: string, sentences: number = 2) => {
@@ -84,6 +84,7 @@ export function IdeaDetailModal({
     }
 
     const problemDisplay = isAuthenticated ? sharedIdea.problem : truncate(sharedIdea.problem)
+    const solutionDisplay = isAuthenticated ? sharedIdea.solution : truncate(sharedIdea.solution)
     const targetCustomerDisplay = isAuthenticated ? sharedIdea.target_customer : truncate(sharedIdea.target_customer, 1)
 
     const dimensions = [
@@ -102,7 +103,7 @@ export function IdeaDetailModal({
 
     return (
         <Dialog open={isOpen} onOpenChange={onOpenChange}>
-            <DialogContent className="w-[95vw] md:w-[90vw] max-w-5xl max-h-[90vh] overflow-y-auto rounded-3xl p-0 border-none shadow-2xl">
+            <DialogContent className="w-[95vw] md:w-[90vw] sm:max-w-6xl max-h-[90vh] overflow-y-auto rounded-3xl p-0 border-none shadow-2xl">
                 <div className="relative">
                     {/* Header Image Gradient */}
                     <div className="h-32 bg-gradient-to-r from-blue-600 to-indigo-700 w-full" />
@@ -133,55 +134,70 @@ export function IdeaDetailModal({
                                 </div>
                             </div>
 
-                            <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
-                                <div className="space-y-6">
-                                    <section className="space-y-2">
+                            <div className="space-y-10">
+                                {/* Problem & Solution Section */}
+                                <div className="grid grid-cols-1 md:grid-cols-2 gap-10">
+                                    <section className="space-y-3">
                                         <h3 className="text-sm font-black uppercase tracking-wider text-slate-800 flex items-center gap-2">
                                             <AlertTriangle className="h-4 w-4 text-amber-500" />
                                             The Problem
                                         </h3>
-                                        <p className="text-slate-600 leading-relaxed text-sm">
+                                        <p className="text-slate-600 leading-relaxed text-base">
                                             {problemDisplay}
                                         </p>
                                     </section>
 
-                                    <section className="space-y-2">
+                                    <section className="space-y-3">
                                         <h3 className="text-sm font-black uppercase tracking-wider text-slate-800 flex items-center gap-2">
-                                            <Target className="h-4 w-4 text-blue-500" />
-                                            Target Customer
+                                            <Sparkles className="h-4 w-4 text-blue-500" />
+                                            The Solution
                                         </h3>
-                                        <p className="text-slate-600 leading-relaxed text-sm">
-                                            {targetCustomerDisplay}
+                                        <p className="text-slate-600 leading-relaxed text-base">
+                                            {solutionDisplay}
                                         </p>
                                     </section>
+                                </div>
 
+                                {/* Target Customer Section (Full Width) */}
+                                <section className="space-y-3 p-6 bg-slate-50/50 rounded-2xl border border-slate-100">
+                                    <h3 className="text-sm font-black uppercase tracking-wider text-slate-800 flex items-center gap-2">
+                                        <Target className="h-4 w-4 text-blue-500" />
+                                        Target Customer
+                                    </h3>
+                                    <p className="text-slate-600 leading-relaxed text-base">
+                                        {targetCustomerDisplay}
+                                    </p>
                                     {!isAuthenticated && (
-                                        <div className="p-4 bg-blue-50 rounded-2xl border border-blue-100 space-y-3">
+                                        <div className="p-4 bg-white/50 rounded-xl border border-blue-100/50 space-y-3 mt-4">
                                             <p className="text-sm font-bold text-blue-900">Sign up free to see the full analysis</p>
                                             <Link href={`/login?redirectTo=${pathname}`} className="block">
-                                                <Button className="w-full bg-blue-600 hover:bg-blue-700 text-white font-bold rounded-xl h-10">
+                                                <Button className="w-full bg-blue-600 hover:bg-blue-700 text-white font-bold rounded-xl h-10 max-w-xs">
                                                     Sign Up Free
                                                 </Button>
                                             </Link>
                                         </div>
                                     )}
-                                </div>
+                                </section>
 
-                                <div className="space-y-6">
-                                    <h3 className="text-sm font-black uppercase tracking-wider text-slate-800">Dimension Scores</h3>
-                                    <div className="space-y-3 relative">
+                                {/* Dimension Scores (Full Width Grid) */}
+                                <section className="space-y-6">
+                                    <h3 className="text-sm font-black uppercase tracking-wider text-slate-800 flex items-center gap-2">
+                                        <BarChart className="h-4 w-4 text-slate-600" />
+                                        Dimension Scores
+                                    </h3>
+                                    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 relative">
                                         {dimensions.map((dim) => {
                                             const Icon = dim.icon
                                             const score = validation ? (validation as Record<string, number>)[dim.key] : null
                                             return (
-                                                <div key={dim.name} className="flex items-center justify-between p-3 bg-slate-50 rounded-xl border border-slate-100">
-                                                    <div className="flex items-center gap-3">
-                                                        <div className="p-1.5 bg-white rounded-lg shadow-sm">
+                                                <div key={dim.name} className="flex items-center justify-between p-4 bg-white rounded-xl border border-slate-100 shadow-sm hover:shadow-md transition-shadow">
+                                                    <div className="flex items-center gap-3 overflow-hidden">
+                                                        <div className="p-2 bg-slate-50 rounded-lg shrink-0">
                                                             <Icon className="h-4 w-4 text-slate-600" />
                                                         </div>
-                                                        <span className="text-xs font-bold text-slate-700">{dim.name}</span>
+                                                        <span className="text-[11px] font-bold text-slate-700 uppercase tracking-tight truncate">{dim.name}</span>
                                                     </div>
-                                                    <div className={cn("font-black text-sm", (!isAuthenticated || (isAuthenticated && !isPro)) && "blur-sm select-none")}>
+                                                    <div className={cn("font-black text-base shrink-0 ml-2", (!isAuthenticated || (isAuthenticated && !isPro)) && "blur-sm select-none")}>
                                                         {(isAuthenticated && isPro) && score ? `${score}/10` : '9/10'}
                                                     </div>
                                                 </div>
@@ -189,20 +205,20 @@ export function IdeaDetailModal({
                                         })}
                                         {(!isAuthenticated || (isAuthenticated && !isPro)) && (
                                             <div className="absolute inset-0 flex items-center justify-center bg-white/40 backdrop-blur-[2px] rounded-2xl">
-                                                <div className="bg-white shadow-xl p-4 rounded-2xl border flex flex-col items-center gap-2">
+                                                <div className="bg-white shadow-xl p-6 rounded-2xl border border-blue-100 flex flex-col items-center gap-3">
                                                     <div className="flex items-center gap-3">
                                                         <Lock className="h-5 w-5 text-slate-400" />
-                                                        <span className="text-sm font-black text-slate-800">Locked</span>
+                                                        <span className="text-sm font-black text-slate-800">Scores Locked</span>
                                                     </div>
                                                     {isAuthenticated ? (
                                                         <Link href={`/dashboard/subscription?redirectTo=${pathname}`}>
-                                                            <Button size="sm" variant="outline" className="text-[10px] h-7 font-black uppercase tracking-wider border-blue-200 text-blue-600 hover:bg-blue-50">
+                                                            <Button size="sm" variant="default" className="text-[10px] h-8 px-4 font-black uppercase tracking-wider bg-blue-600 hover:bg-blue-700 text-white rounded-xl">
                                                                 Upgrade to Unlock
                                                             </Button>
                                                         </Link>
                                                     ) : (
                                                         <Link href={`/login?redirectTo=${pathname}`}>
-                                                            <Button size="sm" variant="outline" className="text-[10px] h-7 font-black uppercase tracking-wider border-blue-200 text-blue-600 hover:bg-blue-50">
+                                                            <Button size="sm" variant="default" className="text-[10px] h-8 px-4 font-black uppercase tracking-wider bg-blue-600 hover:bg-blue-700 text-white rounded-xl">
                                                                 Sign Up Free
                                                             </Button>
                                                         </Link>
@@ -212,7 +228,7 @@ export function IdeaDetailModal({
                                             </div>
                                         )}
                                     </div>
-                                </div>
+                                </section>
                             </div>
 
                             {/* Advanced Sections (PREMIUM ONLY) */}

@@ -15,22 +15,23 @@ interface ComparableCompaniesCardProps {
 }
 
 export function ComparableCompaniesCard({ companies, userTier }: ComparableCompaniesCardProps) {
-    const [appliedLessons, setAppliedLessons] = useState<Set<string>>(new Set())
-
-    // Load from localStorage on mount
-    useEffect(() => {
-        const saved = localStorage.getItem('appliedLessons')
-        if (saved) {
-            try {
-                const parsed = JSON.parse(saved)
-                if (Array.isArray(parsed)) {
-                    setAppliedLessons(new Set(parsed))
+    const [appliedLessons, setAppliedLessons] = useState<Set<string>>(() => {
+        // Load from localStorage during initialization (Client Side Only)
+        if (typeof window !== 'undefined') {
+            const saved = localStorage.getItem('appliedLessons')
+            if (saved) {
+                try {
+                    const parsed = JSON.parse(saved)
+                    if (Array.isArray(parsed)) {
+                        return new Set(parsed)
+                    }
+                } catch (e) {
+                    console.error('Failed to parse applied lessons:', e)
                 }
-            } catch (e) {
-                console.error('Failed to parse applied lessons:', e)
             }
         }
-    }, [])
+        return new Set()
+    })
 
     function toggleLesson(companyName: string, lessonIndex: number) {
         const key = `${companyName}-${lessonIndex}`
@@ -104,7 +105,7 @@ export function ComparableCompaniesCard({ companies, userTier }: ComparableCompa
                         {userTier === 'free' && (
                             <>
                                 <p className="text-sm text-muted-foreground">
-                                    {company.description || (company as any).similarity || "Learn from this company's journey in your space."}
+                                    {company.description || company.similarity || "Learn from this company's journey in your space."}
                                 </p>
 
                                 {/* Upgrade CTA */}
@@ -114,7 +115,7 @@ export function ComparableCompaniesCard({ companies, userTier }: ComparableCompa
                                         <div className="flex-1">
                                             <p className="text-sm font-medium">Unlock Detailed Insights</p>
                                             <p className="text-sm text-muted-foreground mt-1 text-xs">
-                                                See what worked, what didn't, and get actionable lessons for your idea
+                                                See what worked, what didn&apos;t, and get actionable lessons for your idea
                                             </p>
                                             <Button size="sm" variant="outline" className="mt-3 h-8 text-xs" asChild>
                                                 <Link href="/pricing">Upgrade to Pro</Link>
@@ -151,7 +152,7 @@ export function ComparableCompaniesCard({ companies, userTier }: ComparableCompa
                                     <div>
                                         <h4 className="text-sm font-semibold flex items-center gap-2 mb-2">
                                             <TrendingDown className="h-4 w-4 text-rose-600" />
-                                            What Didn't Work
+                                            What Didn&apos;t Work
                                         </h4>
                                         <ul className="space-y-1.5">
                                             {company.whatDidntWork.map((item, idx) => (

@@ -37,6 +37,7 @@ export interface SharedIdea {
     user_id: string
     title: string
     problem: string
+    solution: string
     target_customer: string
     overall_score: number
     traffic_light: 'red' | 'yellow' | 'green'

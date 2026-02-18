@@ -83,7 +83,7 @@ async function runTest() {
         if (result.comparableCompanies.length > 0) {
             console.log('\n🏢 COMPARABLE COMPANIES:');
             result.comparableCompanies.forEach((company, i) => {
-                console.log(`  ${i + 1}. ${company.name} (${company.outcome})`);
+                console.log(`  ${i + 1}. ${company.name} (${company.situation})`);
                 console.log(`     Similarity: ${company.similarity}`);
             });
         }

@@ -3,7 +3,7 @@
 import { createClient } from '@/lib/supabase/server'
 import { revalidatePath } from 'next/cache'
 import { validateIdea } from '@/lib/ai/validator'
-import { IdeaFormData, ValidationResult, ActionPlan } from '@/types/validations'
+import { IdeaFormData, ValidationResult, ActionPlan, ComparableCompany } from '@/types/validations'
 import { checkValidationQuota, checkIterationQuota, canAccessReport, getAccessibleValidations } from '@/lib/utils/subscriptions'
 import { Tables } from '@/types/database'
 
@@ -19,7 +19,7 @@ function mapValidationRowToResult(row: Tables<'validations'>): ValidationResult 
         timeToRevenueScore: { score: row.time_to_revenue_score, reasoning: row.time_to_revenue_reasoning, estimate: row.time_to_revenue_estimate || undefined },
         scalabilityScore: { score: row.scalability_score, reasoning: row.scalability_reasoning },
         redFlags: row.red_flags as string[],
-        comparableCompanies: row.comparable_companies as unknown[] as { name: string, outcome: 'success' | 'failure', similarity: string }[],
+        comparableCompanies: row.comparable_companies as unknown as ComparableCompany[],
         recommendations: row.recommendations as string[],
         created_at: row.created_at || new Date().toISOString(),
         id: row.id,
@@ -390,6 +390,7 @@ export async function getUserIdeas() {
             id,
             title,
             problem,
+            solution,
             status,
             created_at,
             validations (

@@ -23,6 +23,7 @@ export type ComparableCompany = {
     name: string
     situation: string
     description?: string // Legacy field for free users
+    similarity?: string // Legacy field for similarity score
     whatWorked?: string[] // Pro/Premium only
     whatDidntWork?: string[] // Pro/Premium only
     lessonsForYou?: string[] // Pro/Premium only
@@ -65,6 +66,7 @@ export type IdeaWithValidation = {
     id: string
     title: string
     problem: string
+    solution: string
     status: string
     created_at: string
     latest_validation?: ValidationResult | null
