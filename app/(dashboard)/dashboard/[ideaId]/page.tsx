@@ -4,7 +4,10 @@ import { getFullIdea } from "@/app/actions/ideas"
 import { createClient } from "@/lib/supabase/server"
 import { ValidationReport } from "@/components/features/validation-report"
 import { RevalidateButton } from "@/components/features/revalidate-button"
+import { TrafficLight } from "@/components/features/traffic-light"
+import { BenchmarkBadge } from "@/components/features/benchmark-badge"
 import { calculatePercentile } from "@/lib/utils/benchmarks"
+import { getScoreColor } from "@/lib/utils"
 import {
     Breadcrumb,
     BreadcrumbItem,
@@ -76,21 +79,35 @@ export default async function IdeaDetailPage({ params }: IdeaDetailPageProps) {
             </Breadcrumb>
 
             {/* Header / Metadata */}
-            <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
-                <div className="space-y-1">
-                    <h1 className="text-3xl font-bold tracking-tight">{idea.title}</h1>
-                    <div className="flex items-center gap-4 text-sm text-muted-foreground">
-                        <div className="flex items-center gap-1">
-                            <CalendarDays className="h-4 w-4" />
-                            Created on {new Date(idea.created_at).toLocaleDateString()}
+            <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-6 pb-2">
+                <div className="space-y-3">
+                    <h1 className="text-3xl md:text-4xl font-black tracking-tight text-foreground">{idea.title}</h1>
+                    <div className="flex flex-wrap items-center gap-4 text-sm font-medium">
+                        <div className="flex items-center gap-1.5 bg-muted/50 px-3 py-1.5 rounded-full text-muted-foreground border border-muted-foreground/10">
+                            <CalendarDays className="h-4 w-4 text-primary/60" />
+                            Created {new Date(idea.created_at).toLocaleDateString(undefined, { month: 'short', day: 'numeric', year: 'numeric' })}
                         </div>
-                        <div className="flex items-center gap-1 capitalize">
-                            <Lightbulb className="h-4 w-4" />
+                        <div className="flex items-center gap-1.5 bg-muted/50 px-3 py-1.5 rounded-full text-muted-foreground border border-muted-foreground/10 capitalize">
+                            <Lightbulb className="h-4 w-4 text-amber-500/60" />
                             {idea.status}
                         </div>
+                        {latestValidation && (
+                            <TrafficLight trafficLight={latestValidation.trafficLight} />
+                        )}
+                        <BenchmarkBadge percentile={percentile} />
                     </div>
                 </div>
-                <div className="flex items-center gap-3">
+                <div className="flex items-center gap-4 self-end md:self-auto">
+                    {latestValidation && (
+                        <div className="flex items-center gap-3 bg-secondary/30 px-5 py-2.5 rounded-2xl border backdrop-blur-sm transition-all hover:bg-secondary/40">
+                            <div className="text-right">
+                                <p className="text-[10px] font-black text-muted-foreground uppercase leading-none tracking-widest">Overall Score</p>
+                                <p className="text-4xl font-black tracking-tighter leading-none mt-1" style={{ color: getScoreColor(latestValidation.overallScore) }}>
+                                    {latestValidation.overallScore}<span className="text-sm text-muted-foreground/50 ml-0.5">/100</span>
+                                </p>
+                            </div>
+                        </div>
+                    )}
                     {latestValidation && <RevalidateButton ideaId={idea.id} />}
                 </div>
             </div>

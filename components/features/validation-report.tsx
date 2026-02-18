@@ -10,8 +10,8 @@ import { BenchmarkBadge } from "./benchmark-badge";
 import { Tables } from "@/types/database";
 import { ValidationResult } from "@/types/validations";
 import { Badge } from "@/components/ui/badge";
-import { AlertTriangle, CheckCircle2, TrendingUp, History, Lightbulb, BarChart3, ChevronDown, ExternalLink, Target } from "lucide-react";
-import { cn } from "@/lib/utils";
+import { AlertTriangle, CheckCircle2, TrendingUp, History, Lightbulb, BarChart3, ChevronDown, ExternalLink, Target, CalendarDays } from "lucide-react";
+import { cn, getScoreColor } from "@/lib/utils";
 import { useState, useEffect } from "react";
 import {
     Accordion,
@@ -186,11 +186,6 @@ export function ValidationReport({
 
 
 
-    const getScoreColor = (s: number) => {
-        if (s < 50) return "#ef4444";
-        if (s < 80) return "#f59e0b";
-        return "#22c55e";
-    };
 
     return (
         <div className="space-y-8 max-w-6xl mx-auto p-4 md:p-8 animate-in fade-in duration-500 relative">
@@ -217,47 +212,12 @@ export function ValidationReport({
                 </div>
             )}
 
-            {/* Score Improvement Banner & Timeline */}
-            {(history.length > 0) && (
-                <div className="space-y-6">
-                    <ScoreImprovementBanner
-                        currentScore={validation.overallScore}
-                        previousScore={history[0].overallScore}
-                    />
-                </div>
-            )}
-
             <div className={cn(
                 "transition-all duration-700 space-y-8",
                 isActuallyArchived && "blur-md pointer-events-none select-none opacity-50 grayscale-[0.5]"
             )}>
 
-                {/* Header Section */}
-                <div className="flex flex-col md:flex-row md:items-end justify-between gap-6 pb-6 border-b">
-                    <div className="space-y-2">
-                        <Badge variant="outline" className="text-muted-foreground uppercase tracking-widest text-[10px] font-bold">
-                            Validation Report
-                        </Badge>
-                        <h1 className="text-3xl md:text-4xl font-black tracking-tight">{idea.title}</h1>
-                        <div className="flex flex-wrap items-center gap-3 pt-2">
-                            <TrafficLight trafficLight={validation.trafficLight} />
-                            <BenchmarkBadge percentile={percentile || 0} />
-                            <span className="text-xs text-muted-foreground italic" suppressHydrationWarning>
-                                Validated on {validation.created_at ? new Date(validation.created_at).toLocaleDateString() : 'N/A'}
-                            </span>
-                        </div>
-                    </div>
-
-                    <div className="flex items-center gap-4 bg-secondary/30 p-4 rounded-2xl border backdrop-blur-sm">
-                        <div className="text-right">
-                            <p className="text-xs font-bold text-muted-foreground uppercase">Overall Score</p>
-                            <p className="text-5xl font-black tracking-tighter" style={{ color: getScoreColor(validation.overallScore) }}>
-                                {validation.overallScore}<span className="text-2xl text-muted-foreground/50">/100</span>
-                            </p>
-                        </div>
-                    </div>
-
-                    {/* Share Button / Shared Status */}
+                <div className="flex flex-col md:flex-row md:items-center justify-end gap-6 pb-6 border-b">
                     <div className="flex items-center gap-2">
                         {isShared ? (
                             <div className="flex items-center gap-2">
@@ -322,6 +282,15 @@ export function ValidationReport({
                         </TooltipProvider>
                     </div>
                 </div>
+
+
+                {/* Score Improvement Banner */}
+                {(history.length > 0) && (
+                    <ScoreImprovementBanner
+                        currentScore={validation.overallScore}
+                        previousScore={history[0].overallScore}
+                    />
+                )}
 
                 <Tabs defaultValue="scores" className="w-full">
                     <TabsList className="grid w-full grid-cols-2 md:grid-cols-4 mb-8 h-auto p-1">
