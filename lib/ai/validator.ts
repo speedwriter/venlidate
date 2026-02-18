@@ -1,3 +1,5 @@
+import { google } from '@ai-sdk/google';
+import { generateText } from 'ai';
 import { generateTextWithFallback } from './models';
 import {
     VALIDATION_PROMPTS,
@@ -9,7 +11,59 @@ import {
     ACTION_PLAN_PROMPT,
     calculateOverallScore
 } from './prompts';
-import type { IdeaFormData, ValidationResult, DimensionScore, ActionPlan } from '@/types/validations';
+import type { IdeaFormData, ValidationResult, DimensionScore, ActionPlan, ComparableCompany } from '@/types/validations';
+
+/**
+ * Generates comparable companies based on the idea and its weaknesses.
+ */
+export async function generateComparableCompanies(
+    ideaData: IdeaFormData,
+    overallScore: number,
+    keyWeaknesses: string,
+    userTier: 'free' | 'pro' | 'premium' = 'free'
+): Promise<ComparableCompany[]> {
+    const prompt = interpolatePrompt(COMPARABLE_COMPANIES_PROMPT, {
+        problem: ideaData.problem,
+        targetCustomer: ideaData.targetCustomer,
+        revenueModel: ideaData.revenueModel,
+        distributionChannel: ideaData.distributionChannel,
+        unfairAdvantage: ideaData.unfairAdvantage,
+        overallScore: overallScore.toString(),
+        keyWeaknesses: keyWeaknesses,
+    })
+
+    try {
+        const { text } = await generateTextWithFallback({
+            prompt: prompt,
+            temperature: 0.7, // Higher creativity for finding comparables
+            maxOutputTokens: 2000, // Need more tokens for detailed analysis
+        })
+
+        const cleanText = text.replace(/```json|```/g, '').trim()
+        const companies = JSON.parse(cleanText)
+
+        // Validate structure
+        if (!Array.isArray(companies) || companies.length === 0) {
+            return []
+        }
+
+        // For free users, strip out premium fields
+        if (userTier === 'free') {
+            return companies.map(c => ({
+                name: c.name,
+                situation: c.situation,
+                description: `${c.whatWorked?.[0] || 'Successful company in similar space.'}` // Show preview
+            }))
+        }
+
+        // For Pro/Premium, return full enhanced data
+        return companies.slice(0, 4) // Max 4 companies
+
+    } catch (error) {
+        console.error('Failed to generate comparable companies:', error)
+        return []
+    }
+}
 
 /**
  * Helper function to extract JSON from markdown-wrapped responses
@@ -428,15 +482,24 @@ export async function validateIdea(
         // Generate comparable companies
         console.log('🏢 Finding comparable companies...');
         try {
-            const comparablesPrompt = COMPARABLE_COMPANIES_PROMPT(interpolationData);
-            const { text: comparablesText } = await generateTextWithFallback({
-                prompt: comparablesPrompt,
-                temperature: 0.5, // Slightly higher for creativity
-                maxOutputTokens: 1200, // Increased to prevent truncation
-            });
+            // After scoring all dimensions, identify key weaknesses
+            const weakDimensions = [
+                { name: 'Customer Acquisition', score: scores.acquisition },
+                { name: 'Revenue Model', score: scores.revenueModel },
+                { name: 'Competitive Moat', score: scores.moat },
+                { name: 'Founder Fit', score: scores.founderFit },
+            ].filter(d => d.score < 6)
+                .map(d => `${d.name} (${d.score}/10)`)
+                .join(', ')
 
-            const comparables = safeParseJSON(comparablesText, 'array');
-            result.comparableCompanies = Array.isArray(comparables) ? comparables : [];
+            const comparableCompanies = await generateComparableCompanies(
+                ideaData,
+                result.overallScore!,
+                weakDimensions || 'Overall validation',
+                userTier // Pass user tier to determine detail level
+            )
+
+            result.comparableCompanies = comparableCompanies
         } catch (error) {
             console.error('❌ Error generating comparable companies:', error);
             result.comparableCompanies = [];

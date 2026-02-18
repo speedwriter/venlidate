@@ -326,30 +326,59 @@ export function interpolatePrompt(template: string, data: Record<string, string>
   return template.replace(/\{(\w+)\}/g, (_, key) => data[key] || `{${key}}`);
 }
 
-export function COMPARABLE_COMPANIES_PROMPT(data: Record<string, string>): string {
-  const template = `Find 3 REAL comparable companies (not hypothetical) for: {problem} with solution {solution} targeting {targetCustomer}.
+export const COMPARABLE_COMPANIES_PROMPT = `
+You are a startup advisor analyzing comparable companies to help a founder learn from successes and failures.
 
-REQUIREMENTS:
-- At least 2 must be REAL companies (use actual company names if they exist)
-- Include at least 1 FAILURE (crucial learning - failures teach more than successes)
-- Keep each field concise (1 sentence max)
+Founder's Idea:
+- Problem: {problem}
+- Target Customer: {targetCustomer}
+- Revenue Model: {revenueModel}
+- Distribution: {distributionChannel}
+- Unfair Advantage: {unfairAdvantage}
 
-IMPORTANT: You must respond with ONLY valid JSON. Do not include any explanatory text before or after the JSON.
+Overall Score: {overallScore}/100
+Key Weaknesses: {keyWeaknesses}
 
-Return this exact JSON array structure:
+Task: Identify 3-4 comparable companies (startups, not Fortune 500s unless highly relevant).
+
+For each company, provide:
+
+1. **name**: Company name
+2. **situation**: Current status in 1 sentence (e.g., "Successful - $2B valuation" or "Failed - shut down in 2019" or "Acquired by X for $Y")
+3. **whatWorked**: Array of 2-3 specific strategies/decisions that drove their success
+   - Be concrete: "Focused on developers first, then upsold to enterprises" not "Good marketing"
+   - Include HOW they did it: "Built in public with weekly blog posts showing revenue numbers"
+   - Focus on EARLY decisions (first 2-3 years), not mature company tactics
+4. **whatDidntWork**: Array of 1-2 mistakes they made or challenges they faced
+   - Be honest: Include failures, pivots, near-death experiences
+   - Explain the learning: "Tried marketplace model, realized B2B SaaS was better fit"
+5. **lessonsForYou**: Array of 2-3 actionable tests the founder should run
+   - Frame as experiments: "Test: Can you acquire first 100 customers through X?"
+   - Tie to founder's weaknesses: If acquisition score is low, focus lessons on distribution
+   - Be specific: "Validate: Will your target customer pay $X/month, not just use for free?"
+6. **keyMetric**: ONE metric that defined their early success (e.g., "Time to value: 5 minutes" or "NPS: 72 in first year")
+
+CRITICAL: 
+- Choose companies founded in last 10-15 years (not Microsoft, Apple, Google)
+- Include at least 1 failed company (to show what NOT to do)
+- If possible, include 1 company from same industry/vertical
+- Focus on EARLY-stage lessons (0-$10M revenue), not growth-stage tactics
+- Make "lessonsForYou" directly testable (not vague advice)
+
+Return ONLY valid JSON array:
 [
   {
-    "name": "Company name or 'Unknown startup in [space]'",
-    "outcome": "success" | "failure" | "acquired" | "pivoted" | "struggling",
-    "similarity": "1 sentence: what's similar to user's idea",
-    "keyLesson": "1 sentence: key takeaway for user",
-    "linkIfAvailable": ""
+    "name": "Company Name",
+    "situation": "Status in 1 sentence",
+    "whatWorked": ["Concrete strategy 1", "Concrete strategy 2"],
+    "whatDidntWork": ["Mistake or challenge"],
+    "lessonsForYou": ["Test: Specific action 1", "Validate: Specific action 2"],
+    "keyMetric": "Metric: Number/description"
   }
 ]
 
-FOCUS ON FAILURES - they're more educational. What killed them? Be specific but concise.`;
-  return interpolatePrompt(template, data);
-}
+Choose companies the founder can actually learn from (similar stage, similar market, similar challenges).
+`
 
 export function RECOMMENDATIONS_PROMPT(scores: Record<string, number>, data: Record<string, string>): string {
   return `Based on these dimension scores: ${JSON.stringify(scores)}, provide 3 SPECIFIC, ACTIONABLE recommendations.

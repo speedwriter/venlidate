@@ -36,6 +36,7 @@ import { ActionPlanUpgradeCTA } from "./action-plan-upgrade-cta";
 import { ScoreImprovementBanner } from "./score-improvement-banner";
 import { IterationTimeline } from "./iteration-timeline";
 import { NextStepsCard } from "./next-steps-card";
+import { ComparableCompaniesCard } from "./comparable-companies-card";
 
 
 
@@ -415,38 +416,16 @@ export function ValidationReport({
                             </div>
 
                             {/* Comparable Companies */}
-                            <Card className="overflow-hidden">
-                                <CardHeader className="border-b bg-muted/20">
-                                    <CardTitle>Comparable Companies</CardTitle>
-                                    <CardDescription>Learning from those who paved the way</CardDescription>
-                                </CardHeader>
-                                <CardContent className="p-0">
-                                    <div className="divide-y">
-                                        {comparableCompanies.map((company, i) => (
-                                            <div key={i} className="p-4 flex items-center justify-between hover:bg-muted/30 transition-colors">
-                                                <div className="space-y-1">
-                                                    <p className="font-bold text-foreground">{company.name}</p>
-                                                    <p className="text-xs text-muted-foreground">{company.similarity}</p>
-                                                </div>
-                                                <Badge
-                                                    variant={company.outcome === 'success' ? 'default' : 'secondary'}
-                                                    className={cn(
-                                                        "capitalize",
-                                                        company.outcome === 'success' ? "bg-emerald-500 hover:bg-emerald-600" : "bg-zinc-200 text-zinc-700 hover:bg-zinc-300"
-                                                    )}
-                                                >
-                                                    {company.outcome}
-                                                </Badge>
-                                            </div>
-                                        ))}
-                                        {comparableCompanies.length === 0 && (
-                                            <div className="p-8 text-center text-muted-foreground italic">
-                                                No comparable companies identified at this stage.
-                                            </div>
-                                        )}
-                                    </div>
-                                </CardContent>
-                            </Card>
+                            <div className="space-y-4">
+                                <div className="space-y-1">
+                                    <h3 className="text-xl font-bold tracking-tight">Comparable Companies</h3>
+                                    <p className="text-sm text-muted-foreground">Learning from those who paved the way</p>
+                                </div>
+                                <ComparableCompaniesCard
+                                    companies={comparableCompanies}
+                                    userTier={userTier}
+                                />
+                            </div>
                         </div>
                     </TabsContent>
 

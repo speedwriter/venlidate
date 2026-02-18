@@ -19,6 +19,16 @@ export type ActionPlan = {
     readinessCriteria: string
 }
 
+export type ComparableCompany = {
+    name: string
+    situation: string
+    description?: string // Legacy field for free users
+    whatWorked?: string[] // Pro/Premium only
+    whatDidntWork?: string[] // Pro/Premium only
+    lessonsForYou?: string[] // Pro/Premium only
+    keyMetric?: string // Pro/Premium only
+}
+
 export type ValidationResult = {
     painkillerScore: DimensionScore
     revenueModelScore: DimensionScore
@@ -30,11 +40,7 @@ export type ValidationResult = {
     overallScore: number // 0-100
     trafficLight: 'red' | 'yellow' | 'green'
     redFlags: string[]
-    comparableCompanies: Array<{
-        name: string
-        outcome: 'success' | 'failure'
-        similarity: string
-    }>
+    comparableCompanies: ComparableCompany[]
     recommendations: string[]
     thinkingQuestions?: Record<string, string[]> // { dimension: ["q1", "q2"] }
     actionPlan?: ActionPlan | null

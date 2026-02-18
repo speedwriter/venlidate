@@ -23,8 +23,6 @@ import {
     BarChart
 } from 'lucide-react'
 import Link from 'next/link'
-import { ActionPlanCard } from './action-plan-card'
-import { ActionPlanUpgradeCTA } from './action-plan-upgrade-cta'
 import { cn } from '@/lib/utils'
 import { ActionPlan } from '@/types/validations'
 import { usePathname } from 'next/navigation'
@@ -220,42 +218,6 @@ export function IdeaDetailModal({
                             {/* Advanced Sections (PREMIUM ONLY) */}
                             {isAuthenticated && (
                                 <div className="mt-8 pt-8 border-t space-y-8">
-                                    {/* Comparable Companies */}
-                                    <section className="space-y-4">
-                                        <h3 className="text-sm font-black uppercase tracking-wider text-slate-800">Comparable Companies</h3>
-                                        {!isPro ? (
-                                            <div className="p-6 bg-slate-50 border-2 border-dashed rounded-2xl text-center space-y-3">
-                                                <Lock className="h-6 w-6 text-slate-300 mx-auto" />
-                                                <p className="text-xs font-bold text-slate-500 uppercase">Available on Pro & Premium Plans</p>
-                                                <Link href={`/dashboard/subscription?redirectTo=${pathname}`} className="inline-block">
-                                                    <Button variant="outline" size="sm" className="font-bold rounded-xl border-blue-200 text-blue-600 hover:bg-blue-50">
-                                                        Upgrade to Unlock
-                                                    </Button>
-                                                </Link>
-                                            </div>
-                                        ) : (
-                                            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                                                {validation?.comparable_companies?.map((co: { name: string, outcome: string }, i: number) => {
-                                                    const isSuccess = co.outcome?.toLowerCase() === 'success'
-                                                    const bgColor = isSuccess ? 'bg-emerald-50' : 'bg-red-50'
-                                                    const borderColor = isSuccess ? 'border-emerald-100' : 'border-red-100'
-                                                    const textColor = isSuccess ? 'text-emerald-900' : 'text-red-900'
-                                                    const badgeBg = isSuccess ? 'bg-emerald-100' : 'bg-red-100'
-                                                    const badgeText = isSuccess ? 'text-emerald-700' : 'text-red-700'
-
-                                                    return (
-                                                        <div key={i} className={`p-3 ${bgColor} border ${borderColor} rounded-xl flex items-center justify-between`}>
-                                                            <span className={`text-xs font-bold ${textColor}`}>{co.name}</span>
-                                                            <Badge variant="secondary" className={`text-[10px] ${badgeBg} ${badgeText}`}>{co.outcome}</Badge>
-                                                        </div>
-                                                    )
-                                                })}
-                                                {(!validation?.comparable_companies || validation.comparable_companies.length === 0) && (
-                                                    <p className="text-xs text-slate-400 italic">No comparable companies available.</p>
-                                                )}
-                                            </div>
-                                        )}
-                                    </section>
 
                                     {/* AI Insights */}
                                     <section className="space-y-4">
@@ -319,24 +281,6 @@ export function IdeaDetailModal({
                                         )}
                                     </section>
 
-                                    {/* Action Plan Section */}
-                                    <section className="space-y-4 pt-4 border-t">
-                                        <h3 className="text-sm font-black uppercase tracking-wider text-slate-800 flex items-center gap-2">
-                                            <Target className="h-4 w-4 text-blue-500" />
-                                            Personalized Action Plan
-                                        </h3>
-                                        {!isPro ? (
-                                            <ActionPlanUpgradeCTA redirectTo={pathname} />
-                                        ) : (
-                                            validation?.action_plan ? (
-                                                <ActionPlanCard actionPlan={validation.action_plan} tier={userTier} />
-                                            ) : (
-                                                <div className="p-6 bg-slate-50 border-2 border-dashed rounded-2xl text-center">
-                                                    <p className="text-xs text-slate-400 italic">No action plan available for this validation.</p>
-                                                </div>
-                                            )
-                                        )}
-                                    </section>
                                 </div>
                             )}
 
