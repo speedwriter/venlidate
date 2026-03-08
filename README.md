@@ -347,4 +347,4 @@ For issues or questions:
 
 ---
 
-Built with ❤️ by [Your Name]
+Built with ❤️ by Terry
