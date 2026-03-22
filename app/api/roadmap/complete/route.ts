@@ -40,7 +40,7 @@ export async function POST(req: NextRequest) {
       .eq('user_id', user.id)
       .order('created_at', { ascending: true })
 
-    const allReflections = ((tasks || []) as TaskForCompletion[])
+    const allReflections = ((tasks || []) as unknown as TaskForCompletion[])
       .filter(t => t.task_reflection)
       .map(t => ({
         phase: t.sprint?.phase?.phase_number || 0,
