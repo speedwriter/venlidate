@@ -14,6 +14,7 @@ const mockIdea: Tables<"ideas"> = {
     unfair_advantage: "Proprietary computer vision model trained on 1M+ rare plant health images.",
     time_commitment: "full_time",
     status: "validated",
+    roadmap_generated: false,
     user_id: "user-456",
     created_at: new Date(Date.now() - 7 * 24 * 60 * 60 * 1000).toISOString(),
     updated_at: new Date().toISOString(),

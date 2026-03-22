@@ -248,14 +248,27 @@ export async function submitIdeaForValidation(ideaId: string) {
             return { success: false, error: 'Failed to save validation results.' }
         }
 
-        // Update idea status
+        // Update idea status and summary columns
         const { error: updateError } = await supabase
             .from('ideas')
-            .update({ status: 'validated' })
+            .update({ 
+                status: 'validated',
+                description: idea.problem,
+                score: validation.overallScore,
+                score_breakdown: {
+                    problem_clarity: validation.painkillerScore.score,
+                    market_size: validation.revenueModelScore.score,
+                    competitive_advantage: validation.moatScore.score,
+                    technical_feasibility: validation.scalabilityScore.score,
+                    go_to_market: validation.acquisitionScore.score,
+                    founder_fit: validation.founderFitScore.score,
+                    market_timing: validation.timeToRevenueScore.score,
+                }
+            })
             .eq('id', ideaId)
 
         if (updateError) {
-            console.error('Failed to update idea status:', updateError)
+            console.error('Failed to update idea summary:', updateError)
         }
 
         let successMessage: string | undefined

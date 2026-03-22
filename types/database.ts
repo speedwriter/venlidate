@@ -100,7 +100,6 @@ export type Database = {
           id: string
           reason: string
           tier: string | null
-          user_email: string | null
           user_id: string
         }
         Insert: {
@@ -109,7 +108,6 @@ export type Database = {
           id?: string
           reason: string
           tier?: string | null
-          user_email?: string | null
           user_id: string
         }
         Update: {
@@ -118,7 +116,6 @@ export type Database = {
           id?: string
           reason?: string
           tier?: string | null
-          user_email?: string | null
           user_id?: string
         }
         Relationships: []
@@ -131,6 +128,7 @@ export type Database = {
           painkiller_moment: string
           problem: string
           revenue_model: string
+          roadmap_generated: boolean | null
           solution: string
           status: string | null
           target_customer: string
@@ -147,7 +145,8 @@ export type Database = {
           painkiller_moment: string
           problem: string
           revenue_model: string
-          solution: string
+          roadmap_generated?: boolean | null
+          solution?: string
           status?: string | null
           target_customer: string
           time_commitment: string
@@ -163,6 +162,7 @@ export type Database = {
           painkiller_moment?: string
           problem?: string
           revenue_model?: string
+          roadmap_generated?: boolean | null
           solution?: string
           status?: string | null
           target_customer?: string
@@ -173,6 +173,56 @@ export type Database = {
           user_id?: string
         }
         Relationships: []
+      }
+      phase: {
+        Row: {
+          completed_at: string | null
+          created_at: string | null
+          description: string
+          focus_area: string
+          id: string
+          phase_number: number
+          roadmap_id: string
+          status: string
+          title: string
+          unlocked_at: string | null
+          updated_at: string | null
+        }
+        Insert: {
+          completed_at?: string | null
+          created_at?: string | null
+          description: string
+          focus_area: string
+          id?: string
+          phase_number: number
+          roadmap_id: string
+          status?: string
+          title: string
+          unlocked_at?: string | null
+          updated_at?: string | null
+        }
+        Update: {
+          completed_at?: string | null
+          created_at?: string | null
+          description?: string
+          focus_area?: string
+          id?: string
+          phase_number?: number
+          roadmap_id?: string
+          status?: string
+          title?: string
+          unlocked_at?: string | null
+          updated_at?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "phase_roadmap_id_fkey"
+            columns: ["roadmap_id"]
+            isOneToOne: false
+            referencedRelation: "roadmap"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       profiles: {
         Row: {
@@ -204,6 +254,53 @@ export type Database = {
         }
         Relationships: []
       }
+      roadmap: {
+        Row: {
+          created_at: string | null
+          current_phase: number
+          current_sprint: number
+          generated_at: string | null
+          id: string
+          idea_id: string
+          phase_count: number
+          status: string
+          updated_at: string | null
+          user_id: string
+        }
+        Insert: {
+          created_at?: string | null
+          current_phase?: number
+          current_sprint?: number
+          generated_at?: string | null
+          id?: string
+          idea_id: string
+          phase_count?: number
+          status?: string
+          updated_at?: string | null
+          user_id: string
+        }
+        Update: {
+          created_at?: string | null
+          current_phase?: number
+          current_sprint?: number
+          generated_at?: string | null
+          id?: string
+          idea_id?: string
+          phase_count?: number
+          status?: string
+          updated_at?: string | null
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "roadmap_idea_id_fkey"
+            columns: ["idea_id"]
+            isOneToOne: false
+            referencedRelation: "ideas"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       shared_ideas: {
         Row: {
           approved_at: string | null
@@ -215,8 +312,8 @@ export type Database = {
           is_anonymous: boolean | null
           overall_score: number
           problem: string
-          solution: string | null
           shared_by_name: string | null
+          solution: string | null
           status: string | null
           target_customer: string
           title: string
@@ -236,8 +333,8 @@ export type Database = {
           is_anonymous?: boolean | null
           overall_score: number
           problem: string
-          solution?: string | null
           shared_by_name?: string | null
+          solution?: string | null
           status?: string | null
           target_customer: string
           title: string
@@ -257,8 +354,8 @@ export type Database = {
           is_anonymous?: boolean | null
           overall_score?: number
           problem?: string
-          solution?: string | null
           shared_by_name?: string | null
+          solution?: string | null
           status?: string | null
           target_customer?: string
           title?: string
@@ -281,6 +378,155 @@ export type Database = {
             columns: ["validation_id"]
             isOneToOne: true
             referencedRelation: "validations"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      sprint: {
+        Row: {
+          completed_at: string | null
+          created_at: string | null
+          id: string
+          phase_id: string
+          roadmap_id: string
+          sprint_number: number
+          status: string
+          title: string
+          unlocked_at: string | null
+          updated_at: string | null
+        }
+        Insert: {
+          completed_at?: string | null
+          created_at?: string | null
+          id?: string
+          phase_id: string
+          roadmap_id: string
+          sprint_number: number
+          status?: string
+          title: string
+          unlocked_at?: string | null
+          updated_at?: string | null
+        }
+        Update: {
+          completed_at?: string | null
+          created_at?: string | null
+          id?: string
+          phase_id?: string
+          roadmap_id?: string
+          sprint_number?: number
+          status?: string
+          title?: string
+          unlocked_at?: string | null
+          updated_at?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "sprint_phase_id_fkey"
+            columns: ["phase_id"]
+            isOneToOne: false
+            referencedRelation: "phase"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "sprint_roadmap_id_fkey"
+            columns: ["roadmap_id"]
+            isOneToOne: false
+            referencedRelation: "roadmap"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      task: {
+        Row: {
+          completed_at: string | null
+          created_at: string | null
+          description: string
+          id: string
+          resource_url: string | null
+          roadmap_id: string
+          sprint_id: string
+          status: string
+          task_number: number
+          title: string
+          updated_at: string | null
+          user_id: string
+          why_this_matters: string
+        }
+        Insert: {
+          completed_at?: string | null
+          created_at?: string | null
+          description: string
+          id?: string
+          resource_url?: string | null
+          roadmap_id: string
+          sprint_id: string
+          status?: string
+          task_number: number
+          title: string
+          updated_at?: string | null
+          user_id: string
+          why_this_matters: string
+        }
+        Update: {
+          completed_at?: string | null
+          created_at?: string | null
+          description?: string
+          id?: string
+          resource_url?: string | null
+          roadmap_id?: string
+          sprint_id?: string
+          status?: string
+          task_number?: number
+          title?: string
+          updated_at?: string | null
+          user_id?: string
+          why_this_matters?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "task_roadmap_id_fkey"
+            columns: ["roadmap_id"]
+            isOneToOne: false
+            referencedRelation: "roadmap"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "task_sprint_id_fkey"
+            columns: ["sprint_id"]
+            isOneToOne: false
+            referencedRelation: "sprint"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      task_reflection: {
+        Row: {
+          content: string
+          created_at: string | null
+          id: string
+          task_id: string
+          user_id: string
+        }
+        Insert: {
+          content: string
+          created_at?: string | null
+          id?: string
+          task_id: string
+          user_id: string
+        }
+        Update: {
+          content?: string
+          created_at?: string | null
+          id?: string
+          task_id?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "task_reflection_task_id_fkey"
+            columns: ["task_id"]
+            isOneToOne: true
+            referencedRelation: "task"
             referencedColumns: ["id"]
           },
         ]
@@ -382,6 +628,7 @@ export type Database = {
         Row: {
           acquisition_reasoning: string
           acquisition_score: number
+          action_plan: Json | null
           comparable_companies: Json | null
           created_at: string | null
           founder_fit_reasoning: string
@@ -402,10 +649,10 @@ export type Database = {
           revenue_model_score: number
           scalability_reasoning: string
           scalability_score: number
+          thinking_questions: Json | null
           time_to_revenue_estimate: string | null
           time_to_revenue_reasoning: string
           time_to_revenue_score: number
-          thinking_questions: Json | null
           traffic_light: string
           used_credit: boolean | null
           user_id: string
@@ -413,6 +660,7 @@ export type Database = {
         Insert: {
           acquisition_reasoning: string
           acquisition_score: number
+          action_plan?: Json | null
           comparable_companies?: Json | null
           created_at?: string | null
           founder_fit_reasoning: string
@@ -433,10 +681,10 @@ export type Database = {
           revenue_model_score: number
           scalability_reasoning: string
           scalability_score: number
+          thinking_questions?: Json | null
           time_to_revenue_estimate?: string | null
           time_to_revenue_reasoning: string
           time_to_revenue_score: number
-          thinking_questions?: Json | null
           traffic_light: string
           used_credit?: boolean | null
           user_id: string
@@ -444,6 +692,7 @@ export type Database = {
         Update: {
           acquisition_reasoning?: string
           acquisition_score?: number
+          action_plan?: Json | null
           comparable_companies?: Json | null
           created_at?: string | null
           founder_fit_reasoning?: string
@@ -464,10 +713,10 @@ export type Database = {
           revenue_model_score?: number
           scalability_reasoning?: string
           scalability_score?: number
+          thinking_questions?: Json | null
           time_to_revenue_estimate?: string | null
           time_to_revenue_reasoning?: string
           time_to_revenue_score?: number
-          thinking_questions?: Json | null
           traffic_light?: string
           used_credit?: boolean | null
           user_id?: string
@@ -525,116 +774,116 @@ type DefaultSchema = DatabaseWithoutInternals[Extract<keyof Database, "public">]
 
 export type Tables<
   DefaultSchemaTableNameOrOptions extends
-  | keyof (DefaultSchema["Tables"] & DefaultSchema["Views"])
-  | { schema: keyof DatabaseWithoutInternals },
+    | keyof (DefaultSchema["Tables"] & DefaultSchema["Views"])
+    | { schema: keyof DatabaseWithoutInternals },
   TableName extends DefaultSchemaTableNameOrOptions extends {
     schema: keyof DatabaseWithoutInternals
   }
-  ? keyof (DatabaseWithoutInternals[DefaultSchemaTableNameOrOptions["schema"]]["Tables"] &
-    DatabaseWithoutInternals[DefaultSchemaTableNameOrOptions["schema"]]["Views"])
-  : never = never,
+    ? keyof (DatabaseWithoutInternals[DefaultSchemaTableNameOrOptions["schema"]]["Tables"] &
+        DatabaseWithoutInternals[DefaultSchemaTableNameOrOptions["schema"]]["Views"])
+    : never = never,
 > = DefaultSchemaTableNameOrOptions extends {
   schema: keyof DatabaseWithoutInternals
 }
   ? (DatabaseWithoutInternals[DefaultSchemaTableNameOrOptions["schema"]]["Tables"] &
-    DatabaseWithoutInternals[DefaultSchemaTableNameOrOptions["schema"]]["Views"])[TableName] extends {
+      DatabaseWithoutInternals[DefaultSchemaTableNameOrOptions["schema"]]["Views"])[TableName] extends {
       Row: infer R
     }
-  ? R
-  : never
+    ? R
+    : never
   : DefaultSchemaTableNameOrOptions extends keyof (DefaultSchema["Tables"] &
-    DefaultSchema["Views"])
-  ? (DefaultSchema["Tables"] &
-    DefaultSchema["Views"])[DefaultSchemaTableNameOrOptions] extends {
-      Row: infer R
-    }
-  ? R
-  : never
-  : never
+        DefaultSchema["Views"])
+    ? (DefaultSchema["Tables"] &
+        DefaultSchema["Views"])[DefaultSchemaTableNameOrOptions] extends {
+        Row: infer R
+      }
+      ? R
+      : never
+    : never
 
 export type TablesInsert<
   DefaultSchemaTableNameOrOptions extends
-  | keyof DefaultSchema["Tables"]
-  | { schema: keyof DatabaseWithoutInternals },
+    | keyof DefaultSchema["Tables"]
+    | { schema: keyof DatabaseWithoutInternals },
   TableName extends DefaultSchemaTableNameOrOptions extends {
     schema: keyof DatabaseWithoutInternals
   }
-  ? keyof DatabaseWithoutInternals[DefaultSchemaTableNameOrOptions["schema"]]["Tables"]
-  : never = never,
+    ? keyof DatabaseWithoutInternals[DefaultSchemaTableNameOrOptions["schema"]]["Tables"]
+    : never = never,
 > = DefaultSchemaTableNameOrOptions extends {
   schema: keyof DatabaseWithoutInternals
 }
   ? DatabaseWithoutInternals[DefaultSchemaTableNameOrOptions["schema"]]["Tables"][TableName] extends {
-    Insert: infer I
-  }
-  ? I
-  : never
+      Insert: infer I
+    }
+    ? I
+    : never
   : DefaultSchemaTableNameOrOptions extends keyof DefaultSchema["Tables"]
-  ? DefaultSchema["Tables"][DefaultSchemaTableNameOrOptions] extends {
-    Insert: infer I
-  }
-  ? I
-  : never
-  : never
+    ? DefaultSchema["Tables"][DefaultSchemaTableNameOrOptions] extends {
+        Insert: infer I
+      }
+      ? I
+      : never
+    : never
 
 export type TablesUpdate<
   DefaultSchemaTableNameOrOptions extends
-  | keyof DefaultSchema["Tables"]
-  | { schema: keyof DatabaseWithoutInternals },
+    | keyof DefaultSchema["Tables"]
+    | { schema: keyof DatabaseWithoutInternals },
   TableName extends DefaultSchemaTableNameOrOptions extends {
     schema: keyof DatabaseWithoutInternals
   }
-  ? keyof DatabaseWithoutInternals[DefaultSchemaTableNameOrOptions["schema"]]["Tables"]
-  : never = never,
+    ? keyof DatabaseWithoutInternals[DefaultSchemaTableNameOrOptions["schema"]]["Tables"]
+    : never = never,
 > = DefaultSchemaTableNameOrOptions extends {
   schema: keyof DatabaseWithoutInternals
 }
   ? DatabaseWithoutInternals[DefaultSchemaTableNameOrOptions["schema"]]["Tables"][TableName] extends {
-    Update: infer U
-  }
-  ? U
-  : never
+      Update: infer U
+    }
+    ? U
+    : never
   : DefaultSchemaTableNameOrOptions extends keyof DefaultSchema["Tables"]
-  ? DefaultSchema["Tables"][DefaultSchemaTableNameOrOptions] extends {
-    Update: infer U
-  }
-  ? U
-  : never
-  : never
+    ? DefaultSchema["Tables"][DefaultSchemaTableNameOrOptions] extends {
+        Update: infer U
+      }
+      ? U
+      : never
+    : never
 
 export type Enums<
   DefaultSchemaEnumNameOrOptions extends
-  | keyof DefaultSchema["Enums"]
-  | { schema: keyof DatabaseWithoutInternals },
+    | keyof DefaultSchema["Enums"]
+    | { schema: keyof DatabaseWithoutInternals },
   EnumName extends DefaultSchemaEnumNameOrOptions extends {
     schema: keyof DatabaseWithoutInternals
   }
-  ? keyof DatabaseWithoutInternals[DefaultSchemaEnumNameOrOptions["schema"]]["Enums"]
-  : never = never,
+    ? keyof DatabaseWithoutInternals[DefaultSchemaEnumNameOrOptions["schema"]]["Enums"]
+    : never = never,
 > = DefaultSchemaEnumNameOrOptions extends {
   schema: keyof DatabaseWithoutInternals
 }
   ? DatabaseWithoutInternals[DefaultSchemaEnumNameOrOptions["schema"]]["Enums"][EnumName]
   : DefaultSchemaEnumNameOrOptions extends keyof DefaultSchema["Enums"]
-  ? DefaultSchema["Enums"][DefaultSchemaEnumNameOrOptions]
-  : never
+    ? DefaultSchema["Enums"][DefaultSchemaEnumNameOrOptions]
+    : never
 
 export type CompositeTypes<
   PublicCompositeTypeNameOrOptions extends
-  | keyof DefaultSchema["CompositeTypes"]
-  | { schema: keyof DatabaseWithoutInternals },
+    | keyof DefaultSchema["CompositeTypes"]
+    | { schema: keyof DatabaseWithoutInternals },
   CompositeTypeName extends PublicCompositeTypeNameOrOptions extends {
     schema: keyof DatabaseWithoutInternals
   }
-  ? keyof DatabaseWithoutInternals[PublicCompositeTypeNameOrOptions["schema"]]["CompositeTypes"]
-  : never = never,
+    ? keyof DatabaseWithoutInternals[PublicCompositeTypeNameOrOptions["schema"]]["CompositeTypes"]
+    : never = never,
 > = PublicCompositeTypeNameOrOptions extends {
   schema: keyof DatabaseWithoutInternals
 }
   ? DatabaseWithoutInternals[PublicCompositeTypeNameOrOptions["schema"]]["CompositeTypes"][CompositeTypeName]
   : PublicCompositeTypeNameOrOptions extends keyof DefaultSchema["CompositeTypes"]
-  ? DefaultSchema["CompositeTypes"][PublicCompositeTypeNameOrOptions]
-  : never
+    ? DefaultSchema["CompositeTypes"][PublicCompositeTypeNameOrOptions]
+    : never
 
 export const Constants = {
   graphql_public: {

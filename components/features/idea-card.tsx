@@ -123,7 +123,11 @@ export function IdeaCard({ idea, mode = 'dashboard', isAuthenticated = true, use
                     <div className="flex items-center gap-4 mt-2">
                         <div className="flex items-center gap-1.5 text-xs text-muted-foreground">
                             <Calendar className="h-3.5 w-3.5" />
-                            {new Date(idea.created_at).toLocaleDateString()}
+                            {new Date(idea.created_at).toLocaleDateString('en-US', {
+                                month: 'short',
+                                day: 'numeric',
+                                year: 'numeric'
+                            })}
                         </div>
                         {trafficLight && <TrafficLight trafficLight={trafficLight} />}
                     </div>

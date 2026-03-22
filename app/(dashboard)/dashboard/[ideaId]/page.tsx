@@ -18,7 +18,9 @@ import {
 } from "@/components/ui/breadcrumb"
 
 import { Card, CardContent, CardDescription, CardTitle } from "@/components/ui/card"
-import { CalendarDays, Lightbulb, PlayCircle } from "lucide-react"
+import { CalendarDays, Lightbulb, PlayCircle, ArrowRight } from "lucide-react"
+import { GenerateRoadmapCTA } from "@/components/features/roadmap/GenerateRoadmapCTA"
+import { Button } from "@/components/ui/button"
 
 interface IdeaDetailPageProps {
     params: Promise<{
@@ -44,6 +46,9 @@ export default async function IdeaDetailPage({ params }: IdeaDetailPageProps) {
     const latestValidation = validations[0]
     const history = validations.slice(1)
 
+    const supabase = await createClient()
+    const { data: { user } } = await supabase.auth.getUser()
+
     let percentile = 0
     let sharedIdea = null
 
@@ -51,7 +56,6 @@ export default async function IdeaDetailPage({ params }: IdeaDetailPageProps) {
         percentile = await calculatePercentile(latestValidation.overall_score)
 
         // Check if this validation is already shared
-        const supabase = await createClient()
         const { data: shareData } = await supabase
             .from('shared_ideas')
             .select('id, status')
@@ -59,6 +63,19 @@ export default async function IdeaDetailPage({ params }: IdeaDetailPageProps) {
             .single()
 
         sharedIdea = shareData
+    }
+
+    // Check for existing roadmap
+    let roadmapId = null
+    if (user) {
+        const { data: roadmapData } = await supabase
+            .from('roadmap')
+            .select('id')
+            .eq('idea_id', ideaId)
+            .eq('user_id', user.id)
+            .maybeSingle()
+
+        roadmapId = roadmapData?.id
     }
 
     return (
@@ -129,15 +146,64 @@ export default async function IdeaDetailPage({ params }: IdeaDetailPageProps) {
                     </CardContent>
                 </Card>
             ) : (
-                <ValidationReport
-                    idea={idea}
-                    validation={latestValidation}
-                    history={history}
-                    percentile={percentile}
-                    isShared={!!sharedIdea}
-                    sharedIdeaId={sharedIdea?.id}
-                    userTier={userTier}
-                />
+                <div className="space-y-8">
+                    {/* Roadmap CTA/Status */}
+                    {latestValidation && (
+                        <div className="w-full">
+                            {roadmapId ? (
+                                <Card className="border-primary/20 bg-primary/5">
+                                    <CardContent className="flex flex-col sm:flex-row items-center justify-between gap-4 py-6">
+                                        <div className="space-y-1">
+                                            <CardTitle className="text-xl flex items-center gap-2">
+                                                <div className="h-2 w-2 rounded-full bg-primary animate-pulse" />
+                                                Roadmap in Progress
+                                            </CardTitle>
+                                            <CardDescription>
+                                                You are currently working through the execution roadmap for this idea.
+                                            </CardDescription>
+                                        </div>
+                                        <Button asChild size="lg" className="rounded-full px-8 shadow-lg shadow-primary/20 transition-all hover:shadow-primary/30 active:scale-95">
+                                            <Link href={`/roadmap/${roadmapId}`}>
+                                                Continue Roadmap
+                                                <ArrowRight className="ml-2 h-4 w-4" />
+                                            </Link>
+                                        </Button>
+                                    </CardContent>
+                                </Card>
+                            ) : latestValidation.overallScore >= 70 && !idea.roadmap_generated ? (
+                                <GenerateRoadmapCTA 
+                                    ideaId={idea.id} 
+                                    ideaTitle={idea.title} 
+                                    score={latestValidation.overallScore} 
+                                />
+                            ) : latestValidation.overallScore < 70 ? (
+                                <Card className="bg-muted/30 border-dashed">
+                                    <CardContent className="flex items-center gap-4 py-6">
+                                        <div className="h-10 w-10 rounded-full bg-amber-500/10 flex items-center justify-center">
+                                            <Lightbulb className="h-5 w-5 text-amber-600" />
+                                        </div>
+                                        <div className="space-y-1">
+                                            <CardTitle className="text-base font-semibold text-foreground/80">Strengthen your idea first</CardTitle>
+                                            <CardDescription className="text-sm">
+                                                A personalised roadmap unlocks once your idea hits an overall score of 70+. Use the recommendations below to improve your score.
+                                            </CardDescription>
+                                        </div>
+                                    </CardContent>
+                                </Card>
+                            ) : null}
+                        </div>
+                    )}
+
+                    <ValidationReport
+                        idea={idea}
+                        validation={latestValidation}
+                        history={history}
+                        percentile={percentile}
+                        isShared={!!sharedIdea}
+                        sharedIdeaId={sharedIdea?.id}
+                        userTier={userTier}
+                    />
+                </div>
             )
             }
         </div >
