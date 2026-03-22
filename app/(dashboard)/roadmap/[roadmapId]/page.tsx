@@ -27,7 +27,7 @@ export default async function RoadmapPage({ params, searchParams }: { params: Pr
       return (
         <CompletionScreen
           roadmapId={roadmapId}
-          ideaTitle={completionData.idea_title}
+          ideaTitle={completionData.idea_title ?? ''}
           ideaId={roadmap.idea_id}
           summary={completionData.summary}
           choiceMade={completionData.choice_made}
