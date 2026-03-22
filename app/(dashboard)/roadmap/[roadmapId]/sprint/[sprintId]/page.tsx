@@ -6,6 +6,7 @@ import Link from 'next/link'
 import { ArrowLeft, ArrowRight } from 'lucide-react'
 import { createClient } from '@/lib/supabase/server'
 import { SprintTaskList } from '@/components/features/roadmap/SprintTaskList'
+import type { Task, TaskReflection, Sprint } from '@/types/roadmap'
 
 export default async function SprintPage({ params }: { params: Promise<{ roadmapId: string; sprintId: string }> }) {
   const { roadmapId, sprintId } = await params
@@ -32,8 +33,8 @@ export default async function SprintPage({ params }: { params: Promise<{ roadmap
     sprint.phase.phase_number === roadmap.current_phase && 
     sprint.sprint_number === roadmap.current_sprint
 
-  const sortedTasks = sprint.task?.sort((a, b) => a.task_number - b.task_number)
-  const sprintsInPhase = [...(sprint.phase.sprint || [])].sort((a, b) => a.sprint_number - b.sprint_number)
+  const sortedTasks = (sprint.task as (Task & { task_reflection: TaskReflection | null })[])?.sort((a, b) => a.task_number - b.task_number)
+  const sprintsInPhase = [...(sprint.phase.sprint || []) as Pick<Sprint, 'id' | 'sprint_number' | 'status' | 'title'>[]].sort((a, b) => a.sprint_number - b.sprint_number)
   const hasMultipleSprints = sprintsInPhase.length > 1
   const currentSprintIndex = sprintsInPhase.findIndex((s) => s.id === sprintId)
   const prevSprint = currentSprintIndex > 0 ? sprintsInPhase[currentSprintIndex - 1] : null
