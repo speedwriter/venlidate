@@ -8,6 +8,13 @@ import { generateObject } from 'ai'
 import { google } from '@ai-sdk/google'
 import { buildCompletionSummaryPrompt, CompletionSummarySchema } from '@/lib/prompts/completion-summary'
 
+type TaskForCompletion = {
+  title: string
+  task_number: number
+  sprint: { sprint_number: number; phase: { phase_number: number } | null } | null
+  task_reflection: { content: string } | null
+}
+
 export async function POST(req: NextRequest) {
   try {
     const supabase = await createClient()
@@ -33,13 +40,13 @@ export async function POST(req: NextRequest) {
       .eq('user_id', user.id)
       .order('created_at', { ascending: true })
 
-    const allReflections = (tasks || [])
+    const allReflections = ((tasks || []) as TaskForCompletion[])
       .filter(t => t.task_reflection)
       .map(t => ({
-        phase: (t.sprint as any)?.phase?.phase_number || 0,
-        sprint: (t.sprint as any)?.sprint_number || 0,
+        phase: t.sprint?.phase?.phase_number || 0,
+        sprint: t.sprint?.sprint_number || 0,
         task_title: t.title,
-        reflection: (t.task_reflection as any)?.content || '',
+        reflection: t.task_reflection?.content || '',
       }))
 
     // Generate completion summary
@@ -64,8 +71,8 @@ export async function POST(req: NextRequest) {
     }).eq('id', roadmap_id)
 
     return NextResponse.json({ success: true, summary })
-  } catch (error: any) {
+  } catch (error) {
     console.error('Completion summary error:', error)
-    return NextResponse.json({ error: error.message }, { status: 500 })
+    return NextResponse.json({ error: 'Failed to generate completion summary. Please try again.' }, { status: 500 })
   }
 }

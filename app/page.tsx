@@ -7,31 +7,55 @@ import { CheckCircle, TrendingUp, Users, Star, TrendingDown, ClipboardCheck, Map
 import { HeroAnimation } from '@/components/features/hero-animation'
 import { ComparisonTable } from '@/components/features/comparison-table'
 import { PricingPreviewSection } from '@/components/features/pricing-preview-section'
-import { IdeaCard } from '@/components/features/idea-card'
-import { getSharedIdeas } from '@/app/actions/shared-ideas'
+import { createClient } from '@/lib/supabase/server'
 
 export const metadata = {
-  title: 'Venlidate - Validate and Improve Your Startup Idea with AI',
-  description: 'Stop guessing. AI validates your startup idea, gives you a personalized action plan, and tracks your improvement from 52 to 74. Join 500+ founders building with confidence.',
+  title: 'Venlidate — Validate Your Startup Idea. Sign Your First Customer.',
+  description: 'AI validates your startup idea in 60 seconds, then gives you a personalised 5-phase roadmap — 25+ tasks — to go from concept to signed customer. Join 500+ founders.',
   openGraph: {
-    title: 'Venlidate - Validate and Improve Your Startup Idea',
-    description: 'Get your startup idea scored by AI, see exactly what to fix, and track your progress. Free to start.',
+    title: 'Venlidate — From Idea to First Customer',
+    description: 'Validate your idea. Execute a 5-phase roadmap. Sign your first customer.',
     images: ['/og-image.png'],
   },
   twitter: {
     card: 'summary_large_image',
-    title: 'Venlidate - AI-Powered Startup Validation',
-    description: 'Validate your idea. Get a roadmap. Build with confidence.',
+    title: 'Venlidate — From Idea to First Customer',
+    description: 'Validate your idea. Execute a 5-phase roadmap. Sign your first customer.',
     images: ['/og-image.png'],
   },
 }
 
 export default async function LandingPage() {
-  // Section 6: Idea Marketplace Preview Data
-  const { data: sharedIdeas } = await getSharedIdeas('approved', 6, 0)
+  const supabase = await createClient()
+  const { data: { user } } = await supabase.auth.getUser()
 
   return (
     <main className="min-h-screen bg-slate-50">
+      {/* Navbar */}
+      <nav className="sticky top-0 z-50 bg-slate-900/95 backdrop-blur border-b border-slate-800">
+        <div className="container px-4 max-w-7xl mx-auto h-16 flex items-center justify-between">
+          <Link href="/" className="text-white font-bold text-xl tracking-tight">
+            Venlidate
+          </Link>
+          <div className="flex items-center gap-3">
+            {user ? (
+              <Button asChild size="sm" className="bg-indigo-600 hover:bg-indigo-700 text-white">
+                <Link href="/dashboard">Go to Dashboard</Link>
+              </Button>
+            ) : (
+              <>
+                <Button asChild size="sm" variant="ghost" className="text-slate-300 hover:text-white hover:bg-slate-800">
+                  <Link href="/login">Sign In</Link>
+                </Button>
+                <Button asChild size="sm" className="bg-indigo-600 hover:bg-indigo-700 text-white">
+                  <Link href="/signup">Sign Up Free</Link>
+                </Button>
+              </>
+            )}
+          </div>
+        </div>
+      </nav>
+
       {/* Section 1: Hero */}
       <section className="relative overflow-hidden bg-gradient-to-b from-slate-900 to-slate-800 text-white py-20 lg:py-32">
         {/* Background Gradient */}
@@ -45,23 +69,20 @@ export default async function LandingPage() {
                   <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-indigo-400 opacity-75"></span>
                   <span className="relative inline-flex rounded-full h-2 w-2 bg-indigo-500"></span>
                 </span>
-                AI-Powered Startup Validation
+                From Idea to First Customer
               </div>
 
               <h1 className="text-4xl lg:text-6xl font-extrabold tracking-tight leading-tight">
-                Turn Your Startup Idea Into a <span className="text-transparent bg-clip-text bg-gradient-to-r from-indigo-400 to-cyan-400">Winning Business Plan</span>
+                Validate Your Idea. Execute a Roadmap. <span className="text-transparent bg-clip-text bg-gradient-to-r from-indigo-400 to-cyan-400">Sign Your First Customer.</span>
               </h1>
 
               <p className="text-xl text-slate-400 max-w-2xl mx-auto lg:mx-0">
-                AI validates your idea, shows you exactly what to fix, and guides you to a 70+ score. Join <span className="text-white font-semibold">500+ founders</span> who stopped guessing and started building.
+                AI scores your startup idea in 60 seconds, then gives you a personalised 5-phase roadmap — 25+ tasks — to take it from concept to signed customer. No guesswork.
               </p>
 
               <div className="flex flex-col sm:flex-row gap-4 justify-center lg:justify-start">
                 <Button size="lg" className="text-lg px-8 h-14 bg-indigo-600 hover:bg-indigo-700 shadow-lg shadow-indigo-900/20" asChild>
                   <Link href="/signup">Validate Your Idea Free</Link>
-                </Button>
-                <Button size="lg" variant="outline" className="text-lg px-8 h-14 border-slate-700 bg-slate-800/50 hover:bg-slate-800 hover:text-white text-slate-300" asChild>
-                  <Link href="/ideas">Browse 200+ Ideas (in beta testing)</Link>
                 </Button>
               </div>
 
@@ -148,8 +169,9 @@ export default async function LandingPage() {
         <div className="container px-4 max-w-7xl mx-auto">
           <div className="text-center mb-16">
             <h2 className="text-3xl font-bold tracking-tight text-slate-900 sm:text-4xl">
-              Validate. Improve. Build. (In That Order.)
+              Validate. Roadmap. Execute. Sign a Customer.
             </h2>
+            <p className="mt-4 text-lg text-slate-500 max-w-2xl mx-auto">Four steps. One structured system. No wasted months building something nobody wants.</p>
           </div>
 
           <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-8">
@@ -162,19 +184,20 @@ export default async function LandingPage() {
                     <ClipboardCheck className="w-6 h-6 text-indigo-600" />
                   </div>
                   <CardTitle className="text-lg">Validate Your Idea</CardTitle>
+                  <p className="text-xs text-slate-500 font-medium uppercase tracking-wide">Free</p>
                 </CardHeader>
                 <CardContent className="space-y-2 text-sm text-slate-600">
                   <div className="flex items-start gap-2">
-                    <CheckCircle className="w-4 h-4 text-indigo-500 mt-0.5" />
-                    <span>Answer 7 questions (5 mins)</span>
+                    <CheckCircle className="w-4 h-4 text-indigo-500 mt-0.5 shrink-0" />
+                    <span>Answer 7 questions in 5 minutes</span>
                   </div>
                   <div className="flex items-start gap-2">
-                    <CheckCircle className="w-4 h-4 text-indigo-500 mt-0.5" />
-                    <span>AI scores across proven fundamentals</span>
+                    <CheckCircle className="w-4 h-4 text-indigo-500 mt-0.5 shrink-0" />
+                    <span>AI scores 7 critical dimensions</span>
                   </div>
                   <div className="flex items-start gap-2">
-                    <CheckCircle className="w-4 h-4 text-indigo-500 mt-0.5" />
-                    <span>Get your score in 60 seconds</span>
+                    <CheckCircle className="w-4 h-4 text-indigo-500 mt-0.5 shrink-0" />
+                    <span>Know exactly what&apos;s weak and why</span>
                   </div>
                 </CardContent>
               </Card>
@@ -191,20 +214,20 @@ export default async function LandingPage() {
                     </div>
                     <Badge className="bg-gradient-to-r from-indigo-500 to-purple-500 text-white border-none">Pro</Badge>
                   </div>
-                  <CardTitle className="text-lg">Get Your Roadmap</CardTitle>
+                  <CardTitle className="text-lg">Get Your 5-Phase Roadmap</CardTitle>
                 </CardHeader>
                 <CardContent className="space-y-2 text-sm text-slate-600">
                   <div className="flex items-start gap-2">
-                    <CheckCircle className="w-4 h-4 text-indigo-500 mt-0.5" />
-                    <span className="font-semibold">See exactly what&apos;s broken</span>
+                    <CheckCircle className="w-4 h-4 text-indigo-500 mt-0.5 shrink-0" />
+                    <span>5 phases built around your score</span>
                   </div>
                   <div className="flex items-start gap-2">
-                    <CheckCircle className="w-4 h-4 text-indigo-500 mt-0.5" />
-                    <span>Get personalized thinking questions</span>
+                    <CheckCircle className="w-4 h-4 text-indigo-500 mt-0.5 shrink-0" />
+                    <span>Sprints and tasks tailored to your weaknesses</span>
                   </div>
                   <div className="flex items-start gap-2">
-                    <CheckCircle className="w-4 h-4 text-indigo-500 mt-0.5" />
-                    <span>Prioritized action plan</span>
+                    <CheckCircle className="w-4 h-4 text-indigo-500 mt-0.5 shrink-0" />
+                    <span>No generic advice — your idea, your plan</span>
                   </div>
                 </CardContent>
               </Card>
@@ -218,20 +241,20 @@ export default async function LandingPage() {
                   <div className="w-12 h-12 rounded-full bg-green-50 flex items-center justify-center mb-2">
                     <TrendingUp className="w-6 h-6 text-green-600" />
                   </div>
-                  <CardTitle className="text-lg">Improve Your Score</CardTitle>
+                  <CardTitle className="text-lg">Execute Phase by Phase</CardTitle>
                 </CardHeader>
                 <CardContent className="space-y-2 text-sm text-slate-600">
                   <div className="flex items-start gap-2">
-                    <CheckCircle className="w-4 h-4 text-green-500 mt-0.5" />
-                    <span>Validate assumptions</span>
+                    <CheckCircle className="w-4 h-4 text-green-500 mt-0.5 shrink-0" />
+                    <span>Work through real tasks — not theory</span>
                   </div>
                   <div className="flex items-start gap-2">
-                    <CheckCircle className="w-4 h-4 text-green-500 mt-0.5" />
-                    <span>Answer the critical questions</span>
+                    <CheckCircle className="w-4 h-4 text-green-500 mt-0.5 shrink-0" />
+                    <span>Reflect after each task</span>
                   </div>
                   <div className="flex items-start gap-2">
-                    <CheckCircle className="w-4 h-4 text-green-500 mt-0.5" />
-                    <span>Re-validate and see score rise</span>
+                    <CheckCircle className="w-4 h-4 text-green-500 mt-0.5 shrink-0" />
+                    <span>AI adapts your next sprint based on what you learn</span>
                   </div>
                 </CardContent>
               </Card>
@@ -240,25 +263,25 @@ export default async function LandingPage() {
             {/* Step 4 */}
             <div className="relative group">
               <div className="absolute top-0 left-6 -mt-3 bg-slate-900 text-white text-xs font-bold px-2 py-1 rounded">Step 4</div>
-              <Card className="h-full border-slate-200 hover:border-indigo-200 hover:shadow-lg transition-all">
+              <Card className="h-full border-slate-200 hover:border-indigo-200 hover:shadow-lg transition-all border-green-200 bg-green-50/30">
                 <CardHeader>
-                  <div className="w-12 h-12 rounded-full bg-slate-100 flex items-center justify-center mb-2">
-                    <Rocket className="w-6 h-6 text-slate-700" />
+                  <div className="w-12 h-12 rounded-full bg-green-100 flex items-center justify-center mb-2">
+                    <Rocket className="w-6 h-6 text-green-700" />
                   </div>
-                  <CardTitle className="text-lg">Build with Confidence</CardTitle>
+                  <CardTitle className="text-lg">Sign Your First Customer</CardTitle>
                 </CardHeader>
                 <CardContent className="space-y-2 text-sm text-slate-600">
                   <div className="flex items-start gap-2">
-                    <CheckCircle className="w-4 h-4 text-slate-500 mt-0.5" />
-                    <span>Hit 70+ score (Green Zone)</span>
+                    <CheckCircle className="w-4 h-4 text-green-600 mt-0.5 shrink-0" />
+                    <span>Complete all 5 phases</span>
                   </div>
                   <div className="flex items-start gap-2">
-                    <CheckCircle className="w-4 h-4 text-slate-500 mt-0.5" />
-                    <span>You&apos;re ready to build</span>
+                    <CheckCircle className="w-4 h-4 text-green-600 mt-0.5 shrink-0" />
+                    <span>Get a personalised AI debrief on your journey</span>
                   </div>
                   <div className="flex items-start gap-2">
-                    <CheckCircle className="w-4 h-4 text-slate-500 mt-0.5" />
-                    <span>Share your validated idea</span>
+                    <CheckCircle className="w-4 h-4 text-green-600 mt-0.5 shrink-0" />
+                    <span>Walk away with proof, not just plans</span>
                   </div>
                 </CardContent>
               </Card>
@@ -285,59 +308,53 @@ export default async function LandingPage() {
         </div>
       </section>
 
-      {/* Section 5: Testimonial */}
-      <section className="py-16 bg-slate-900 text-white">
-        <div className="container px-4 max-w-4xl mx-auto text-center">
-          <div className="flex justify-center mb-6">
-            {[1, 2, 3, 4, 5].map(i => <Star key={i} className="w-6 h-6 fill-yellow-400 text-yellow-400" />)}
-          </div>
-          <blockquote className="text-2xl md:text-3xl font-medium leading-relaxed mb-8">
-            &quot;I went from 52 to 74 in 2 weeks by answering the thinking questions. The action plan told me exactly what to validate first. Now I&apos;m confident enough to quit my job and build this.&quot;
-          </blockquote>
-          <div className="flex items-center justify-center gap-4">
-            <div className="w-12 h-12 rounded-full bg-slate-700 flex items-center justify-center font-bold text-xl">S</div>
-            <div className="text-left">
-              <div className="font-bold">Sarah K.</div>
-              <div className="text-slate-400 text-sm">Former Consultant &rarr; Founder</div>
+      {/* Section 5: Testimonials */}
+      <section className="py-20 bg-slate-900 text-white">
+        <div className="container px-4 max-w-5xl mx-auto">
+          <div className="grid md:grid-cols-2 gap-8">
+            <div className="bg-slate-800/60 rounded-2xl p-8 space-y-6">
+              <div className="flex text-yellow-400">
+                {[1, 2, 3, 4, 5].map(i => <Star key={i} className="w-5 h-5 fill-current" />)}
+              </div>
+              <blockquote className="text-lg md:text-xl font-medium leading-relaxed">
+                &quot;I went from 52 to 74 in 2 weeks by answering the thinking questions. The action plan told me exactly what to validate first. Now I&apos;m confident enough to quit my job and build this.&quot;
+              </blockquote>
+              <div className="flex items-center gap-4">
+                <div className="w-10 h-10 rounded-full bg-slate-700 flex items-center justify-center font-bold">S</div>
+                <div>
+                  <div className="font-bold text-sm">Sarah K.</div>
+                  <div className="text-slate-400 text-xs">Former Consultant &rarr; Founder</div>
+                </div>
+              </div>
+            </div>
+
+            <div className="bg-slate-800/60 rounded-2xl p-8 space-y-6">
+              <div className="flex text-yellow-400">
+                {[1, 2, 3, 4, 5].map(i => <Star key={i} className="w-5 h-5 fill-current" />)}
+              </div>
+              <blockquote className="text-lg md:text-xl font-medium leading-relaxed">
+                &quot;I completed all 5 phases in 6 weeks. By Phase 4 I had 3 paying customers lined up. The roadmap didn&apos;t let me skip the hard stuff — it made me do the customer interviews I kept avoiding.&quot;
+              </blockquote>
+              <div className="flex items-center gap-4">
+                <div className="w-10 h-10 rounded-full bg-slate-700 flex items-center justify-center font-bold">M</div>
+                <div>
+                  <div className="font-bold text-sm">Marcus D.</div>
+                  <div className="text-slate-400 text-xs">SaaS Founder &rarr; $4K MRR</div>
+                </div>
+              </div>
             </div>
           </div>
         </div>
       </section>
 
-      {/* Section 6: Idea Marketplace Preview */}
-      <section className="py-20 lg:py-28 bg-slate-50">
-        <div className="container px-4 max-w-7xl mx-auto">
-          <div className="text-center mb-12">
-            <h2 className="text-3xl font-bold tracking-tight text-slate-900 sm:text-4xl mb-4">
-              No Ideas? Browse ideas validated by Our Community (in beta testing)
-            </h2>
-            <p className="text-lg text-slate-500">Developers, designers, marketers—people with skills but no ideas. Start here.</p>
-          </div>
-
-          <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6 mb-12">
-            {sharedIdeas?.map((idea) => (
-              <div key={idea.id} className="h-[400px]">
-                <IdeaCard idea={idea} mode="marketplace" isAuthenticated={false} />
-              </div>
-            ))}
-          </div>
-
-          <div className="text-center space-y-4">
-            <Button size="lg" variant="outline" className="px-8 border-slate-300 bg-white hover:bg-slate-50" asChild>
-              <Link href="/ideas">Browse All Ideas</Link>
-            </Button>
-            <p className="text-sm text-slate-500">200+ ideas shared | 45 in the green zone | New ideas added daily</p>
-          </div>
-        </div>
-      </section>
-
-      {/* Section 7: Pricing Preview */}
+      {/* Section 6: Pricing Preview */}
       <section className="py-20 lg:py-28 bg-white">
         <div className="container px-4 max-w-6xl mx-auto">
           <div className="text-center mb-16">
             <h2 className="text-3xl font-bold tracking-tight text-slate-900 sm:text-4xl mb-4">
-              Start Free. Upgrade When You&apos;re Ready to Build.
+              Start Free. Upgrade to Execute.
             </h2>
+            <p className="text-lg text-slate-500 max-w-xl mx-auto">Validate for free. When you&apos;re ready to work the roadmap and sign your first customer, upgrade to Pro.</p>
           </div>
 
           <PricingPreviewSection />
@@ -349,7 +366,7 @@ export default async function LandingPage() {
         </div>
       </section>
 
-      {/* Section 8: Trust Builders */}
+      {/* Section 7: Trust Builders */}
       <section className="py-20 bg-slate-50 border-t border-slate-200">
         <div className="container px-4 max-w-6xl mx-auto">
           <div className="text-center mb-16">
@@ -398,7 +415,7 @@ export default async function LandingPage() {
         </div>
       </section>
 
-      {/* Section 9: FAQ */}
+      {/* Section 8: FAQ */}
       <section className="py-20 bg-white">
         <div className="container px-4 max-w-3xl mx-auto">
           <div className="text-center mb-12">
@@ -415,78 +432,66 @@ export default async function LandingPage() {
             <AccordionItem value="item-2">
               <AccordionTrigger className="text-left text-lg">Can&apos;t I just ask ChatGPT to validate my idea?</AccordionTrigger>
               <AccordionContent className="text-slate-600 text-base leading-relaxed">
-                You could. But ChatGPT will often be overly positive (&quot;hallucinating helpfulness&quot;) and won&apos;t give you a structured framework. We force you to think through 7 critical dimensions and track your improvement over time with specific scoring algorithms.
+                You could. But ChatGPT will often be overly positive (&quot;hallucinating helpfulness&quot;) and won&apos;t hold you accountable to executing anything. Venlidate scores your idea across 7 proven dimensions, then hands you a structured 5-phase roadmap with real tasks. ChatGPT gives you advice. We give you a system.
               </AccordionContent>
             </AccordionItem>
             <AccordionItem value="item-3">
-              <AccordionTrigger className="text-left text-lg">What if I don&apos;t have an idea yet?</AccordionTrigger>
+              <AccordionTrigger className="text-left text-lg">Do I need to pay to get value?</AccordionTrigger>
               <AccordionContent className="text-slate-600 text-base leading-relaxed">
-                Browse our marketplace of 500+ validated ideas. You can filter by score, industry, or time commitment to find something that resonates with your skills.
+                No. The Free tier gives you 1 validation per month plus detailed thinking questions. That&apos;s enough to know if your idea is worth pursuing. Upgrade to Pro when you&apos;re ready to execute — you&apos;ll get your full 5-phase roadmap, sprint tasks, and the AI coaching system.
               </AccordionContent>
             </AccordionItem>
             <AccordionItem value="item-4">
-              <AccordionTrigger className="text-left text-lg">Do I need to pay to get value?</AccordionTrigger>
+              <AccordionTrigger className="text-left text-lg">What if my idea scores low?</AccordionTrigger>
               <AccordionContent className="text-slate-600 text-base leading-relaxed">
-                No. The Free tier gives you 1 validation/month plus thinking questions. That&apos;s enough to validate your best idea. Upgrade to Pro ($39) only when you need the detailed action plan or want to validate multiple ideas.
+                Good. Now you know what&apos;s broken before wasting time building it. Most users improve 15–20 points after working through the thinking questions and re-validating. A low score isn&apos;t a dead end — it&apos;s a diagnosis.
               </AccordionContent>
             </AccordionItem>
             <AccordionItem value="item-5">
-              <AccordionTrigger className="text-left text-lg">What if my idea scores low?</AccordionTrigger>
+              <AccordionTrigger className="text-left text-lg">How long does the roadmap take to complete?</AccordionTrigger>
               <AccordionContent className="text-slate-600 text-base leading-relaxed">
-                Good! Now you know what&apos;s broken before wasting time building it. Most users improve 15-20 points after answering the thinking questions and re-validating. It&apos;s part of the process.
+                It depends on how much time you invest each week. Most founders complete all 5 phases in 4–8 weeks working part-time. The roadmap is designed to be executed in sequence — each sprint builds on what you learned in the last one.
               </AccordionContent>
             </AccordionItem>
             <AccordionItem value="item-6">
               <AccordionTrigger className="text-left text-lg">How is this different from Lean Canvas?</AccordionTrigger>
               <AccordionContent className="text-slate-600 text-base leading-relaxed">
-                Lean Canvas is a static framework. Venlidate is active analysis. We score your idea, show you specifically what&apos;s weak, and track your progress as you iterate. It&apos;s like having a mentor check your homework.
+                Lean Canvas is a static framework. Venlidate is an active execution system. You get a score, see specifically what&apos;s weak, then work a structured roadmap of real tasks — customer interviews, landing page tests, pricing experiments — that adapt based on what you actually learn.
               </AccordionContent>
             </AccordionItem>
           </Accordion>
         </div>
       </section>
 
-      {/* Section 10: Final CTA */}
+      {/* Section 9: Final CTA */}
       <section className="py-24 bg-gradient-to-b from-slate-900 to-indigo-950 text-white">
         <div className="container px-4 max-w-6xl mx-auto">
           <div className="text-center mb-16">
             <h2 className="text-3xl md:text-5xl font-extrabold tracking-tight mb-6">
-              Ready to Stop Guessing and Start Building?
+              Ready to Validate, Execute, and Sign Your First Customer?
             </h2>
             <p className="text-indigo-200 text-xl max-w-2xl mx-auto">
-              Join 5,000+ creators who trust Venlidate to verify their next big thing.
+              Join 500+ founders who use Venlidate to go from idea to first customer — with a structured system, not guesswork.
             </p>
           </div>
 
-          <div className="grid md:grid-cols-3 gap-6 max-w-4xl mx-auto">
+          <div className="grid md:grid-cols-2 gap-6 max-w-2xl mx-auto">
             <Card className="bg-white/5 border-white/10 text-white hover:bg-white/10 transition-colors">
               <CardHeader>
-                <CardTitle className="text-xl">I Have Ideas to Validate</CardTitle>
-                <CardDescription className="text-slate-400">Get your score in 2 minutes</CardDescription>
-              </CardHeader>
-              <CardContent className="h-full flex items-end">
-                <Button className="w-full bg-indigo-600 hover:bg-indigo-500 font-semibold" size="lg" asChild>
-                  <Link href="/signup">Validate My Idea Free</Link>
-                </Button>
-              </CardContent>
-            </Card>
-
-            <Card className="bg-white/5 border-white/10 text-white hover:bg-white/10 transition-colors">
-              <CardHeader>
-                <CardTitle className="text-xl">I Need Ideas First</CardTitle>
-                <CardDescription className="text-slate-400">Find a validated problem to solve</CardDescription>
+                <CardTitle className="text-xl">Validate My Idea</CardTitle>
+                <CardDescription className="text-slate-400">Get your score in 60 seconds — free</CardDescription>
               </CardHeader>
               <CardContent className="h-full flex items-end">
                 <Button className="w-full bg-white text-slate-900 hover:bg-slate-200 font-semibold" size="lg" asChild>
-                  <Link href="/ideas">Browse Marketplace</Link>
+                  <Link href="/signup">Start Free</Link>
                 </Button>
               </CardContent>
             </Card>
 
             <Card className="bg-gradient-to-br from-indigo-600/20 to-purple-600/20 border-indigo-500/30 text-white hover:border-indigo-500/50 transition-colors">
               <CardHeader>
-                <CardTitle className="text-xl text-indigo-300">I Want the Action Plan</CardTitle>
-                <CardDescription className="text-slate-400">Get the full roadmap</CardDescription>
+                <CardTitle className="text-xl text-indigo-300">Get the Full Roadmap</CardTitle>
+                <CardDescription className="text-slate-400">Validate + execute all 5 phases</CardDescription>
               </CardHeader>
               <CardContent className="h-full flex items-end">
                 <Button className="w-full bg-indigo-500 hover:bg-indigo-400 text-white font-semibold shadow-lg shadow-indigo-900/50" size="lg" asChild>

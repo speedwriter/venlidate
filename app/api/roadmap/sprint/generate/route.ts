@@ -6,12 +6,29 @@ import { google } from '@ai-sdk/google'
 import { buildNextSprintPrompt, GeneratedSprintSchema } from '@/lib/prompts/sprint-generator'
 import { buildCompletionSummaryPrompt, CompletionSummarySchema } from '@/lib/prompts/completion-summary'
 import { ScoreBreakdown } from '@/types/roadmap'
+import { getUserTier, TIER_LIMITS } from '@/lib/utils/subscriptions'
+
+type ReflectionWithTask = {
+  content: string
+  task: { title: string } | null
+}
+
+type TaskForCompletion = {
+  title: string
+  sprint: { sprint_number: number; phase: { phase_number: number } | null } | null
+  task_reflection: { content: string } | null
+}
 
 export async function POST(req: NextRequest) {
   try {
     const supabase = await createClient()
     const { data: { user } } = await supabase.auth.getUser()
     if (!user) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+
+    const tier = await getUserTier(user.id)
+    if (!TIER_LIMITS[tier].canAccessRoadmap) {
+      return NextResponse.json({ error: 'Upgrade to Pro to access the 5-phase roadmap.' }, { status: 403 })
+    }
 
     const { completed_sprint_id, roadmap_id } = await req.json()
 
@@ -128,8 +145,8 @@ export async function POST(req: NextRequest) {
         (await supabase.from('task').select('id').eq('roadmap_id', roadmap_id)).data?.map(t => t.id) || []
       )
 
-    const priorReflections = (reflections || []).map(r => ({
-      task_title: (r.task as any)?.title || '',
+    const priorReflections = ((reflections || []) as ReflectionWithTask[]).map(r => ({
+      task_title: r.task?.title || '',
       reflection: r.content,
     }))
 
@@ -180,13 +197,13 @@ export async function POST(req: NextRequest) {
         .eq('user_id', user.id)
         .order('created_at', { ascending: true })
 
-      const allReflections = (tasks || [])
+      const allReflections = ((tasks || []) as TaskForCompletion[])
         .filter(t => t.task_reflection)
         .map(t => ({
-          phase: (t.sprint as any)?.phase?.phase_number || 0,
-          sprint: (t.sprint as any)?.sprint_number || 0,
+          phase: t.sprint?.phase?.phase_number || 0,
+          sprint: t.sprint?.sprint_number || 0,
           task_title: t.title,
-          reflection: (t.task_reflection as any)?.content || '',
+          reflection: t.task_reflection?.content || '',
         }))
 
       const completionPrompt = buildCompletionSummaryPrompt(idea.title, idea.description, allReflections)
@@ -311,8 +328,8 @@ export async function POST(req: NextRequest) {
 
     console.log('Successfully generated sprint:', newSprint.id)
     return NextResponse.json({ success: true, sprint_id: newSprint.id })
-  } catch (error: any) {
+  } catch (error) {
     console.error('Sprint generation error:', error)
-    return NextResponse.json({ error: error.message || 'Sprint generation failed' }, { status: 500 })
+    return NextResponse.json({ error: 'Sprint generation failed. Please try again.' }, { status: 500 })
   }
 }

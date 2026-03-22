@@ -1,6 +1,6 @@
 export type SubscriptionTier = 'free' | 'pro' | 'premium'
 
-export type SubscriptionStatus = 'active' | 'canceled' | 'expired'
+export type SubscriptionStatus = 'active' | 'canceled' | 'expired' | 'trialing' | 'past_due' | 'unpaid' | 'incomplete' | 'incomplete_expired' | 'paused' | 'none'
 
 export type UserSubscription = {
     id: string
@@ -14,6 +14,10 @@ export type UserSubscription = {
     created_at: string
     updated_at: string
     stripe_customer_id?: string | null
+    stripe_subscription_id?: string | null
+    stripe_price_id?: string | null
+    stripe_current_period_end?: string | null
+    stripe_cancel_at_period_end?: boolean | null
 }
 
 export type QuotaCheck = {
@@ -29,6 +33,7 @@ export type SubscriptionLimits = {
     reportStorageDays: number | 'unlimited'
     maxComparisonIdeas: number
     canExportPDF: boolean
+    canAccessRoadmap: boolean
 }
 
 export const TIER_LIMITS: Record<SubscriptionTier, SubscriptionLimits> = {
@@ -38,6 +43,7 @@ export const TIER_LIMITS: Record<SubscriptionTier, SubscriptionLimits> = {
         reportStorageDays: 30,
         maxComparisonIdeas: 0,
         canExportPDF: false,
+        canAccessRoadmap: false,
     },
     pro: {
         validationsPerMonth: 10,
@@ -45,6 +51,7 @@ export const TIER_LIMITS: Record<SubscriptionTier, SubscriptionLimits> = {
         reportStorageDays: 'unlimited',
         maxComparisonIdeas: 3,
         canExportPDF: true,
+        canAccessRoadmap: true,
     },
     premium: {
         validationsPerMonth: 'unlimited',
@@ -52,5 +59,6 @@ export const TIER_LIMITS: Record<SubscriptionTier, SubscriptionLimits> = {
         reportStorageDays: 'unlimited',
         maxComparisonIdeas: 5,
         canExportPDF: true,
+        canAccessRoadmap: true,
     },
 }

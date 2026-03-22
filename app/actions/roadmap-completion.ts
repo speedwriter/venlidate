@@ -20,8 +20,9 @@ export async function recordPostCompletionChoice(
 
     revalidatePath(`/roadmap/${roadmapId}`)
     return { success: true }
-  } catch (error: any) {
-    return { success: false, error: error.message }
+  } catch (error) {
+    const message = error instanceof Error ? error.message : 'Unknown error'
+    return { success: false, error: message }
   }
 }
 
@@ -39,10 +40,19 @@ export async function getCompletionSummary(roadmapId: string) {
 
   if (!data?.completion_summary) return null
 
+  let summary
+  try {
+    summary = JSON.parse(data.completion_summary)
+  } catch {
+    console.error('[getCompletionSummary] Failed to parse completion_summary for roadmap:', roadmapId)
+    return null
+  }
+
+  const idea = data.idea as { title?: string } | null
   return {
-    summary: JSON.parse(data.completion_summary),
+    summary,
     generated_at: data.completion_summary_generated_at,
     choice_made: data.post_completion_choice,
-    idea_title: (data.idea as any)?.title,
+    idea_title: idea?.title,
   }
 }

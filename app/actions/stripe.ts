@@ -243,22 +243,16 @@ export async function getSubscriptionStatus(userId: string) {
                 subData.stripe_subscription_id
             )
 
-            // TypeScript sometimes wraps the response in a Response object depending on version
-            const sub = subscription as unknown as {
-                status: string;
-                current_period_end: number;
-                cancel_at_period_end: boolean;
-                items: { data: { price: { id: string } }[] }
-            }
-
             return {
                 success: true,
                 data: {
                     tier: subData.tier || 'free',
-                    status: sub.status,
-                    currentPeriodEnd: sub.current_period_end,
-                    cancelAtPeriodEnd: sub.cancel_at_period_end,
-                    priceId: sub.items.data[0].price.id,
+                    status: subscription.status,
+                    // cancel_at is set when subscription is scheduled to cancel at period end;
+                    // current_period_end was removed in Stripe API v2026
+                    currentPeriodEnd: subscription.cancel_at ?? null,
+                    cancelAtPeriodEnd: subscription.cancel_at_period_end,
+                    priceId: subscription.items.data[0]?.price.id ?? null,
                 }
             }
         } catch (err: unknown) {

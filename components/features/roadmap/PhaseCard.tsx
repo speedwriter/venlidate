@@ -4,14 +4,22 @@ import { Lock, CheckCircle2, Circle } from 'lucide-react'
 import { cn } from '@/lib/utils'
 import { Phase } from '@/types/roadmap'
 
-export function PhaseCard({ phase, roadmapId }: { phase: Phase & { sprint?: any[] }; roadmapId: string }) {
+type SprintInPhase = {
+  id: string
+  sprint_number: number
+  status: string
+  title: string | null
+  task?: { status: string }[]
+}
+
+export function PhaseCard({ phase, roadmapId }: { phase: Phase & { sprint?: SprintInPhase[] }; roadmapId: string }) {
   const isLocked = phase.status === 'locked'
   const isCompleted = phase.status === 'completed'
   const isActive = phase.status === 'active'
 
-  const sortedSprints = [...(phase.sprint || [])].sort((a: any, b: any) => a.sprint_number - b.sprint_number)
+  const sortedSprints = [...(phase.sprint || [])].sort((a, b) => a.sprint_number - b.sprint_number)
   const totalTasks = sortedSprints.flatMap(s => s.task || []).length
-  const completedTasks = sortedSprints.flatMap(s => s.task || []).filter((t: any) => t.status === 'completed').length
+  const completedTasks = sortedSprints.flatMap(s => s.task || []).filter(t => t.status === 'completed').length
   const hasMultipleSprints = sortedSprints.length > 1
 
   const header = (
@@ -46,9 +54,9 @@ export function PhaseCard({ phase, roadmapId }: { phase: Phase & { sprint?: any[
       )}>
         {header}
         <div className="mt-3 pt-3 border-t space-y-1 pl-7">
-          {sortedSprints.map((sprint: any) => {
+          {sortedSprints.map((sprint) => {
             const sprintTasks = sprint.task || []
-            const sprintCompleted = sprintTasks.filter((t: any) => t.status === 'completed').length
+            const sprintCompleted = sprintTasks.filter(t => t.status === 'completed').length
             const isSprintLocked = sprint.status === 'locked'
             const label = sprint.title?.replace(/^Sprint \d+:\s*/, '') || `Sprint ${sprint.sprint_number}`
 

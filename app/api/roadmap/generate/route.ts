@@ -4,12 +4,18 @@ import { generateObject } from 'ai'
 import { google } from '@ai-sdk/google'
 import { buildRoadmapGenerationPrompt, PHASE_DEFINITIONS, GeneratedSprintSchema } from '@/lib/prompts/roadmap-generator'
 import { ScoreBreakdown } from '@/types/roadmap'
+import { getUserTier, TIER_LIMITS } from '@/lib/utils/subscriptions'
 
 export async function POST(req: NextRequest) {
   try {
     const supabase = await createClient()
     const { data: { user } } = await supabase.auth.getUser()
     if (!user) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+
+    const tier = await getUserTier(user.id)
+    if (!TIER_LIMITS[tier].canAccessRoadmap) {
+      return NextResponse.json({ error: 'Upgrade to Pro to access the 5-phase roadmap.' }, { status: 403 })
+    }
 
     const { idea_id } = await req.json()
     if (!idea_id) return NextResponse.json({ error: 'idea_id required' }, { status: 400 })
@@ -100,8 +106,8 @@ export async function POST(req: NextRequest) {
     await supabase.from('ideas').update({ roadmap_generated: true }).eq('id', idea_id)
 
     return NextResponse.json({ success: true, roadmap_id: roadmap.id })
-  } catch (error: any) {
+  } catch (error) {
     console.error('Roadmap generation error:', error)
-    return NextResponse.json({ error: error.message || 'Generation failed' }, { status: 500 })
+    return NextResponse.json({ error: 'Roadmap generation failed. Please try again.' }, { status: 500 })
   }
 }

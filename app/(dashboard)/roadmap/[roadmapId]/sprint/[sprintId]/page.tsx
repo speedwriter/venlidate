@@ -32,10 +32,10 @@ export default async function SprintPage({ params }: { params: Promise<{ roadmap
     sprint.phase.phase_number === roadmap.current_phase && 
     sprint.sprint_number === roadmap.current_sprint
 
-  const sortedTasks = sprint.task?.sort((a: any, b: any) => a.task_number - b.task_number)
-  const sprintsInPhase = [...(sprint.phase.sprint || [])].sort((a: any, b: any) => a.sprint_number - b.sprint_number)
+  const sortedTasks = sprint.task?.sort((a, b) => a.task_number - b.task_number)
+  const sprintsInPhase = [...(sprint.phase.sprint || [])].sort((a, b) => a.sprint_number - b.sprint_number)
   const hasMultipleSprints = sprintsInPhase.length > 1
-  const currentSprintIndex = sprintsInPhase.findIndex((s: any) => s.id === sprintId)
+  const currentSprintIndex = sprintsInPhase.findIndex((s) => s.id === sprintId)
   const prevSprint = currentSprintIndex > 0 ? sprintsInPhase[currentSprintIndex - 1] : null
   const nextSprint = currentSprintIndex < sprintsInPhase.length - 1 && sprintsInPhase[currentSprintIndex + 1]?.status !== 'locked'
     ? sprintsInPhase[currentSprintIndex + 1]

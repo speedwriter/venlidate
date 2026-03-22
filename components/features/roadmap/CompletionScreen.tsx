@@ -3,10 +3,10 @@
 import { useState } from 'react'
 import { useRouter } from 'next/navigation'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
-import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
 import { Separator } from '@/components/ui/separator'
 import { BookOpen, RefreshCw, Loader2, CheckCircle2, ArrowLeft } from 'lucide-react'
+
 import Link from 'next/link'
 import { recordPostCompletionChoice } from '@/app/actions/roadmap-completion'
 
@@ -63,7 +63,7 @@ export function CompletionScreen({
           <CheckCircle2 className="h-12 w-12 text-green-500" />
         </div>
         <h1 className="text-2xl font-bold">You built it.</h1>
-        <p className="text-muted-foreground">"{ideaTitle}" — all 5 phases complete.</p>
+        <p className="text-muted-foreground">&quot;{ideaTitle}&quot; — all 5 phases complete.</p>
       </div>
 
       {/* AI Summary */}
@@ -109,7 +109,7 @@ export function CompletionScreen({
       {/* 3-Option Decision Panel */}
       <div className="space-y-3">
         <p className="text-sm font-semibold text-center text-muted-foreground">
-          What's your next move?
+          What&apos;s your next move?
         </p>
 
         {/* Option 1: Course */}

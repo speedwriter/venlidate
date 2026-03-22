@@ -1,7 +1,7 @@
 'use server'
 
 import { createClient } from '@/lib/supabase/server'
-import { RoadmapWithPhases, SprintWithTasks } from '@/types/roadmap'
+
 import { revalidatePath } from 'next/cache'
 
 export async function getRoadmapOverview(roadmapId: string) {
@@ -97,9 +97,10 @@ export async function completeTaskWithReflection(taskId: string, reflection: str
 
     revalidatePath(`/roadmap/${roadmapId}`, 'layout')
     return { success: true, sprint_complete: isSprintComplete }
-  } catch (error: any) {
+  } catch (error) {
     console.error('Error completing task:', error)
-    return { success: false, error: error.message || 'Failed to complete task' }
+    const message = error instanceof Error ? error.message : 'Failed to complete task'
+    return { success: false, error: message }
   }
 }
 
@@ -140,8 +141,9 @@ export async function updateTaskReflection(taskId: string, reflection: string, r
 
     revalidatePath(`/roadmap/${roadmapId}`, 'layout')
     return { success: true }
-  } catch (error: any) {
+  } catch (error) {
     console.error('Error updating reflection:', error)
-    return { success: false, error: error.message || 'Failed to update reflection' }
+    const message = error instanceof Error ? error.message : 'Failed to update reflection'
+    return { success: false, error: message }
   }
 }

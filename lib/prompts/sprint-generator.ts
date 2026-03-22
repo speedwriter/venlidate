@@ -1,6 +1,5 @@
-import { ScoreBreakdown, GeneratedSprint } from '@/types/roadmap'
+import { ScoreBreakdown } from '@/types/roadmap'
 import { PHASE_DEFINITIONS, getWeakestDimensions, GeneratedSprintSchema } from './roadmap-generator'
-import { z } from 'zod'
 
 export function buildNextSprintPrompt(
   ideaTitle: string,

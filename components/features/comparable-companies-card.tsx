@@ -7,7 +7,7 @@ import { Button } from '@/components/ui/button'
 import { Checkbox } from '@/components/ui/checkbox'
 import Link from 'next/link'
 import type { ComparableCompany } from '@/types/validations'
-import { useState, useEffect } from 'react'
+import { useState } from 'react'
 
 interface ComparableCompaniesCardProps {
     companies: ComparableCompany[]

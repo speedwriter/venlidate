@@ -126,7 +126,7 @@ export function TaskItem({ task, isActive, isLocked, isCompleting, taskNumber, o
                   </div>
                 </div>
               ) : (
-                <p className="text-sm italic">"{task.task_reflection.content}"</p>
+                <p className="text-sm italic">&quot;{task.task_reflection.content}&quot;</p>
               )}
             </div>
           )}

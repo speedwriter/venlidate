@@ -38,19 +38,13 @@ export default function FeatureComparisonTable() {
 
                         {/* AI Guidance */}
                         <TableRow className="bg-muted/50">
-                            <TableCell colSpan={4} className="font-semibold text-sm">AI Guidance</TableCell>
+                            <TableCell colSpan={4} className="font-semibold text-sm">AI Validation</TableCell>
                         </TableRow>
                         <TableRow>
                             <TableCell>Thinking questions</TableCell>
-                            <TableCell className="text-center">Basic (3-5)</TableCell>
+                            <TableCell className="text-center">All dimensions</TableCell>
                             <TableCell className="text-center bg-primary/5">All dimensions</TableCell>
                             <TableCell className="text-center">All dimensions</TableCell>
-                        </TableRow>
-                        <TableRow>
-                            <TableCell>Personalized action plan</TableCell>
-                            <TableCell className="text-center"><X className="h-5 w-5 text-red-500 inline" /></TableCell>
-                            <TableCell className="text-center bg-primary/5"><Check className="h-5 w-5 text-green-500 inline" /></TableCell>
-                            <TableCell className="text-center"><Check className="h-5 w-5 text-green-500 inline" /></TableCell>
                         </TableRow>
                         <TableRow>
                             <TableCell>Iteration tracking</TableCell>
@@ -62,6 +56,41 @@ export default function FeatureComparisonTable() {
                             <TableCell>Score improvement charts</TableCell>
                             <TableCell className="text-center"><X className="h-5 w-5 text-red-500 inline" /></TableCell>
                             <TableCell className="text-center bg-primary/5"><Check className="h-5 w-5 text-green-500 inline" /></TableCell>
+                            <TableCell className="text-center"><Check className="h-5 w-5 text-green-500 inline" /></TableCell>
+                        </TableRow>
+
+                        {/* Execution Roadmap */}
+                        <TableRow className="bg-muted/50">
+                            <TableCell colSpan={4} className="font-semibold text-sm">Execution Roadmap</TableCell>
+                        </TableRow>
+                        <TableRow>
+                            <TableCell>5-Phase Execution Roadmap</TableCell>
+                            <TableCell className="text-center"><X className="h-5 w-5 text-red-500 inline" /></TableCell>
+                            <TableCell className="text-center bg-primary/5"><Check className="h-5 w-5 text-green-500 inline" /></TableCell>
+                            <TableCell className="text-center"><Check className="h-5 w-5 text-green-500 inline" /></TableCell>
+                        </TableRow>
+                        <TableRow>
+                            <TableCell>Concurrent active roadmaps</TableCell>
+                            <TableCell className="text-center"><X className="h-5 w-5 text-red-500 inline" /></TableCell>
+                            <TableCell className="text-center bg-primary/5">1</TableCell>
+                            <TableCell className="text-center">Unlimited</TableCell>
+                        </TableRow>
+                        <TableRow>
+                            <TableCell>Adaptive AI sprint generation</TableCell>
+                            <TableCell className="text-center"><X className="h-5 w-5 text-red-500 inline" /></TableCell>
+                            <TableCell className="text-center bg-primary/5"><Check className="h-5 w-5 text-green-500 inline" /></TableCell>
+                            <TableCell className="text-center"><Check className="h-5 w-5 text-green-500 inline" /></TableCell>
+                        </TableRow>
+                        <TableRow>
+                            <TableCell>AI completion debrief</TableCell>
+                            <TableCell className="text-center"><X className="h-5 w-5 text-red-500 inline" /></TableCell>
+                            <TableCell className="text-center bg-primary/5"><Check className="h-5 w-5 text-green-500 inline" /></TableCell>
+                            <TableCell className="text-center"><Check className="h-5 w-5 text-green-500 inline" /></TableCell>
+                        </TableRow>
+                        <TableRow>
+                            <TableCell>Shareable validation reports</TableCell>
+                            <TableCell className="text-center"><X className="h-5 w-5 text-red-500 inline" /></TableCell>
+                            <TableCell className="text-center bg-primary/5"><X className="h-5 w-5 text-red-500 inline" /></TableCell>
                             <TableCell className="text-center"><Check className="h-5 w-5 text-green-500 inline" /></TableCell>
                         </TableRow>
 
@@ -82,41 +111,6 @@ export default function FeatureComparisonTable() {
                             <TableCell className="text-center"><Check className="h-5 w-5 text-green-500 inline" /></TableCell>
                         </TableRow>
 
-                        {/* Marketplace */}
-                        <TableRow className="bg-muted/50">
-                            <TableCell colSpan={4} className="font-semibold text-sm">Marketplace</TableCell>
-                        </TableRow>
-                        <TableRow>
-                            <TableCell>Browse shared ideas</TableCell>
-                            <TableCell className="text-center">20 recent</TableCell>
-                            <TableCell className="text-center bg-primary/5">Full archive</TableCell>
-                            <TableCell className="text-center">Full archive</TableCell>
-                        </TableRow>
-                        <TableRow>
-                            <TableCell>Filter by score</TableCell>
-                            <TableCell className="text-center"><X className="h-5 w-5 text-red-500 inline" /></TableCell>
-                            <TableCell className="text-center bg-primary/5"><Check className="h-5 w-5 text-green-500 inline" /></TableCell>
-                            <TableCell className="text-center"><Check className="h-5 w-5 text-green-500 inline" /></TableCell>
-                        </TableRow>
-                        <TableRow>
-                            <TableCell>Search by keyword</TableCell>
-                            <TableCell className="text-center"><X className="h-5 w-5 text-red-500 inline" /></TableCell>
-                            <TableCell className="text-center bg-primary/5"><X className="h-5 w-5 text-red-500 inline" /></TableCell>
-                            <TableCell className="text-center"><Check className="h-5 w-5 text-green-500 inline" /></TableCell>
-                        </TableRow>
-                        <TableRow>
-                            <TableCell>Industry filters</TableCell>
-                            <TableCell className="text-center"><X className="h-5 w-5 text-red-500 inline" /></TableCell>
-                            <TableCell className="text-center bg-primary/5"><X className="h-5 w-5 text-red-500 inline" /></TableCell>
-                            <TableCell className="text-center"><Check className="h-5 w-5 text-green-500 inline" /></TableCell>
-                        </TableRow>
-                        <TableRow>
-                            <TableCell>Save favorites</TableCell>
-                            <TableCell className="text-center"><X className="h-5 w-5 text-red-500 inline" /></TableCell>
-                            <TableCell className="text-center bg-primary/5">10</TableCell>
-                            <TableCell className="text-center">Unlimited</TableCell>
-                        </TableRow>
-
                         {/* Reports & Export */}
                         <TableRow className="bg-muted/50">
                             <TableCell colSpan={4} className="font-semibold text-sm">Reports & Export</TableCell>
@@ -131,6 +125,12 @@ export default function FeatureComparisonTable() {
                             <TableCell>PDF export</TableCell>
                             <TableCell className="text-center"><X className="h-5 w-5 text-red-500 inline" /></TableCell>
                             <TableCell className="text-center bg-primary/5"><Check className="h-5 w-5 text-green-500 inline" /></TableCell>
+                            <TableCell className="text-center"><Check className="h-5 w-5 text-green-500 inline" /></TableCell>
+                        </TableRow>
+                        <TableRow>
+                            <TableCell>Shareable report link</TableCell>
+                            <TableCell className="text-center"><X className="h-5 w-5 text-red-500 inline" /></TableCell>
+                            <TableCell className="text-center bg-primary/5"><X className="h-5 w-5 text-red-500 inline" /></TableCell>
                             <TableCell className="text-center"><Check className="h-5 w-5 text-green-500 inline" /></TableCell>
                         </TableRow>
                         <TableRow>

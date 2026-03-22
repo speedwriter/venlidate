@@ -4,13 +4,12 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import Link from "next/link";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { ScoreCard } from "./score-card";
-import { TrafficLight } from "./traffic-light";
-import { BenchmarkBadge } from "./benchmark-badge";
+
 
 import { Tables } from "@/types/database";
 import { ValidationResult } from "@/types/validations";
 import { Badge } from "@/components/ui/badge";
-import { AlertTriangle, CheckCircle2, TrendingUp, History, Lightbulb, BarChart3, ChevronDown, ExternalLink, Target, CalendarDays } from "lucide-react";
+import { AlertTriangle, CheckCircle2, TrendingUp, History, Lightbulb, BarChart3, ChevronDown, ExternalLink, Target } from "lucide-react";
 import { cn, getScoreColor } from "@/lib/utils";
 import { useState, useEffect } from "react";
 import {
@@ -83,7 +82,6 @@ export function ValidationReport({
     validation,
     idea,
     history = [],
-    percentile,
     isShared: initialIsShared = false,
     sharedIdeaId: initialSharedIdeaId,
     userTier = 'free'

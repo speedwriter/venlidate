@@ -1,4 +1,4 @@
-import { ScoreBreakdown, GeneratedSprint } from '@/types/roadmap'
+import { ScoreBreakdown } from '@/types/roadmap'
 import { z } from 'zod'
 
 export const PHASE_DEFINITIONS = [

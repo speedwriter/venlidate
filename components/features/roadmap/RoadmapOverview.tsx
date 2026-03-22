@@ -3,18 +3,35 @@ import { Button } from '@/components/ui/button'
 import { Progress } from '@/components/ui/progress'
 import { PhaseCard } from './PhaseCard'
 import { ArrowRight, CheckCircle2 } from 'lucide-react'
+import { Phase } from '@/types/roadmap'
 
-export function RoadmapOverview({ roadmap, activeSprint, isCompleted }: { roadmap: any; activeSprint: any; isCompleted?: boolean }) {
+type TaskRow = { status: string }
+type SprintRow = { id: string; sprint_number: number; status: string; title: string; task?: TaskRow[] }
+type PhaseRow = Phase & { sprint?: SprintRow[] }
+type RoadmapRow = {
+  id: string
+  current_phase: number
+  current_sprint: number
+  phase?: PhaseRow[]
+  idea: { title: string }
+}
+type ActiveSprintRow = {
+  id: string
+  title: string
+  task?: TaskRow[]
+}
+
+export function RoadmapOverview({ roadmap, activeSprint, isCompleted }: { roadmap: RoadmapRow; activeSprint: ActiveSprintRow | null; isCompleted?: boolean }) {
   // Only count tasks from unlocked phases so progress never regresses as new sprints generate
   const unlockedPhaseTasks = roadmap.phase
-    ?.filter((p: any) => p.status !== 'locked')
-    .flatMap((p: any) => p.sprint?.flatMap((s: any) => s.task || []) || []) || []
-  const completedTasks = unlockedPhaseTasks.filter((t: any) => t.status === 'completed').length
+    ?.filter(p => p.status !== 'locked')
+    .flatMap(p => p.sprint?.flatMap(s => s.task || []) || []) || []
+  const completedTasks = unlockedPhaseTasks.filter(t => t.status === 'completed').length
   const progressPercent = unlockedPhaseTasks.length > 0
     ? Math.round((completedTasks / unlockedPhaseTasks.length) * 100)
     : 0
 
-  const currentPhase = roadmap.phase?.find((p: any) => p.phase_number === roadmap.current_phase)
+  const currentPhase = roadmap.phase?.find(p => p.phase_number === roadmap.current_phase)
   const hasMultipleSprintsInCurrentPhase = (currentPhase?.sprint?.length || 0) > 1
 
   return (
@@ -45,7 +62,7 @@ export function RoadmapOverview({ roadmap, activeSprint, isCompleted }: { roadma
               {hasMultipleSprintsInCurrentPhase ? activeSprint.title : activeSprint.title.replace(/^Sprint \d+: /, '')}
             </p>
             <p className="text-sm text-muted-foreground mt-0.5">
-              {activeSprint.task?.filter((t: any) => t.status === 'completed').length || 0}/{activeSprint.task?.length || 5} tasks complete
+              {activeSprint.task?.filter(t => t.status === 'completed').length || 0}/{activeSprint.task?.length || 5} tasks complete
             </p>
           </div>
           <Button asChild>
@@ -74,7 +91,7 @@ export function RoadmapOverview({ roadmap, activeSprint, isCompleted }: { roadma
 
       <div className="space-y-3">
         <h2 className="text-sm font-semibold text-muted-foreground uppercase tracking-wide">Your 5 Phases</h2>
-        {roadmap.phase?.sort((a: any, b: any) => a.phase_number - b.phase_number).map((phase: any) => (
+        {roadmap.phase?.sort((a, b) => a.phase_number - b.phase_number).map((phase) => (
           <PhaseCard key={phase.id} phase={phase} roadmapId={roadmap.id} />
         ))}
       </div>

@@ -1,5 +1,4 @@
 import { z } from 'zod'
-import { ScoreBreakdown } from '@/types/roadmap'
 
 // Guardrail: the logical post-MVP progression stages
 // LLM picks from and adapts these — prevents hallucinated or regressive phases

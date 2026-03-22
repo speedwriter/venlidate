@@ -37,8 +37,8 @@ export function GenerateRoadmapCTA({ ideaId, ideaTitle, score }: GenerateRoadmap
       }
       
       router.push(`/roadmap/${data.roadmap_id}`)
-    } catch (err: any) {
-      setError(err.message)
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Generation failed')
       setIsGenerating(false)
     }
   }
@@ -51,7 +51,7 @@ export function GenerateRoadmapCTA({ ideaId, ideaTitle, score }: GenerateRoadmap
           <CardTitle className="text-lg">Your idea scored {score} — now build it.</CardTitle>
         </div>
         <CardDescription>
-          Get a personalised 5-phase roadmap built around "{ideaTitle}" with week-by-week tasks tailored to your specific score gaps. Complete 5 tasks to unlock the next sprint.
+          Get a personalised 5-phase roadmap built around &quot;{ideaTitle}&quot; with week-by-week tasks tailored to your specific score gaps. Complete 5 tasks to unlock the next sprint.
         </CardDescription>
       </CardHeader>
       <CardContent className="flex flex-col gap-3">

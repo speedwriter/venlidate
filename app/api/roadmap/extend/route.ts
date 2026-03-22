@@ -8,6 +8,12 @@ import { generateObject } from 'ai'
 import { google } from '@ai-sdk/google'
 import { buildExtendedPhasePrompt, ExtendedPhaseSchema } from '@/lib/prompts/extended-phase-generator'
 
+type TaskForContext = {
+  title: string
+  sprint: { phase: { phase_number: number } | null } | null
+  task_reflection: { content: string } | null
+}
+
 export async function POST(req: NextRequest) {
   try {
     const supabase = await createClient()
@@ -47,12 +53,12 @@ export async function POST(req: NextRequest) {
       .eq('roadmap_id', roadmap_id)
       .order('created_at', { ascending: true })
 
-    const allReflections = (tasks || [])
+    const allReflections = ((tasks || []) as TaskForContext[])
       .filter(t => t.task_reflection)
       .map(t => ({
-        phase: (t.sprint as any)?.phase?.phase_number || 0,
+        phase: t.sprint?.phase?.phase_number || 0,
         task_title: t.title,
-        reflection: (t.task_reflection as any)?.content || '',
+        reflection: t.task_reflection?.content || '',
       }))
 
     const prompt = buildExtendedPhasePrompt(
@@ -70,7 +76,7 @@ export async function POST(req: NextRequest) {
     })
 
     // Insert new phase
-    const { data: newPhase } = await supabase
+    const { data: newPhase, error: phaseError } = await supabase
       .from('phase')
       .insert({
         roadmap_id,
@@ -83,12 +89,13 @@ export async function POST(req: NextRequest) {
       })
       .select()
       .single()
+    if (phaseError || !newPhase) throw phaseError ?? new Error('Phase creation failed')
 
     // Insert Sprint 1
-    const { data: newSprint } = await supabase
+    const { data: newSprint, error: sprintError } = await supabase
       .from('sprint')
       .insert({
-        phase_id: newPhase!.id,
+        phase_id: newPhase.id,
         roadmap_id,
         sprint_number: 1,
         title: extended.sprint.title,
@@ -97,11 +104,12 @@ export async function POST(req: NextRequest) {
       })
       .select()
       .single()
+    if (sprintError || !newSprint) throw sprintError ?? new Error('Sprint creation failed')
 
     // Insert 5 tasks
-    await supabase.from('task').insert(
+    const { error: taskError } = await supabase.from('task').insert(
       extended.sprint.tasks.map((t, i) => ({
-        sprint_id: newSprint!.id,
+        sprint_id: newSprint.id,
         roadmap_id,
         user_id: user.id,
         task_number: i + 1,
@@ -111,6 +119,7 @@ export async function POST(req: NextRequest) {
         resource_url: t.resource_url || null,
       }))
     )
+    if (taskError) throw taskError
 
     // Update roadmap status back to active + increment counters
     await supabase.from('roadmap').update({
@@ -122,8 +131,8 @@ export async function POST(req: NextRequest) {
     }).eq('id', roadmap_id)
 
     return NextResponse.json({ success: true, phase_id: newPhase!.id })
-  } catch (error: any) {
+  } catch (error) {
     console.error('Extend roadmap error:', error)
-    return NextResponse.json({ error: error.message }, { status: 500 })
+    return NextResponse.json({ error: 'Failed to extend roadmap. Please try again.' }, { status: 500 })
   }
 }

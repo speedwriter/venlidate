@@ -18,9 +18,10 @@ import {
 } from "@/components/ui/breadcrumb"
 
 import { Card, CardContent, CardDescription, CardTitle } from "@/components/ui/card"
-import { CalendarDays, Lightbulb, PlayCircle, ArrowRight } from "lucide-react"
+import { CalendarDays, Lightbulb, PlayCircle, ArrowRight, Lock } from "lucide-react"
 import { GenerateRoadmapCTA } from "@/components/features/roadmap/GenerateRoadmapCTA"
 import { Button } from "@/components/ui/button"
+import { TIER_LIMITS } from "@/lib/utils/subscriptions"
 
 interface IdeaDetailPageProps {
     params: Promise<{
@@ -170,12 +171,6 @@ export default async function IdeaDetailPage({ params }: IdeaDetailPageProps) {
                                         </Button>
                                     </CardContent>
                                 </Card>
-                            ) : latestValidation.overallScore >= 70 && !idea.roadmap_generated ? (
-                                <GenerateRoadmapCTA 
-                                    ideaId={idea.id} 
-                                    ideaTitle={idea.title} 
-                                    score={latestValidation.overallScore} 
-                                />
                             ) : latestValidation.overallScore < 70 ? (
                                 <Card className="bg-muted/30 border-dashed">
                                     <CardContent className="flex items-center gap-4 py-6">
@@ -190,6 +185,34 @@ export default async function IdeaDetailPage({ params }: IdeaDetailPageProps) {
                                         </div>
                                     </CardContent>
                                 </Card>
+                            ) : !TIER_LIMITS[userTier].canAccessRoadmap ? (
+                                <Card className="border-2 border-indigo-200 bg-indigo-50/50">
+                                    <CardContent className="flex flex-col sm:flex-row items-center justify-between gap-4 py-6">
+                                        <div className="flex items-center gap-4">
+                                            <div className="h-10 w-10 rounded-full bg-indigo-100 flex items-center justify-center shrink-0">
+                                                <Lock className="h-5 w-5 text-indigo-600" />
+                                            </div>
+                                            <div className="space-y-1">
+                                                <CardTitle className="text-base font-semibold">Your idea scored {latestValidation.overallScore} — upgrade to build it.</CardTitle>
+                                                <CardDescription className="text-sm">
+                                                    Pro unlocks your personalised 5-phase roadmap with AI-generated sprint tasks tailored to your score.
+                                                </CardDescription>
+                                            </div>
+                                        </div>
+                                        <Button asChild size="lg" className="bg-indigo-600 hover:bg-indigo-700 text-white shrink-0">
+                                            <Link href="/dashboard/subscription">
+                                                Upgrade to Pro
+                                                <ArrowRight className="ml-2 h-4 w-4" />
+                                            </Link>
+                                        </Button>
+                                    </CardContent>
+                                </Card>
+                            ) : !idea.roadmap_generated ? (
+                                <GenerateRoadmapCTA
+                                    ideaId={idea.id}
+                                    ideaTitle={idea.title}
+                                    score={latestValidation.overallScore}
+                                />
                             ) : null}
                         </div>
                     )}

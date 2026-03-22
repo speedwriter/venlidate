@@ -1,23 +1,37 @@
 import { createClient } from '@/lib/supabase/server'
 import { NextResponse } from 'next/server'
+import { timingSafeEqual } from 'crypto'
 
 /**
  * Cron job to cleanup (hard delete) very old reports for free tier users.
  * Runs on a schedule (e.g., daily).
- * Target: Free tier reports older than 365 days.
+ * Target: Free tier reports older than 30 days.
+ * Requires CRON_SECRET to be set in environment variables.
  */
 export async function GET(request: Request) {
-    // Basic secret check for cron jobs if configured
-    const authHeader = request.headers.get('authorization')
     const cronSecret = process.env.CRON_SECRET
+    if (!cronSecret) {
+        console.error('[Cron] CRON_SECRET environment variable is not set — endpoint blocked')
+        return NextResponse.json({ error: 'Service unavailable' }, { status: 503 })
+    }
 
-    if (cronSecret && authHeader !== `Bearer ${cronSecret}`) {
+    const authHeader = request.headers.get('authorization') ?? ''
+    const expected = `Bearer ${cronSecret}`
+
+    // Constant-time comparison to prevent timing attacks
+    const authBytes = Buffer.from(authHeader, 'utf8')
+    const expectedBytes = Buffer.from(expected, 'utf8')
+    const isValid =
+        authBytes.length === expectedBytes.length &&
+        timingSafeEqual(authBytes, expectedBytes)
+
+    if (!isValid) {
         return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
     }
 
     const supabase = await createClient()
 
-    // 1. Calculate cutoff date for HARD deletion (365 days ago)
+    // 1. Calculate cutoff date for HARD deletion (30 days ago for free tier)
     const cutoffDate = new Date()
     cutoffDate.setDate(cutoffDate.getDate() - 30)
     const cutoffIso = cutoffDate.toISOString()
@@ -62,7 +76,7 @@ export async function GET(request: Request) {
         console.error('[Cron] Cleanup reports failed:', error)
         return NextResponse.json({
             success: false,
-            error: error instanceof Error ? error.message : 'An unknown error occurred during cleanup'
+            error: 'Cleanup failed. Check server logs for details.'
         }, { status: 500 })
     }
 }

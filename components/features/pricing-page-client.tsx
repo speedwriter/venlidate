@@ -26,8 +26,8 @@ export default function PricingPageClient({ currentTier, userId, showCTA = true 
 
     const freeTierFeatures = [
         "1 validation per month",
-        "Basic thinking questions (3-5 per idea)",
-        "Browse 20 recent marketplace ideas",
+        "All thinking questions (every dimension)",
+        "Detailed score breakdown across 7 dimensions",
         "Reports saved for 30 days",
         "Community benchmarks (view only)"
     ]
@@ -35,23 +35,24 @@ export default function PricingPageClient({ currentTier, userId, showCTA = true 
     const proTierFeatures = [
         "10 validations per month",
         "All thinking questions (every dimension)",
-        "🎯 Personalized Action Plan",
+        "🗺️ Full 5-Phase Execution Roadmap",
+        "📋 AI-generated sprint tasks tailored to your score",
+        "🔄 Adaptive sprints — AI learns from your reflections",
         "📊 Iteration tracking (see score improve)",
-        "Full marketplace access (200+ ideas)",
+        "🎓 AI debrief when you complete all 5 phases",
         "Compare up to 3 ideas side-by-side",
         "Export reports as PDF",
-        "Reports saved forever",
-        "Save favorite marketplace ideas (up to 10)"
+        "Reports saved forever"
     ]
 
     const premiumTierFeatures = [
         "Everything in Pro, plus:",
-        "Unlimited validations",
-        "Compare up to 5 ideas",
-        "Export ideas as PDF",
-        "Priority email support (< 24hr)",
-        "Early access to new features",
-        "Weekly digest of high-scoring ideas"
+        "♾️ Unlimited validations per month",
+        "🚀 Run unlimited concurrent roadmaps — execute all your ideas at once",
+        "🔗 Shareable validation reports — send to co-founders or investors",
+        "📊 Up to 5 ideas side-by-side (Pro: up to 3)",
+        "⚡ Priority email support (< 24hr response)",
+        "🔬 Early access to new features"
     ]
 
     const getProPrice = () => {
@@ -85,10 +86,10 @@ export default function PricingPageClient({ currentTier, userId, showCTA = true 
             {/* Hero Section with Billing Toggle */}
             <div className="flex flex-col items-center text-center space-y-4 mb-12">
                 <h1 className="text-4xl font-bold tracking-tight sm:text-5xl">
-                    Choose Your Plan. Validate Faster. Build Smarter.
+                    Start Free. Upgrade to Execute.
                 </h1>
                 <p className="max-w-[700px] text-xl text-muted-foreground">
-                    Start free. Upgrade when you need action plans and unlimited validations. No credit card required.
+                    Validate your idea for free. Upgrade to Pro when you&apos;re ready to work the 5-phase roadmap and sign your first customer. No credit card required.
                 </p>
 
                 {(currentTier === 'pro' || currentTier === 'premium') && userId && (
@@ -109,7 +110,7 @@ export default function PricingPageClient({ currentTier, userId, showCTA = true 
                     name="Free"
                     price="$0"
                     billingPeriod="forever"
-                    description="Perfect for testing the waters"
+                    description="Validate your idea. Know your score."
                     features={freeTierFeatures}
                     cta="Start Free"
                     highlighted={false}
@@ -123,7 +124,7 @@ export default function PricingPageClient({ currentTier, userId, showCTA = true 
                     price={getProPrice()}
                     billingPeriod="month"
                     annualPrice="$33"
-                    description="For aspiring founders with multiple ideas"
+                    description="Validate your idea. Then execute the roadmap to sign your first customer."
                     features={proTierFeatures}
                     cta="Start Pro Subscription Now"
                     highlighted={true}
@@ -138,7 +139,7 @@ export default function PricingPageClient({ currentTier, userId, showCTA = true 
                     price={getPremiumPrice()}
                     billingPeriod="month"
                     annualPrice="$66"
-                    description="For serial validators and consultants"
+                    description="Everything in Pro, for founders running multiple ideas in parallel."
                     features={premiumTierFeatures}
                     cta="Start Premium Subscription Now"
                     highlighted={false}
@@ -202,11 +203,11 @@ export default function PricingPageClient({ currentTier, userId, showCTA = true 
                                 ))}
                             </div>
                             <p className="text-sm mb-4 italic">
-                                &ldquo;I had no ideas but knew I wanted to start a business. Browsed the marketplace, found a validated SaaS idea scoring 72/100, and built my version of it. Now at $5K MRR.&rdquo;
+                                &ldquo;I completed all 5 phases in 6 weeks. By Phase 4 I had 3 paying customers lined up. The roadmap didn&apos;t let me skip the hard stuff — it made me do the customer interviews I kept avoiding.&rdquo;
                             </p>
                             <div>
-                                <p className="font-semibold text-sm">Alex R.</p>
-                                <p className="text-xs text-muted-foreground">Premium User</p>
+                                <p className="font-semibold text-sm">Marcus D.</p>
+                                <p className="text-xs text-muted-foreground">Pro User · $4K MRR</p>
                             </div>
                         </CardContent>
                     </Card>
@@ -236,9 +237,9 @@ export default function PricingPageClient({ currentTier, userId, showCTA = true 
                         </AccordionContent>
                     </AccordionItem>
                     <AccordionItem value="item-4">
-                        <AccordionTrigger>Is the action plan really worth upgrading to Pro?</AccordionTrigger>
+                        <AccordionTrigger>Is the roadmap really worth upgrading to Pro?</AccordionTrigger>
                         <AccordionContent>
-                            Yes. The action plan tells you the top 3 bottlenecks in priority order, exactly how to validate each one, and success criteria. Free users get thinking questions (helpful), but Pro users get a step-by-step roadmap (game-changing).
+                            Yes. The free tier tells you what&apos;s broken. The Pro roadmap tells you exactly what to do about it — 5 phases, structured sprints, real tasks like customer interviews, landing page tests, and pricing experiments. The AI uses your reflections to generate the next sprint, so it adapts as you learn. Free users get a diagnosis. Pro users get a system to fix it.
                         </AccordionContent>
                     </AccordionItem>
                     <AccordionItem value="item-5">
@@ -311,21 +312,18 @@ export default function PricingPageClient({ currentTier, userId, showCTA = true 
             {showCTA && (
                 <div className="max-w-6xl mx-auto py-20 bg-gradient-to-r from-primary to-primary/80 rounded-2xl px-8 text-center">
                     <h2 className="text-3xl font-bold text-white mb-6">
-                        Start Validating Today. Build Tomorrow.
+                        Validate Today. Sign Your First Customer.
                     </h2>
                     <div className="flex flex-col sm:flex-row items-center justify-center gap-4 mb-4">
                         <Button asChild size="lg" variant="secondary">
                             <Link href="/signup">Start Free</Link>
                         </Button>
                         <Button asChild size="lg" variant="outline" className="bg-white/10 text-white border-white hover:bg-white/20">
-                            <Link href="/signup?plan=pro">Try Pro Free</Link>
-                        </Button>
-                        <Button asChild size="lg" variant="outline" className="bg-white/10 text-white border-white hover:bg-white/20">
-                            <Link href="/signup?plan=premium">Try Premium Free</Link>
+                            <Link href="/signup?plan=pro">Get the Full Roadmap</Link>
                         </Button>
                     </div>
                     <p className="text-white/90 text-sm">
-                        Join 500+ founders who stopped guessing and started building with confidence.
+                        Join 500+ founders who use Venlidate to go from idea to first customer.
                     </p>
                 </div>
             )}
