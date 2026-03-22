@@ -145,7 +145,7 @@ export async function POST(req: NextRequest) {
         (await supabase.from('task').select('id').eq('roadmap_id', roadmap_id)).data?.map(t => t.id) || []
       )
 
-    const priorReflections = ((reflections || []) as ReflectionWithTask[]).map(r => ({
+    const priorReflections = ((reflections || []) as unknown as ReflectionWithTask[]).map(r => ({
       task_title: r.task?.title || '',
       reflection: r.content,
     }))
