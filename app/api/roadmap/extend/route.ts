@@ -53,7 +53,7 @@ export async function POST(req: NextRequest) {
       .eq('roadmap_id', roadmap_id)
       .order('created_at', { ascending: true })
 
-    const allReflections = ((tasks || []) as TaskForContext[])
+    const allReflections = ((tasks || []) as unknown as TaskForContext[])
       .filter(t => t.task_reflection)
       .map(t => ({
         phase: t.sprint?.phase?.phase_number || 0,
