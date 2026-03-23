@@ -1,7 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { createClient } from '@/lib/supabase/server'
-import { generateObject } from 'ai'
-import { google } from '@ai-sdk/google'
+import { generateObjectWithFallback } from '@/lib/ai/models'
 import { buildRoadmapGenerationPrompt, PHASE_DEFINITIONS, GeneratedSprintSchema } from '@/lib/prompts/roadmap-generator'
 import { ScoreBreakdown } from '@/types/roadmap'
 import { getUserTier, TIER_LIMITS } from '@/lib/utils/subscriptions'
@@ -40,9 +39,8 @@ export async function POST(req: NextRequest) {
     const scoreBreakdown = idea.score_breakdown as ScoreBreakdown
     const prompt = buildRoadmapGenerationPrompt(idea.title, idea.description, scoreBreakdown)
 
-    // Generate Sprint 1 via Gemini
-    const { object: generatedSprint } = await generateObject({
-      model: google('gemini-2.5-flash-lite'),
+    // Generate Sprint 1 with fallback chain
+    const { object: generatedSprint } = await generateObjectWithFallback({
       schema: GeneratedSprintSchema,
       prompt,
     })

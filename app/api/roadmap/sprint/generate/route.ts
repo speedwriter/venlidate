@@ -1,8 +1,7 @@
 // File: app/api/roadmap/sprint/generate/route.ts
 import { NextRequest, NextResponse } from 'next/server'
 import { createClient } from '@/lib/supabase/server'
-import { generateObject } from 'ai'
-import { google } from '@ai-sdk/google'
+import { generateObjectWithFallback } from '@/lib/ai/models'
 import { buildNextSprintPrompt, GeneratedSprintSchema } from '@/lib/prompts/sprint-generator'
 import { buildCompletionSummaryPrompt, CompletionSummarySchema } from '@/lib/prompts/completion-summary'
 import { ScoreBreakdown } from '@/types/roadmap'
@@ -167,8 +166,7 @@ export async function POST(req: NextRequest) {
       phaseOverride
     )
 
-    const { object: generatedSprint } = await generateObject({
-      model: google('gemini-2.5-flash-lite'),
+    const { object: generatedSprint } = await generateObjectWithFallback({
       schema: GeneratedSprintSchema,
       prompt,
     })
@@ -207,8 +205,7 @@ export async function POST(req: NextRequest) {
         }))
 
       const completionPrompt = buildCompletionSummaryPrompt(idea.title, idea.description, allReflections)
-      const { object: summary } = await generateObject({
-        model: google('gemini-2.5-flash-lite'),
+      const { object: summary } = await generateObjectWithFallback({
         schema: CompletionSummarySchema,
         prompt: completionPrompt,
       })

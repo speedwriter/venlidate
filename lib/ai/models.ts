@@ -1,8 +1,9 @@
-import { generateText } from 'ai';
+import { generateText, generateObject } from 'ai';
 import { google } from '@ai-sdk/google';
 import { createOpenRouter } from '@openrouter/ai-sdk-provider';
 import { deepseek } from '@ai-sdk/deepseek';
 import type { LanguageModel } from 'ai';
+import type { z } from 'zod';
 
 /**
  * Provider chain for reliability: tries each in order on rate limit or provider errors.
@@ -26,6 +27,18 @@ const FALLBACK_CHAIN: ModelEntry[] = [
     { getModel: () => google('gemini-2.5-flash'), modelId: 'gemini-2.5-flash' },
     { getModel: () => openrouter('google/gemini-2.5-flash'), modelId: 'openrouter:google/gemini-2.5-flash' },
     { getModel: () => deepseek('deepseek-chat'), modelId: 'deepseek-chat' },
+];
+
+/**
+ * Structured output chain — DeepSeek excluded as it is unreliable with strict JSON schemas.
+ * 1. Google Gemini 2.5 Flash Lite
+ * 2. Google Gemini 2.5 Flash
+ * 3. OpenRouter (google/gemini-2.5-flash)
+ */
+const OBJECT_FALLBACK_CHAIN: ModelEntry[] = [
+    { getModel: () => google('gemini-2.5-flash-lite'), modelId: 'gemini-2.5-flash-lite' },
+    { getModel: () => google('gemini-2.5-flash'), modelId: 'gemini-2.5-flash' },
+    { getModel: () => openrouter('google/gemini-2.5-flash'), modelId: 'openrouter:google/gemini-2.5-flash' },
 ];
 
 function isRetryableError(err: unknown): boolean {
@@ -73,6 +86,47 @@ export async function generateTextWithFallback(options: GenerateTextOptions): Pr
                 },
             });
             return { text: response.text, modelUsed: modelId };
+        } catch (err) {
+            lastError = err;
+            if (!isRetryableError(err)) throw err;
+            console.warn(`[models] ${modelId} failed (will try next):`, err instanceof Error ? err.message : err);
+        }
+    }
+
+    throw lastError instanceof Error
+        ? lastError
+        : new Error(String(lastError));
+}
+
+export type GenerateObjectOptions<T> = {
+    schema: z.ZodType<T>;
+    prompt: string;
+};
+
+export type GenerateObjectResult<T> = {
+    object: T;
+    modelUsed: string;
+};
+
+/**
+ * Calls generateObject with the first model that succeeds.
+ * On rate limit or retryable provider errors, tries the next in the chain.
+ * DeepSeek is excluded — unreliable with strict Zod schemas.
+ */
+export async function generateObjectWithFallback<T>(
+    options: GenerateObjectOptions<T>
+): Promise<GenerateObjectResult<T>> {
+    const { schema, prompt } = options;
+    let lastError: unknown;
+
+    for (const { getModel, modelId } of OBJECT_FALLBACK_CHAIN) {
+        try {
+            const response = await generateObject({
+                model: getModel(),
+                schema,
+                prompt,
+            });
+            return { object: response.object as T, modelUsed: modelId };
         } catch (err) {
             lastError = err;
             if (!isRetryableError(err)) throw err;
