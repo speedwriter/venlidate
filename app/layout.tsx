@@ -29,6 +29,7 @@ export const metadata: Metadata = {
 import { Toaster } from "@/components/ui/sonner";
 import { PostHogProvider } from "@/components/posthog-provider";
 import { Analytics } from "@vercel/analytics/next";
+import { SpeedInsights } from "@vercel/speed-insights/next";
 import { Suspense } from "react";
 
 export default function RootLayout({
@@ -46,6 +47,7 @@ export default function RootLayout({
             {children}
             <Toaster position="top-center" richColors />
             <Analytics />
+            <SpeedInsights />
           </PostHogProvider>
         </Suspense>
       </body>
