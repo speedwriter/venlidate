@@ -599,3 +599,28 @@ export async function validateIdea(
         );
     }
 }
+/**
+ * Compares current idea data with a saved snapshot to see if anything changed.
+ * Only compares the fields that actually affect the AI validation output.
+ */
+export function isIdeaUnchanged(current: IdeaFormData, snapshot: IdeaFormData | undefined): boolean {
+    if (!snapshot) return false;
+
+    const fieldsToCompare: (keyof IdeaFormData)[] = [
+        'title',
+        'problem',
+        'solution',
+        'targetCustomer',
+        'painkillerMoment',
+        'revenueModel',
+        'unfairAdvantage',
+        'distributionChannel',
+        'timeCommitment'
+    ];
+
+    return fieldsToCompare.every(field => {
+        const curValue = String(current[field] || '').trim();
+        const snapValue = String(snapshot[field] || '').trim();
+        return curValue === snapValue;
+    });
+}

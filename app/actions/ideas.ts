@@ -2,12 +2,12 @@
 
 import { createClient } from '@/lib/supabase/server'
 import { revalidatePath } from 'next/cache'
-import { validateIdea } from '@/lib/ai/validator'
+import { validateIdea, isIdeaUnchanged } from '@/lib/ai/validator'
 import { IdeaFormData, ValidationResult, ActionPlan, ComparableCompany } from '@/types/validations'
 import { checkValidationQuota, checkIterationQuota, canAccessReport, getAccessibleValidations } from '@/lib/utils/subscriptions'
 import { Tables } from '@/types/database'
 
-function mapValidationRowToResult(row: Tables<'validations'>): ValidationResult {
+function mapValidationRowToResult(row: Tables<'validations'> | any): ValidationResult {
     return {
         overallScore: row.overall_score,
         trafficLight: row.traffic_light as 'red' | 'yellow' | 'green',
@@ -155,12 +155,19 @@ export async function submitIdeaForValidation(ideaId: string) {
         return { success: false, error: 'Unauthorized' }
     }
 
-    // Fetch idea and verify ownership
+    // Fetch idea and verify ownership (include latest validation for caching check)
     const { data: idea, error: ideaError } = await supabase
         .from('ideas')
-        .select('*')
+        .select(`
+            *,
+            validations (
+                *
+            )
+        `)
         .eq('id', ideaId)
         .eq('user_id', user.id)
+        .order('created_at', { foreignTable: 'validations', ascending: false })
+        .limit(1, { foreignTable: 'validations' })
         .single()
 
     if (ideaError || !idea) {
@@ -202,6 +209,17 @@ export async function submitIdeaForValidation(ideaId: string) {
             unfairAdvantage: idea.unfair_advantage,
             distributionChannel: idea.distribution_channel,
             timeCommitment: idea.time_commitment,
+        }
+
+        // --- Content-Based Caching Check ---
+        const latestValidation = (idea.validations as any[])?.[0]
+        if (latestValidation && isIdeaUnchanged(ideaData, latestValidation.idea_snapshot)) {
+            console.log('🔄 Returning cached validation result for unchanged idea content');
+            return { 
+                success: true, 
+                data: mapValidationRowToResult(latestValidation),
+                message: "Using cached results from previous validation (no content changes detected)."
+            }
         }
 
         const startTime = Date.now()
